@@ -13,12 +13,59 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+
+  email         String   @unique
+  username      String?
+
+  passwordHash  String?
+
+  googleId      String?  @unique
+
+  provider      AuthProvider @default(LOCAL)
+
+  role          Role     @default(USER)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  glossaries    Glossary[]
 }
 
-model glosary {
-  id int @id @default(autoincrement())
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
+model Glossary {
+  id               Int      @id @default(autoincrement())
+
+  name             String
+
+  sourceLanguage   String
+  targetLanguage   String
+
+  userId           Int
+  user             User     @relation(fields: [userId], references: [id])
+
+  entries          GlossaryEntry[]
+
+  createdAt        DateTime @default(now())
+}
+
+model GlossaryEntry {
+  id           Int       @id @default(autoincrement())
+
+  source       String
+  target       String
+
+  detail       String?
+
+  glossaryId   Int
+  glossary     Glossary  @relation(fields: [glossaryId], references: [id], onDelete: Cascade)
 }
