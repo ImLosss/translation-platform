@@ -31,6 +31,7 @@ model User {
   updatedAt     DateTime @updatedAt
 
   glossaries    Glossary[]
+  translations Translation[]
 }
 
 enum Role {
@@ -69,4 +70,46 @@ model GlossaryEntry {
 
   glossaryId   Int
   glossary     Glossary  @relation(fields: [glossaryId], references: [id], onDelete: Cascade)
+}
+
+model Translation {
+  id         Int      @id @default(autoincrement())
+  
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+
+  fileName   String   
+
+  // Simpan identitas bahasa di tabel induk
+  sourceLang String   // Contoh: "en-US"
+  targetLang String   // Contoh: "id-ID"
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  rows       TranslationRow[]
+
+  @@map("translations")
+}
+
+
+model TranslationRow {
+  id            Int      @id @default(autoincrement())
+  translationId Int      
+  
+  sequence      Int   
+  startTime     String  
+  endTime       String   
+  
+  // Memisahkan teks asli dan hasil terjemahan
+  sourceText    String   @db.Text 
+  targetText    String?  @db.Text 
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  translation   Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
+
+  @@index([translationId]) 
+  @@map("translation_rows")
 }
