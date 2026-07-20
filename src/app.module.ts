@@ -7,12 +7,14 @@ import { GlosaryModule } from './glosary/glosary.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { GlossaryEntryModule } from './glossary-entry/glossary-entry.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    EventEmitterModule.forRoot(),
     TranslateModule,
     GlosaryModule,
     AuthModule,

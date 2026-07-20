@@ -1,16 +1,17 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { TranslateService } from './translate.service';
-import { TranslateDto } from './dto/translate.dto/translate.dto';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
+import { TranslateDto } from './dto/translate.dto';
 
 @Controller('translate')
+@UseGuards(JwtAuthGuard)
 export class TranslateController {
     constructor(private readonly translateService: TranslateService) {}
 
-    @UseGuards(JwtAuthGuard)
     @Post()
-    async translate(@Body() body: TranslateDto) {
-        return this.translateService.translate(body);
+    async translateText(@Body() translateDto: TranslateDto, @Req() req: any) {
+        const userId = req.user.sub;
+        return this.translateService.processTranslationInBackground(translateDto, userId); 
     }
 }

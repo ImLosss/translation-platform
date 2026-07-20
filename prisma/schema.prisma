@@ -73,23 +73,29 @@ model GlossaryEntry {
 }
 
 model Translation {
-  id         Int      @id @default(autoincrement())
+  id         Int               @id @default(autoincrement())
   
   userId     Int
-  user       User     @relation(fields: [userId], references: [id])
+  user       User              @relation(fields: [userId], references: [id])
 
-  fileName   String   
+  fileName   String
 
   // Simpan identitas bahasa di tabel induk
-  sourceLang String   // Contoh: "en-US"
-  targetLang String   // Contoh: "id-ID"
+  sourceLang String  
+  targetLang String   
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  status     TranslationStatus @default(RUNNING)   
+
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
 
   rows       TranslationRow[]
+}
 
-  @@map("translations")
+enum TranslationStatus {
+  RUNNING
+  COMPLETED
+  ERROR
 }
 
 
@@ -111,5 +117,4 @@ model TranslationRow {
   translation   Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
 
   @@index([translationId]) 
-  @@map("translation_rows")
 }
