@@ -3,9 +3,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +22,11 @@ export class AuthService {
         });
 
         if (!user) {
-        throw new UnauthorizedException('Email atau password salah');
+            throw new UnauthorizedException('Email atau password salah');
+        }
+
+        if (!user.passwordHash) {
+            throw new UnauthorizedException('Password tidak tersedia');
         }
 
         const valid = await bcrypt.compare(
