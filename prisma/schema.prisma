@@ -73,27 +73,29 @@ model GlossaryEntry {
 }
 
 model Translation {
-  id         Int               @id @default(autoincrement())
+  id          Int               @id @default(autoincrement())
   
-  userId     Int
-  user       User              @relation(fields: [userId], references: [id])
+  userId      Int
+  user        User              @relation(fields: [userId], references: [id])
 
-  fileName   String
+  fileName    String
 
-  // Simpan identitas bahasa di tabel induk
-  sourceLang String  
-  targetLang String   
+  sourceLang  String  
+  targetLang  String   
+  batchSize   Int               @default(50)
+  totalCost   Float             @default(0)
+  totalTokens Int               @default(0)
 
-  status     TranslationStatus @default(RUNNING)   
+  status      TranslationStatus @default(PROCESSING)   
 
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
-  rows       TranslationRow[]
+  rows        TranslationRow[]
 }
 
 enum TranslationStatus {
-  RUNNING
+  PROCESSING
   COMPLETED
   ERROR
 }

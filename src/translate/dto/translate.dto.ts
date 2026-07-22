@@ -1,5 +1,6 @@
 // src/translate/dto/translate.dto/translate.dto.ts
 import { IsString, IsNotEmpty, IsEnum, IsOptional, IsInt } from 'class-validator';
+import { IsValidSrt } from './is-valid-srt.validator';
 
 export enum AiModel {
   OPENAI = 'openai',
@@ -23,7 +24,12 @@ export class TranslateDto {
   @IsNotEmpty()
   targetLang: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @IsValidSrt()
+  srtContent: string;
+
   @IsInt()
   @IsOptional()
-  glossaryId?: number; // Konteks tambahan untuk prompt engineering agar terjemahan lebih akurat
+  glossaryId?: number; 
 }

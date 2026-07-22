@@ -14,7 +14,7 @@ export class TranslateListener {
   @OnEvent('translation.process', { async: true })
   async handleTranslationProcessEvent(payload: TranslationProcessEvent) {
     this.logger.log(`Memulai proses translasi untuk ID: ${payload.translationId}...`);
-
+    
     try {
       let resultText = '';
 

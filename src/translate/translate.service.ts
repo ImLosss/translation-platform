@@ -1,12 +1,21 @@
 // src/translate/translate.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { TranslateDto } from './dto/translate.dto';
 import { TranslationProcessEvent } from './events/translate.event';
+import SrtParser from 'srt-parser-2';
+
+export interface SrtBlock {
+  line: number;
+  timestamp: string;
+  content: string;
+}
 
 @Injectable()
 export class TranslateService {
+  private srtParser = new SrtParser();
+
   constructor(
     private readonly prisma: PrismaService,
     private eventEmitter: EventEmitter2, // Injeksi Event Emitter
@@ -22,6 +31,22 @@ export class TranslateService {
         userId: userId,
         // status: 'PENDING' -> Pastikan kolom ini ditambahkan di schema Prisma
       },
+    });
+
+    const parsedSrt = this.srtParser.fromSrt(dto.srtContent);
+
+    const rowsData = parsedSrt.map((item) => ({
+      translationId: translationRecord.id,
+      sequence: parseInt(item.id, 10),
+      startTime: item.startTime,
+      endTime: item.endTime,
+      sourceText: item.text,
+    }));
+
+    // Simpan ke database menggunakan createMany
+    await this.prisma.translationRow.createMany({
+      data: rowsData,
+      skipDuplicates: true, // (Opsional) Mengabaikan error jika kebetulan ada data duplikat
     });
 
     // 2. Siapkan payload event
