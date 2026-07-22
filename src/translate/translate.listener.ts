@@ -29,7 +29,7 @@ export class TranslateListener {
       await this.prisma.translation.update({
         where: { id: payload.translationId },
         data: {
-          // status: 'COMPLETED',
+          status: 'COMPLETED',
           // Tulis hasil resultText ke TranslationRow di sini
         },
       });
