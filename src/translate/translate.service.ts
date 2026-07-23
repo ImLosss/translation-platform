@@ -63,4 +63,15 @@ export class TranslateService {
       translationId: translationRecord.id,
     };
   }
+
+  async checkTranslationStatus(translationId: number, userId: number) {
+    const translation = await this.prisma.translation.findUnique({
+      where: { id: translationId, userId: userId },
+      omit: {
+        userId: true, 
+      }
+    });
+
+    return translation;
+  }
 }
