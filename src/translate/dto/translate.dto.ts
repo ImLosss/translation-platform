@@ -31,5 +31,9 @@ export class TranslateDto {
 
   @IsInt()
   @IsOptional()
+  batchProcessingSize?: number; 
+
+  @IsInt()
+  @IsOptional()
   glossaryId?: number; 
 }

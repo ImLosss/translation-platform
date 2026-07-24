@@ -1,5 +1,5 @@
 // src/translate/translate.service.ts
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { TranslateDto } from './dto/translate.dto';
@@ -73,5 +73,31 @@ export class TranslateService {
     });
 
     return translation;
+  }
+
+  async generateSrtFile(translationId: number, userId: number): Promise<string> {
+    const translation = await this.prisma.translation.findUnique({
+      where: { id: translationId, userId: userId },
+      include: {
+        rows: {
+          orderBy: { sequence: 'asc' } // Pastikan urutannya benar
+        }
+      }
+    });
+
+    if (!translation) throw new NotFoundException('Data terjemahan tidak ditemukan.');
+
+    if(translation.status !== 'COMPLETED') throw new BadRequestException('File terjemahan belum selesai diproses.');
+
+    let srtContent = '';
+    
+    for (const row of translation.rows) {
+      srtContent += `${row.sequence}\n`;
+      srtContent += `${row.startTime} --> ${row.endTime}\n`;
+      // Gunakan targetText (hasil LLM) jika ada, jika kosong gunakan sourceText
+      srtContent += `${row.targetText || `MISSING TRANSLATION : ${row.sourceText}`}\n\n`;
+    }
+
+    return srtContent.trim(); // Hapus sisa spasi/enter di akhir
   }
 }

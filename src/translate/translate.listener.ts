@@ -25,7 +25,7 @@ export class TranslateListener {
 
     try {
       // 1. Ekstrak bahasa dari DTO
-      const { sourceLang, targetLang, glossaryId, model } = payload.dto;
+      const { sourceLang, targetLang, glossaryId, model, batchProcessingSize } = payload.dto;
 
       const translationRows = await this.prisma.translationRow.findMany({
         where: { translationId: payload.translationId },
@@ -35,7 +35,7 @@ export class TranslateListener {
       // Format kembali ke bentuk array object untuk prompt LLM
       const promptData = translationRows.map(row => ({
         line: row.sequence,
-        content: row.sourceText,
+        text: row.sourceText,
       }));
 
       // 2. Injeksi bahasa ke dalam Prompt
@@ -43,7 +43,7 @@ export class TranslateListener {
       const globalSystemPrompt = this.getUniversalSystemPrompt(sourceLang, targetLang);
 
       // 3. Mulai proses Chunking dan Looping ke LLM
-      const chunks = this.chunkArray(promptData, 10);
+      const chunks = this.chunkArray(promptData, batchProcessingSize || 50); 
       let tempChatHistory: ChatMessage[] = [];
       let totReq = 0;
       let repeatReq = 0;
