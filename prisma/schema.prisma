@@ -124,8 +124,7 @@ model TranslationRow {
 }
 
 model Provider {
-  id Int @id @default(autoincrement())
-  name String
-  pricing Float @default(0)
-
+  id      Int    @id @default(autoincrement())
+  name    String
+  pricing Float  @default(0)
 }
