@@ -14,21 +14,23 @@ datasource db {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
 
-  email         String   @unique
+  email         String       @unique
   username      String?
 
   passwordHash  String?
 
-  googleId      String?  @unique
+  googleId      String?      @unique
+
+  balance       Float        @default(0)
 
   provider      AuthProvider @default(LOCAL)
 
-  role          Role     @default(USER)
+  role          Role         @default(USER)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   glossaries    Glossary[]
   translations Translation[]
@@ -119,4 +121,11 @@ model TranslationRow {
   translation   Translation @relation(fields: [translationId], references: [id], onDelete: Cascade)
 
   @@index([translationId]) 
+}
+
+model Provider {
+  id Int @id @default(autoincrement())
+  name String
+  pricing Float @default(0)
+
 }
