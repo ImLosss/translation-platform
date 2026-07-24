@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { GlossaryEntryModule } from './glossary-entry/glossary-entry.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     AuthModule,
     PrismaModule,
     GlossaryEntryModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
