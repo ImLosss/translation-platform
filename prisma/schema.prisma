@@ -75,18 +75,19 @@ model GlossaryEntry {
 }
 
 model Translation {
-  id          Int               @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
   
   userId      Int
-  user        User              @relation(fields: [userId], references: [id])
+  user        User   @relation(fields: [userId], references: [id])
 
-  fileName    String
+  fileName    String 
+  videoSource String?
 
   sourceLang  String  
   targetLang  String   
-  batchSize   Int               @default(50)
-  totalCost   Float             @default(0)
-  totalTokens Int               @default(0)
+  batchSize   Int     @default(50)
+  totalCost   Float   @default(0)
+  totalTokens Int     @default(0)
 
   status      TranslationStatus @default(PROCESSING)   
 
