@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin · Translation Platform</title>
+
+    <!-- ===== FONT ===== -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+
+    <!-- ===== ICON ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <link rel="stylesheet" href="desain4.css" />
+    
+</head>
+
+<body>
+
+    <!-- ============================================================
+    SIDEBAR OVERLAY (mobile)
+    ============================================================ -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ============================================================
+    SIDEBAR
+    ============================================================ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo-icon"><i class="fas fa-language"></i></div>
+            <div>
+                <h1>TransLingo</h1>
+                <span>Translation Platform</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-label">Main</div>
+            <a href="#" class="active"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="#"><i class="fas fa-file-alt"></i> Projects</a>
+            <a href="#"><i class="fas fa-film"></i> Subtitles</a>
+
+            <div class="nav-label" style="margin-top:12px;">Management</div>
+            <a href="#"><i class="fas fa-users"></i> Users</a>
+            <a href="#"><i class="fas fa-cog"></i> Settings</a>
+            <a href="#"><i class="fas fa-credit-card"></i> Billing <span class="badge">Pro</span></a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- ============================================================
+    MAIN WRAPPER
+    ============================================================ -->
+    <div class="main-wrapper">
+
+        <!-- ===== HEADER ===== -->
+        <header class="header">
+            <div class="header-left">
+                <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <nav class="breadcrumb">
+                    <a href="#">Dashboard</a>
+                    <span class="separator"><i class="fas fa-chevron-right" style="font-size:10px;"></i></span>
+                    <span class="current">Translation Overview</span>
+                </nav>
+            </div>
+            <div class="header-right">
+                <button class="notif-btn" id="notifBtn" aria-label="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="dot"></span>
+                </button>
+                <div class="profile-mini" id="profileMini">
+                    <div class="avatar">JD</div>
+                    <span class="name">John Doe</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ===== CONTENT ===== -->
+        <main class="content">
+
+            <!-- ===== STATS ===== -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                    <div class="stat-label">Balance</div>
+                    <div class="stat-value"><span class="currency">$</span>12,840</div>
+                    <div class="stat-change up"><i class="fas fa-arrow-up"></i> +8.2%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-label">Total Translations</div>
+                    <div class="stat-value">4,283</div>
+                    <div class="stat-change up"><i class="fas fa-arrow-up"></i> +12.4%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-label">Active Users</div>
+                    <div class="stat-value">1,204</div>
+                    <div class="stat-change up"><i class="fas fa-arrow-up"></i> +3.7%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-label">Pending Review</div>
+                    <div class="stat-value">38</div>
+                    <div class="stat-change down"><i class="fas fa-arrow-down"></i> -2.1%</div>
+                </div>
+            </section>
+
+            <!-- ===== CARD FORM ===== -->
+            <section class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-pen-fancy" style="color:var(--accent);margin-right:10px;"></i>New Translation Job</h2>
+                    <div class="card-actions">
+                        <button class="btn btn-outline btn-sm"><i class="fas fa-undo-alt"></i> Reset</button>
+                    </div>
+                </div>
+                <form id="translationForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="jobName">Job Name</label>
+                            <input type="text" class="form-control" id="jobName" placeholder="e.g. Episode 12 - Subtitle" />
+                        </div>
+                        <div class="form-group">
+                            <label for="sourceLang">Source Language</label>
+                            <input type="text" class="form-control" id="sourceLang" placeholder="en, id, ja, ..." />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="targetLang">Target Language</label>
+                            <input type="text" class="form-control" id="targetLang" placeholder="id, en, fr, ..." />
+                        </div>
+                        <div class="form-group">
+                            <label for="llmModel">LLM Model</label>
+                            <select class="form-control" id="llmModel">
+                                <option>GPT-4 Turbo</option>
+                                <option selected>Claude 3.5 Sonnet</option>
+                                <option>Gemini Pro</option>
+                                <option>LLaMA 3</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="jobDesc">Description</label>
+                        <textarea class="form-control" id="jobDesc" rows="2" placeholder="Additional context for translation..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-rocket"></i> Submit Job</button>
+                </form>
+            </section>
+
+            <!-- ===== CARD TABLE ===== -->
+            <section class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-table" style="color:var(--accent);margin-right:10px;"></i>Recent Translation Jobs</h2>
+                    <div class="card-actions">
+                        <button class="btn btn-primary btn-sm" id="addTableRow"><i class="fas fa-plus"></i> Add Data</button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Job Name</th>
+                                <th>Source</th>
+                                <th>Target</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td><strong>Episode 12</strong></td>
+                                <td>en</td>
+                                <td>id</td>
+                                <td><span class="status-badge success">Completed</span></td>
+                                <td>2026-07-25</td>
+                                <td style="text-align:right;">
+                                    <button class="btn btn-outline btn-xs"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-outline btn-xs"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-xs delete-row"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Movie Night</strong></td>
+                                <td>ja</td>
+                                <td>en</td>
+                                <td><span class="status-badge warning">Processing</span></td>
+                                <td>2026-07-24</td>
+                                <td style="text-align:right;">
+                                    <button class="btn btn-outline btn-xs"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-outline btn-xs"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-xs delete-row"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Documentary S2E1</strong></td>
+                                <td>fr</td>
+                                <td>id</td>
+                                <td><span class="status-badge danger">Failed</span></td>
+                                <td>2026-07-23</td>
+                                <td style="text-align:right;">
+                                    <button class="btn btn-outline btn-xs"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-outline btn-xs"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-xs delete-row"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== SUBTITLE PREVIEW (SRT EDITOR) ===== -->
+            <section class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-closed-captioning" style="color:var(--accent);margin-right:10px;"></i>Subtitle Preview (SRT)</h2>
+                    <div class="card-actions">
+                        <button class="btn btn-success btn-sm" id="addSubtitleLine"><i class="fas fa-plus"></i> Add Line</button>
+                    </div>
+                </div>
+                <div id="subtitleContainer">
+                    <!-- baris subtitle akan di-render oleh JS -->
+                </div>
+
+                <!-- <div class="mt-2 d-flex flex-wrap align-center justify-between"> -->
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        <button class="btn btn-outline btn-sm" id="saveSubtitleBtn"><i class="fas fa-save"></i> Save Changes</button>
+                        <button class="btn btn-outline btn-sm" id="saveSubtitleBtn"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+            </section>
+
+            <!-- ===== DRAG & DROP ===== -->
+            <section class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-upload" style="color:var(--accent);margin-right:10px;"></i>Upload Subtitle File</h2>
+                </div>
+                <div class="dropzone" id="dropzone">
+                    <div class="dz-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <p>Drag &amp; drop your .srt or .ass file here, or</p>
+                    <label class="browse-btn" for="fileInput">Browse Files</label>
+                    <input type="file" id="fileInput" accept=".srt,.ass,.txt" />
+                    <p style="margin-top:10px;font-size:12px;color:var(--text-muted);">Supported: SRT, ASS, TXT (max 10MB)</p>
+                </div>
+            </section>
+
+            <!-- ===== PROFILE CARD ===== -->
+            <section class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-circle" style="color:var(--accent);margin-right:10px;"></i>Profile</h2>
+                    <div class="card-actions">
+                        <button class="btn btn-outline btn-sm"><i class="fas fa-edit"></i> Edit</button>
+                    </div>
+                </div>
+                <div class="profile-card">
+                    <div class="profile-avatar">JD</div>
+                    <div class="profile-info">
+                        <div class="name">John Doe</div>
+                        <div class="role">Senior Translator · LLM Specialist</div>
+                        <div class="details">
+                            <div class="detail-item"><strong>Email</strong><br />john.doe@translingo.com</div>
+                            <div class="detail-item"><strong>Member Since</strong><br />March 2024</div>
+                            <div class="detail-item"><strong>Projects</strong><br />142</div>
+                            <div class="detail-item"><strong>Languages</strong><br />EN, ID, JA</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ============================================================
+    NOTIFICATION MODAL
+    ============================================================ -->
+    <div class="notif-overlay" id="notifOverlay">
+        <div class="notif-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-bell" style="margin-right:8px;"></i>Notifications</h3>
+                <button class="close-btn" id="notifClose"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="notif-item">
+                <div class="notif-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="notif-body">
+                    <p><strong>Translation completed</strong> — Episode 12 is ready for review.</p>
+                    <span class="time">2 minutes ago</span>
+                </div>
+            </div>
+            <div class="notif-item">
+                <div class="notif-icon"><i class="fas fa-exclamation-triangle" style="color:var(--yellow);"></i></div>
+                <div class="notif-body">
+                    <p><strong>Processing stalled</strong> — Movie Night job needs attention.</p>
+                    <span class="time">1 hour ago</span>
+                </div>
+            </div>
+            <div class="notif-item">
+                <div class="notif-icon"><i class="fas fa-user-plus" style="color:var(--green);"></i></div>
+                <div class="notif-body">
+                    <p><strong>New user registered</strong> — Sarah Lee joined the platform.</p>
+                    <span class="time">3 hours ago</span>
+                </div>
+            </div>
+            <div class="notif-item">
+                <div class="notif-icon"><i class="fas fa-credit-card"></i></div>
+                <div class="notif-body">
+                    <p><strong>Payment received</strong> — Invoice #INV-2026-07-23 has been paid.</p>
+                    <span class="time">5 hours ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    ALERT CONTAINER
+    ============================================================ -->
+    <div class="alert-container" id="alertContainer"></div>
+
+
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ---------- DOM refs ----------
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+            const notifBtn = document.getElementById('notifBtn');
+            const notifOverlay = document.getElementById('notifOverlay');
+            const notifClose = document.getElementById('notifClose');
+            const alertContainer = document.getElementById('alertContainer');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const addTableRow = document.getElementById('addTableRow');
+            const tableBody = document.getElementById('tableBody');
+            const addSubtitleBtn = document.getElementById('addSubtitleLine');
+            const subtitleContainer = document.getElementById('subtitleContainer');
+            const saveSubtitleBtn = document.getElementById('saveSubtitleBtn');
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+            const translationForm = document.getElementById('translationForm');
+
+            // ---------- SIDEBAR TOGGLE ----------
+            function toggleSidebar(open) {
+                const isOpen = open !== undefined ? open : !sidebar.classList.contains('open');
+                sidebar.classList.toggle('open', isOpen);
+                overlay.classList.toggle('open', isOpen);
+            }
+
+            hamburger.addEventListener('click', () => toggleSidebar());
+            overlay.addEventListener('click', () => toggleSidebar(false));
+
+            // Close sidebar on escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                    toggleSidebar(false);
+                }
+            });
+
+            // ---------- NOTIFICATION MODAL ----------
+            function toggleNotif(open) {
+                const isOpen = open !== undefined ? open : !notifOverlay.classList.contains('open');
+                notifOverlay.classList.toggle('open', isOpen);
+            }
+
+            notifBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleNotif();
+            });
+
+            notifClose.addEventListener('click', () => toggleNotif(false));
+            notifOverlay.addEventListener('click', (e) => {
+                if (e.target === notifOverlay) toggleNotif(false);
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && notifOverlay.classList.contains('open')) {
+                    toggleNotif(false);
+                }
+            });
+
+            // ---------- ALERT SYSTEM ----------
+            function showAlert(message, type = 'success', duration = 4000) {
+                const icons = {
+                    success: 'fa-check-circle',
+                    error: 'fa-times-circle',
+                    warning: 'fa-exclamation-circle'
+                };
+                const colors = {
+                    success: 'var(--green)',
+                    error: 'var(--red)',
+                    warning: 'var(--yellow)'
+                };
+                const icon = icons[type] || icons.success;
+                const color = colors[type] || colors.success;
+
+                const alertEl = document.createElement('div');
+                alertEl.className = `alert ${type}`;
+                alertEl.innerHTML = `
+                    <span class="alert-icon" style="color:${color}"><i class="fas ${icon}"></i></span>
+                    <span>${message}</span>
+                    <button class="alert-close"><i class="fas fa-times"></i></button>
+                `;
+                alertContainer.appendChild(alertEl);
+
+                // Close button
+                alertEl.querySelector('.alert-close').addEventListener('click', () => {
+                    alertEl.remove();
+                });
+
+                // Auto dismiss
+                setTimeout(() => {
+                    if (alertEl.parentNode) alertEl.remove();
+                }, duration);
+            }
+
+            // ---------- LOGOUT ----------
+            logoutBtn.addEventListener('click', () => {
+                showAlert('You have been logged out successfully.', 'success');
+            });
+
+            // ---------- TABLE: ADD ROW ----------
+            addTableRow.addEventListener('click', () => {
+                const statuses = ['success', 'warning', 'danger'];
+                const statusLabels = ['Completed', 'Processing', 'Failed'];
+                const rand = Math.floor(Math.random() * 3);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>New Job #${Date.now().toString().slice(-4)}</strong></td>
+                    <td>en</td>
+                    <td>id</td>
+                    <td><span class="status-badge ${statuses[rand]}">${statusLabels[rand]}</span></td>
+                    <td>${new Date().toISOString().slice(0,10)}</td>
+                    <td style="text-align:right;">
+                        <button class="btn btn-outline btn-xs"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-outline btn-xs"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-xs delete-row"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+                showAlert('New job row added successfully!', 'success');
+            });
+
+            // TABLE: delete row (delegated)
+            tableBody.addEventListener('click', (e) => {
+                const delBtn = e.target.closest('.delete-row');
+                if (delBtn) {
+                    const row = delBtn.closest('tr');
+                    if (row && tableBody.children.length > 1) {
+                        row.remove();
+                        showAlert('Row deleted successfully.', 'warning');
+                    } else {
+                        showAlert('Cannot delete the last row.', 'error');
+                    }
+                }
+            });
+
+            // ---------- SUBTITLE LINES (CRUD) ----------
+            let subtitleLines = [];
+            let lineCounter = 1;
+
+            function renderSubtitles() {
+                if (!subtitleContainer) return;
+                if (subtitleLines.length === 0) {
+                    // default sample
+                    subtitleLines = [{
+                        id: 1,
+                        start: '00:00:01,000',
+                        end: '00:00:04,000',
+                        source: 'Hello, welcome to the translation platform.',
+                        translated: 'Halo, selamat datang di platform terjemahan.'
+                    }, {
+                        id: 2,
+                        start: '00:00:05,000',
+                        end: '00:00:08,500',
+                        source: 'This subtitle is powered by LLM technology.',
+                        translated: 'Subtitle ini didukung oleh teknologi LLM.'
+                    }];
+                    lineCounter = 3;
+                }
+
+                let html = '';
+                subtitleLines.forEach((line, index) => {
+                    html += `
+                                <div class="subtitle-line" data-index="${index}">
+                                    <div class="sub-field">
+                                        <label>Start</label>
+                                        <input type="text" class="sub-start" value="${line.start}" />
+                                    </div>
+                                    <div class="sub-field">
+                                        <label>End</label>
+                                        <input type="text" class="sub-end" value="${line.end}" />
+                                    </div>
+                                    <div class="sub-field">
+                                        <label>Source (read-only)</label>
+                                        <textarea readonly class="sub-source" rows="1">${line.source}</textarea>
+                                    </div>
+                                    <div class="sub-field">
+                                        <label>Translation</label>
+                                        <textarea class="sub-translated" rows="1">${line.translated}</textarea>
+                                    </div>
+                                    <div class="sub-actions">
+                                        <button class="btn-add-line" title="Add line after this"><i class="fas fa-plus-circle"></i></button>
+                                        <button class="btn-del-line" title="Delete this line"><i class="fas fa-trash-alt"></i></button>
+                                    </div>
+                                </div>
+                            `;
+                });
+
+                subtitleContainer.innerHTML = html;
+
+                // event listeners for delete & add inside subtitle
+                document.querySelectorAll('.btn-del-line').forEach((btn) => {
+                    btn.addEventListener('click', function() {
+                        const parent = this.closest('.subtitle-line');
+                        const idx = parseInt(parent.dataset.index);
+                        if (subtitleLines.length <= 1) {
+                            alert('Minimal 1 baris subtitle.');
+                            return;
+                        }
+                        if (confirm('Hapus baris subtitle ini?')) {
+                            subtitleLines.splice(idx, 1);
+                            renderSubtitles();
+                            showAlert('Baris subtitle dihapus.', 'warning');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.btn-add-line').forEach((btn) => {
+                    btn.addEventListener('click', function() {
+                        const parent = this.closest('.subtitle-line');
+                        const idx = parseInt(parent.dataset.index);
+                        const newLine = {
+                            id: lineCounter++,
+                            start: '00:00:00,000',
+                            end: '00:00:02,000',
+                            source: 'New subtitle line',
+                            translated: 'Baris subtitle baru'
+                        };
+                        subtitleLines.splice(idx + 1, 0, newLine);
+                        renderSubtitles();
+                    });
+                });
+
+                // auto-sync input changes to data (untuk preview)
+                document.querySelectorAll('.subtitle-line').forEach((el) => {
+                    const idx = parseInt(el.dataset.index);
+                    const startInput = el.querySelector('.sub-start');
+                    const endInput = el.querySelector('.sub-end');
+                    const translatedInput = el.querySelector('.sub-translated');
+
+                    if (startInput) {
+                        startInput.addEventListener('input', function() {
+                            subtitleLines[idx].start = this.value;
+                        });
+                    }
+                    if (endInput) {
+                        endInput.addEventListener('input', function() {
+                            subtitleLines[idx].end = this.value;
+                        });
+                    }
+                    if (translatedInput) {
+                        translatedInput.addEventListener('input', function() {
+                            subtitleLines[idx].translated = this.value;
+                        });
+                    }
+                });
+            }
+
+            // Add new line (from header button)
+            addSubtitleBtn.addEventListener('click', function() {
+                const newLine = {
+                    id: lineCounter++,
+                    start: '00:00:00,000',
+                    end: '00:00:02,000',
+                    source: 'New subtitle line',
+                    translated: 'Baris subtitle baru'
+                };
+                subtitleLines.push(newLine);
+                renderSubtitles();
+                showAlert('Baris subtitle baru ditambahkan.', 'success');
+                // scroll to bottom
+                subtitleContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            });
+
+            // Save subtitle changes
+            saveSubtitleBtn.addEventListener('click', function() {
+                // collect all data from UI
+                const lines = document.querySelectorAll('.subtitle-line');
+                lines.forEach((el, idx) => {
+                    const start = el.querySelector('.sub-start')?.value || '';
+                    const end = el.querySelector('.sub-end')?.value || '';
+                    const translated = el.querySelector('.sub-translated')?.value || '';
+                    if (subtitleLines[idx]) {
+                        subtitleLines[idx].start = start;
+                        subtitleLines[idx].end = end;
+                        subtitleLines[idx].translated = translated;
+                    }
+                });
+                alert('✅ Perubahan subtitle berhasil disimpan!');
+                console.log('Subtitle data:', subtitleLines);
+            });
+
+            // ---------- DRAG & DROP ----------
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+
+            dropzone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (fileInput.files.length > 0) {
+                    handleFile(fileInput.files[0]);
+                }
+            });
+
+            function handleFile(file) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (!['srt', 'ass', 'txt'].includes(ext)) {
+                    showAlert('Unsupported file format. Please upload .srt, .ass, or .txt.', 'error');
+                    return;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    showAlert('File too large. Max 10MB.', 'error');
+                    return;
+                }
+                showAlert(`File "${file.name}" uploaded successfully! (${(file.size/1024).toFixed(1)} KB)`, 'success');
+                fileInput.value = '';
+            }
+
+            // Click on dropzone triggers file input
+            dropzone.addEventListener('click', (e) => {
+                if (e.target.closest('.browse-btn') || e.target.closest('input')) return;
+                fileInput.click();
+            });
+
+            // ---------- FORM SUBMIT ----------
+            translationForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('jobName').value.trim() || 'Untitled Job';
+                showAlert(`Job "${name}" submitted successfully to LLM!`, 'success');
+                translationForm.reset();
+            });
+
+            // ---------- DEMO: Show initial alert ----------
+            setTimeout(() => {
+                showAlert('Welcome back, John! You have 3 pending reviews.', 'warning', 5000);
+            }, 400);
+
+            // ---------- Close mobile sidebar on resize to desktop ----------
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 820 && sidebar.classList.contains('open')) {
+                    toggleSidebar(false);
+                }
+            });
+
+            renderSubtitles();
+
+        })();
+    </script>
+
+</body>
+</html>
