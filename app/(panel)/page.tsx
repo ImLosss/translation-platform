@@ -1,6 +1,5 @@
-// ... komponen lain
+import Header from "../components/layout/Header";
 
-import Header from "./components/layout/Header";
 
 export default function AdminPage() {
   return (

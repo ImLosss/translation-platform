@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Inter } from "next/font/google";
 import "./globals.css";
 import { AlertProvider } from "./components/ui/Alert";
-import SidebarProvider from "./components/client/SidebarProvider";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -16,29 +15,20 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: 'Admin · Translation Platform',
-  description: 'Translation Platform Admin Dashboard',
+  title: 'Translation Platform',
+  description: 'Translation Platform Dashboard',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={inter.variable}>
+    <html lang="id" className={`${inter.variable} ${geistSans.variable}`}>
       <head>
-        {/* Font Awesome CDN */}
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
       </head>
       <body>
         <AlertProvider>
-          <SidebarProvider>
-            {children}
-          </SidebarProvider>
+          {/* Hanya render children, TIDAK ADA Sidebar di sini */}
+          {children}
         </AlertProvider>
       </body>
     </html>
