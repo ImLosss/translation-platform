@@ -1,9 +1,12 @@
 
+'use client';
 import Link from 'next/link';
 import HamburgerButton from '../client/HamburgerButton';
 import NotifButtonAndModal from '../client/NotifButtonModal';
+import { useUser } from '../client/UserProvider';
 
 export default function Header() {
+  const user = useUser();
   return (
     <header className="header">
       <div className="header-left">
@@ -20,8 +23,8 @@ export default function Header() {
       <div className="header-right">
         <NotifButtonAndModal />
         <div className="profile-mini">
-          <div className="avatar">JD</div>
-          <span className="name">John Doe</span>
+          <div className="avatar">{user.username?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}</div>
+          <span className="name">{user.username || user.email}</span>
         </div>
       </div>
     </header>

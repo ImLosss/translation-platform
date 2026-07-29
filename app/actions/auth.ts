@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { api } from '../lib/api';
 
 // ==========================================
 // ACTION: LOGIN MANUAL
@@ -13,19 +14,22 @@ export async function loginAction(formData: FormData) {
     return { success: false, message: 'Email dan password wajib diisi.' };
   }
 
-  // SIMULASI CEK DATABASE (Ganti dengan logika database sungguhan nanti)
-  if (email === 'admin@example.com' && password === 'rahasia123') {
-    
-    // Set HTTP-Only Cookie yang aman
+  const data = await api('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  }).catch((error) => { return { success: false, message: error.message }; });
+
+  if (data && data.access_token) {
     const cookieStore = await cookies();
-    cookieStore.set('auth_token', 'dummy_token_rahasia_123', {
+    cookieStore.set('auth_token', data.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7 // Berlaku 1 minggu
+      maxAge: 60 * 60 * 24 * 7,
     });
 
-    return { success: true, message: 'Login berhasil!' };
+    return { success: true, message: 'Login Berhasil', user: data.user };
   }
 
   return { success: false, message: 'Email atau password salah.' };
@@ -43,15 +47,23 @@ export async function signupAction(formData: FormData) {
     return { success: false, message: 'Pastikan semua data valid (Password min 8 karakter).' };
   }
 
-  // SIMULASI SIMPAN KE DATABASE DI SINI...
+  const data = await api('/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify({ username: name, email, password }),
+  }).catch((error) => { return { success: false, message: error.message }; });
+
+  if (!data || !data.access_token) {
+    return { success: false, message: data?.message || 'Gagal membuat akun.' };
+  }
 
   // Set cookie setelah berhasil daftar
   const cookieStore = await cookies();
-  cookieStore.set('auth_token', 'dummy_token_rahasia_123', {
+  cookieStore.set('auth_token', data.access_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 7
+    maxAge: 60 * 60 * 24 * 7,
   });
 
   return { success: true, message: 'Akun berhasil dibuat!' };
@@ -62,41 +74,33 @@ export async function signupAction(formData: FormData) {
 // ==========================================
 export async function googleLoginAction(accessToken: string) {
   try {
-    // Verifikasi Access Token langsung ke server Google
-    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` }
+    const data = await api("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({
+        accessToken,
+      }),
     });
 
-    if (!response.ok) {
-      throw new Error("Token Google tidak valid");
-    }
-
-    // Dapatkan data user dari Google
-    const payload = await response.json();
-    
-    if (!payload.email) {
-      return { success: false, message: 'Gagal mendapatkan email dari Google' };
-    }
-
-    // SIMULASI: Cek/Simpan email & nama ke database Anda di sini...
-    // console.log("User Google login:", payload.name, payload.email);
-
-    // Set cookie
     const cookieStore = await cookies();
-    cookieStore.set('auth_token', 'dummy_token_google_123', {
+
+    cookieStore.set("auth_token", data.access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7 
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
     });
 
-    return { 
-      success: true, 
-      message: `Login berhasil sebagai ${payload.name}` 
+    return {
+      success: true,
+      message: "Login Berhasil",
+      user: data.user,
     };
-
-  } catch (error) {
-    console.error("Google login error:", error);
-    return { success: false, message: 'Autentikasi Google gagal.' };
+  } catch (e) {
+    console.error("Google login error:", e);
+    return {
+      success: false,
+      message: "Login Google gagal",
+    };
   }
 }

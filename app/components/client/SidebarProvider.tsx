@@ -10,6 +10,8 @@ import {
 } from 'react';
 import Link from 'next/link';
 import { useAlert } from '../ui/Alert';
+import { logoutAction } from '@/app/actions/logout';
+import { useRouter } from 'next/dist/client/components/navigation';
 
 // Definisikan tipe untuk context
 interface SidebarContextType {
@@ -20,7 +22,7 @@ interface SidebarContextType {
 // Buat context dengan nilai default yang sesuai tipe
 const SidebarContext = createContext<SidebarContextType>({
   isOpen: false,
-  toggle: () => {},
+  toggle: () => { },
 });
 
 export const useSidebar = () => useContext(SidebarContext);
@@ -28,7 +30,16 @@ export const useSidebar = () => useContext(SidebarContext);
 export default function SidebarProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-   const { showAlert } = useAlert();
+  const { showAlert } = useAlert();
+
+  const router = useRouter();
+
+  async function logout() {
+    await logoutAction();
+
+    router.replace("/login");
+    router.refresh();
+  }
 
   const toggle = useCallback((force?: boolean) => {
     setIsOpen((prev) => (force !== undefined ? force : !prev));
@@ -100,7 +111,7 @@ export default function SidebarProvider({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="sidebar-footer">
-          <button className="logout-btn" id="logoutBtn">
+          <button className="logout-btn" id="logoutBtn" onClick={logout}>
             <i className="fas fa-sign-out-alt"></i> Logout
           </button>
         </div>
