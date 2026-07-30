@@ -18,9 +18,10 @@ export class GlosaryService {
     });
   }
 
-  async findAll() {
+  async findAll(userId: number) {
     // Mengambil semua glosarium beserta daftar entry-nya
     return this.prisma.glossary.findMany({
+      where: { userId },
       orderBy: { createdAt: 'desc' }
     });
   }

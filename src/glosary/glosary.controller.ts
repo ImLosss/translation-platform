@@ -16,8 +16,9 @@ export class GlosaryController {
   }
 
   @Get()
-  findAll() {
-    return this.glosaryService.findAll();
+  findAll(@Req() req: any) {
+    const userId = req.user.sub;
+    return this.glosaryService.findAll(userId);
   }
 
   @Get(':id')

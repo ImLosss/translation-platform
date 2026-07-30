@@ -15,6 +15,12 @@ export class TranslateController {
         return this.translateService.processTranslationInBackground(translateDto, userId); 
     }
 
+    @Get()
+    async getUserTranslations(@Req() req: any) {
+        const userId = req.user.sub;
+        return this.translateService.getUserTranslations(userId);
+    }
+
     @Get('check/:translateId')
     async checkTranslationStatus(@Param('translateId') translateId: number, @Req() req: any) {
         const userId = req.user.sub;
@@ -30,15 +36,12 @@ export class TranslateController {
         const userId = req.user.sub;
         
         // 1. Dapatkan string SRT dari service
-        const srtContent = await this.translateService.generateSrtFile(Number(translationId), userId);
+        const { fileName, srtContent } = await this.translateService.generateSrtFile(Number(translationId), userId);
 
         // 2. Ubah string menjadi Buffer
         const buffer = Buffer.from(srtContent, 'utf-8');
-
-        // 3. Set nama file secara dinamis
-        const fileName = `translated_${translationId}.srt`;
         
-        // 4. Kembalikan file dengan options internal dari StreamableFile
+        // 3. Kembalikan file dengan options internal dari StreamableFile
         return new StreamableFile(buffer, {
             type: 'application/x-subrip', // Menggantikan @Header
             disposition: `attachment; filename="${fileName}"`, // Menggantikan res.setHeader

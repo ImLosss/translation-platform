@@ -42,6 +42,13 @@ export class UserService {
       },
     });
 
+    const processingCount = await this.prisma.translation.count({
+      where: {
+        userId: userId,
+        status: 'PROCESSING',
+      },
+    });
+
     if (!user) {
       throw new NotFoundException('User tidak ditemukan');
     }
@@ -69,6 +76,7 @@ export class UserService {
         totalTranslations: user._count.translations || 0,
         totalTokensUsed: translationStats._sum.totalTokens || 0,
         totalCost: translationStats._sum.totalCost || 0,
+        processing: processingCount || 0,
       },
     };
   }

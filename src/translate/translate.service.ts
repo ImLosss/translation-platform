@@ -75,12 +75,12 @@ export class TranslateService {
     return translation;
   }
 
-  async generateSrtFile(translationId: number, userId: number): Promise<string> {
+  async generateSrtFile(translationId: number, userId: number): Promise<{ fileName: string; srtContent: string }> {
     const translation = await this.prisma.translation.findUnique({
       where: { id: translationId, userId: userId },
       include: {
         rows: {
-          orderBy: { sequence: 'asc' } // Pastikan urutannya benar
+          orderBy: { sequence: 'asc' } 
         }
       }
     });
@@ -98,6 +98,17 @@ export class TranslateService {
       srtContent += `${row.targetText || `MISSING TRANSLATION : ${row.sourceText}`}\n\n`;
     }
 
-    return srtContent.trim(); // Hapus sisa spasi/enter di akhir
+    return { 
+      fileName: `translated_${translation.fileName}.srt`,
+      srtContent: srtContent.trim()
+    };
+  }
+
+  async getUserTranslations(userId: number) {
+    const translations = await this.prisma.translation.findMany({
+      where: { userId: userId },
+      orderBy: { createdAt: 'desc' }
+    });
+    return translations;
   }
 }
