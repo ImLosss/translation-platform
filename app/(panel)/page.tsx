@@ -1,14 +1,10 @@
-import Header from "../components/layout/Header";
+import StatsGrid from "../components/dashboard/StatsGrid";
 
 
 export default function AdminPage() {
   return (
-    <div className="main-wrapper">
-      <Header />
-      <main className="content">
-        {/* <StatsGrid /> */}
-        {/* client component lainnya */}
-      </main>
-    </div>
+    <>  
+      <StatsGrid />
+    </>
   );
 }

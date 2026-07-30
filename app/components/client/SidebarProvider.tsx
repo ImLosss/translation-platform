@@ -11,7 +11,7 @@ import {
 import Link from 'next/link';
 import { useAlert } from '../ui/Alert';
 import { logoutAction } from '@/app/actions/logout';
-import { useRouter } from 'next/dist/client/components/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 // Definisikan tipe untuk context
 interface SidebarContextType {
@@ -33,6 +33,10 @@ export default function SidebarProvider({ children }: { children: ReactNode }) {
   const { showAlert } = useAlert();
 
   const router = useRouter();
+  const pathname = usePathname();
+
+
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   async function logout() {
     await logoutAction();
@@ -63,6 +67,10 @@ export default function SidebarProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('resize', handleResize);
   }, [isOpen]);
 
+  const closeSidebar = () => {
+      setIsOpen(false);
+  };
+
   return (
     <SidebarContext.Provider value={{ isOpen, toggle }}>
       {/* Overlay hanya tampil saat sidebar terbuka */}
@@ -85,26 +93,26 @@ export default function SidebarProvider({ children }: { children: ReactNode }) {
 
         <nav className="sidebar-nav">
           <div className="nav-label">Main</div>
-          <Link href="#" className="active">
+          <Link href="/" className={isActive('/') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-th-large"></i> Dashboard
           </Link>
-          <Link href="#">
+          <Link href="/projects" className={isActive('/projects') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-file-alt"></i> Projects
           </Link>
-          <Link href="#">
-            <i className="fas fa-film"></i> Subtitles
+          <Link href="/translate" className={isActive('/translate') ? 'active' : ''} onClick={closeSidebar}>
+            <i className="fas fa-film"></i> Translations
           </Link>
 
           <div className="nav-label" style={{ marginTop: 12 }}>
             Management
           </div>
-          <Link href="#" onClick={() => showAlert('This feature is under development.', 'warning')}>
+          <Link href="/users" className={isActive('/users') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-users"></i> Users
           </Link>
-          <Link href="#">
+          <Link href="/settings" className={isActive('/settings') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-cog"></i> Settings
           </Link>
-          <Link href="#">
+          <Link href="/billing" className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-credit-card"></i> Billing
             <span className="badge">Pro</span>
           </Link>

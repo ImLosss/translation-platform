@@ -2,6 +2,8 @@ import { redirect } from "next/dist/client/components/redirect";
 import SidebarProvider from "../components/client/SidebarProvider";
 import { getCurrentUser } from "../lib/auth";
 import { UserProvider } from "../components/client/UserProvider";
+import Header from "../components/layout/Header";
+import "./panel.css";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -9,7 +11,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <SidebarProvider>
       <UserProvider user={user}>
-        {children}
+        <div className="main-wrapper">
+          <Header />
+          <main className="content">
+            {children}
+          </main>
+        </div>
       </UserProvider>
     </SidebarProvider>
   );

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { loginAction, signupAction, googleLoginAction } from '@/app/actions/auth'; 
-import "./globals.css"; // Pastikan path ini sesuai dengan file CSS Anda
+import "./login.css"; // Pastikan path ini sesuai dengan file CSS Anda
 
 // Komponen Isi Form (Dipisah agar bisa memakai hook useGoogleLogin)
 function AuthContent() {
@@ -39,7 +39,9 @@ function AuthContent() {
 
     if (result.success) {
       showAlert(result.message, 'success');
-      setTimeout(() => router.push('/'), 1200); // Arahkan ke Root Panel Admin
+      setTimeout(async () =>{
+        window.location.href = '/'; // Arahkan ke Root Panel Admin
+      }, 1200);
     } else {
       showAlert(result.message, 'error');
       setIsLoading(false);
@@ -56,7 +58,9 @@ function AuthContent() {
 
     if (result.success) {
       showAlert(result.message, 'success');
-      setTimeout(() => router.push('/'), 1200);
+      setTimeout(async () =>{
+        window.location.href = '/'; // Arahkan ke Root Panel Admin
+      }, 1200);
     } else {
       showAlert(result.message, 'error');
       setIsLoading(false);
@@ -71,7 +75,9 @@ function AuthContent() {
       
       if (result.success) {
         showAlert(result.message, 'success');
-        setTimeout(() => router.push('/'), 1200);
+        setTimeout(async () =>{
+          window.location.href = '/'; // Arahkan ke Root Panel Admin
+        }, 1200);
       } else {
         showAlert(result.message, 'error');
         setIsLoading(false);

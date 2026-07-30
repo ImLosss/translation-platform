@@ -2,10 +2,10 @@ import { cookies } from "next/headers";
 
 const API_URL = process.env.API_URL!; // TANPA NEXT_PUBLIC
 
-export async function api(
+export async function api<T>(
   endpoint: string,
   options?: RequestInit
-) {
+): Promise<T> {
   const token = (await cookies()).get("auth_token")?.value;
 
   const response = await fetch(`${API_URL}${endpoint}`, {

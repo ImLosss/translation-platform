@@ -1,0 +1,128 @@
+import { api } from "@/app/lib/api";
+import Link from "next/dist/client/link";
+import EllipsisDropdown from "../client/ElipsisDropdown";
+
+export interface Translation {
+  id: number;
+  fileName: string;
+  sourceLang: string;
+  targetLang: string;
+
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+
+  batchSize: number;
+
+  totalCost: number;
+  totalTokens: number;
+
+  videoSource: string | null;
+
+  userId: number;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default async function TableData() {
+  let jobs = [];
+  try {
+    jobs = await api<Translation[]>("/translate")
+  } catch (error) {
+    return (
+      <section className="card">
+        <div className="card-header">
+          <h2>Recent Translation Jobs</h2>
+        </div>
+
+        <div style={{ padding: "40px", textAlign: "center" }}>
+          <i
+            className="fas fa-triangle-exclamation"
+            style={{ fontSize: 40, color: "#dc3545" }}
+          />
+          <p>Failed to load translation data.</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="card">
+      <div className="card-header">
+        <h2>
+          <i
+            className="fas fa-table"
+            style={{ color: "var(--accent)", marginRight: 10 }}
+          />
+          Recent Translation Jobs
+        </h2>
+
+        <div className="card-actions">
+          <Link href="/translate/create" className="btn btn-primary btn-sm">
+            <i className="fas fa-plus"></i> New Translate
+          </Link>
+        </div>
+      </div>
+
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Job Name</th>
+              <th>Source</th>
+              <th>Target</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th style={{ textAlign: "right" }}>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {jobs.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ textAlign: "center", padding: "40px" }}>
+                  <i
+                    className="fas fa-inbox"
+                    style={{
+                      fontSize: 36,
+                      marginBottom: 12,
+                      display: "block",
+                      color: "#999",
+                    }}
+                  />
+                  No translation jobs found.
+                </td>
+              </tr>
+            ) : (
+              jobs.map((job) => (
+                <tr key={job.id}>
+                  <td>{job.fileName}</td>
+                  <td>{job.sourceLang}</td>
+                  <td>{job.targetLang}</td>
+                  <td><span className={`status-badge ${job.status === 'COMPLETED' ? 'success' : 'warning'}`}>{job.status}</span></td>
+                  <td>{new Date(job.createdAt).toLocaleString()}</td>
+                  <td style={{  textAlign: "right", display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                    {job.status === "COMPLETED" && <a href={`/api/translate/${job.id}/download`} className="btn btn-outline btn-xs"><i className="fas fa-download"></i></a>}
+                    <EllipsisDropdown>
+                      <Link href={`/translate/${job.id}`} className="dropdown-item">
+                        <i className="fas fa-eye"></i> View
+                      </Link>
+                      <Link href={`/translate/${job.id}/edit`} className="dropdown-item">
+                        <i className="fas fa-edit"></i> Edit
+                      </Link>
+                      <form method="POST">
+                        <input type="hidden" name="id" value={job.id} />
+                        <button type="submit" className="dropdown-item delete">
+                          <i className="fas fa-trash"></i> Delete
+                        </button>
+                      </form>
+                    </EllipsisDropdown>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
