@@ -115,7 +115,7 @@ export default function SubtitleEditor({
         try {
 
             // 2. Hitung ulang nilai 'sequence' berdasarkan urutan array yang sudah benar
-            const sequencedLines = [...lines].map((line, index) => ({
+            const sequencedLines = lines.map((line, index) => ({
                 ...line,
                 sequence: index + 1, // Urutan dimulai dari 1, 2, 3, dst...
             }));
