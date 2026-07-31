@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Header, Param, Post, Req, Res, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Patch, Post, Req, Res, StreamableFile } from '@nestjs/common';
 import { TranslateService } from './translate.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { TranslateDto } from './dto/translate.dto';
+import { UpdateTranslationDto } from './dto/update-subtitle-row.dto';
 
 @Controller('translate')
 @UseGuards(JwtAuthGuard)
@@ -19,6 +20,21 @@ export class TranslateController {
     async getUserTranslations(@Req() req: any) {
         const userId = req.user.sub;
         return this.translateService.getUserTranslations(userId);
+    }
+
+    @Get(':translationId')
+    async getTranslationDetails(@Param('translationId') translationId: string, @Req() req: any) {
+        const userId = req.user.sub;
+        return this.translateService.getTranslationDetails(Number(translationId), userId);
+    }
+
+    @Patch(':id')
+    update(
+        @Param('id') id: string,
+        @Body() dto: UpdateTranslationDto,
+        @Req() req: any,
+    ) {
+        return this.translateService.updateTranslation(Number(id), req.user.sub, dto);
     }
 
     @Get('check/:translateId')

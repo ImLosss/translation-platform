@@ -21,14 +21,11 @@ export class TranslateListener {
 
   @OnEvent('translation.process', { async: true })
   async handleTranslationProcessEvent(payload: TranslationProcessEvent) {
-    this.logger.log(`Memulai proses translasi LLM untuk ID: ${payload.translationId}...`);
+    this.logger.log(`Memulai proses translasi LLM untuk ID: ${payload.translation.id}...`);
 
     try {
-      // 1. Ekstrak bahasa dari DTO
-      const { sourceLang, targetLang, glossaryId, model, batchProcessingSize } = payload.dto;
-
       const translationRows = await this.prisma.translationRow.findMany({
-        where: { translationId: payload.translationId },
+        where: { translationId: payload.translation.id },
         orderBy: { sequence: 'asc' },
       });
 
@@ -39,18 +36,18 @@ export class TranslateListener {
       }));
 
       // 2. Injeksi bahasa ke dalam Prompt
-      const glossaryPrompt = await this.buildGlossaryPrompt(glossaryId);
-      const globalSystemPrompt = this.getUniversalSystemPrompt(sourceLang, targetLang);
+      const glossaryPrompt = await this.buildGlossaryPrompt(payload.translation.glossaryId);
+      const globalSystemPrompt = this.getUniversalSystemPrompt(payload.translation.sourceLang, payload.translation.targetLang);
 
       // 3. Mulai proses Chunking dan Looping ke LLM
-      const chunks = this.chunkArray(promptData, batchProcessingSize || 50); 
+      const chunks = this.chunkArray(promptData, payload.translation.batchSize || 50);
       let tempChatHistory: ChatMessage[] = [];
       let totReq = 0;
       let repeatReq = 0;
 
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
-        this.logger.debug(`Memproses Batch ${i + 1}/${chunks.length} [Max 10 lines/Req]`);
+        this.logger.debug(`Memproses Batch ${i + 1}/${chunks.length} [Max ${payload.translation.batchSize || 50} lines/Req]`);
 
         // Susun Chat History sesuai referensi Anda
         const chatHistory: ChatMessage[] = [];
@@ -70,8 +67,7 @@ export class TranslateListener {
 
         this.logger.debug(`Chat History untuk Batch ${i + 1}: ${JSON.stringify(chatHistory)}`);
 
-        // Panggil LLM (DeepSeek / OpenAI)
-        const response = await this.llmService.processTranslation(model, chatHistory);
+        const response = await this.llmService.processTranslation(payload.model, chatHistory);
 
         if (!response.status) {
           this.logger.warn(`Request gagal pada batch ${i + 1}. Mengulang...`);
@@ -99,7 +95,7 @@ export class TranslateListener {
         }
 
         // 4. Update hasil ke database per batch (mencegah data hilang jika crash di tengah jalan)
-        const saveResult = await this.saveBatchResultToDb(payload.translationId, response.message);
+        const saveResult = await this.saveBatchResultToDb(payload.translation.id, response.message);
 
         if (!saveResult) {
           this.logger.warn(`Gagal menyimpan hasil batch ${i + 1} ke database. Mengulang...`);
@@ -121,16 +117,16 @@ export class TranslateListener {
 
       // 5. Tandai selesai
       await this.prisma.translation.update({
-        where: { id: payload.translationId },
+        where: { id: payload.translation.id },
         data: { status: 'COMPLETED' },
       });
 
-      this.logger.log(`Translasi ID ${payload.translationId} selesai! Total Request: ${totReq}`);
+      this.logger.log(`Translasi ID ${payload.translation.id} selesai! Total Request: ${totReq}`);
 
     } catch (error) {
-      this.logger.error(`Translasi ID ${payload.translationId} gagal:`, error.stack);
+      this.logger.error(`Translasi ID ${payload.translation.id} gagal:`, error.stack);
       await this.prisma.translation.update({
-        where: { id: payload.translationId },
+        where: { id: payload.translation.id },
         data: { status: 'ERROR' }, // Pastikan menggunakan enum ERROR
       });
     }

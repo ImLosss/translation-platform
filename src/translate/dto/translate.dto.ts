@@ -10,28 +10,28 @@ export enum AiModel {
 export class TranslateDto {
   @IsString()
   @IsNotEmpty()
-  fileName: string;
+  fileName!: string;
 
   @IsEnum(AiModel)
   @IsNotEmpty()
-  model: AiModel;
+  model!: AiModel;
 
   @IsString()
   @IsNotEmpty()
-  sourceLang: string;
+  sourceLang!: string;
 
   @IsString()
   @IsNotEmpty()
-  targetLang: string;
+  targetLang!: string;
 
   @IsString()
   @IsNotEmpty()
   @IsValidSrt()
-  srtContent: string;
+  srtContent!: string;
 
   @IsInt()
   @IsOptional()
-  batchProcessingSize?: number; 
+  batchSize?: number; 
 
   @IsInt()
   @IsOptional()
