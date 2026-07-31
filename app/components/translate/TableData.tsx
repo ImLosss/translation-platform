@@ -8,7 +8,7 @@ export interface Translation {
   sourceLang: string;
   targetLang: string;
 
-  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+  status: "PROCESSING" | "COMPLETED" | "ERROR";
 
   batchSize: number;
 
@@ -22,6 +22,12 @@ export interface Translation {
   createdAt: string;
   updatedAt: string;
 }
+
+const statusClass = {
+  PROCESSING: "warning",
+  COMPLETED: "success",
+  ERROR: "danger",
+};
 
 export default async function TableData() {
   let jobs = [];
@@ -98,7 +104,7 @@ export default async function TableData() {
                   <td>{job.fileName}</td>
                   <td>{job.sourceLang}</td>
                   <td>{job.targetLang}</td>
-                  <td><span className={`status-badge ${job.status === 'COMPLETED' ? 'success' : 'warning'}`}>{job.status}</span></td>
+                  <td><span className={`status-badge ${statusClass[job.status]}`}>{job.status}</span></td>
                   <td>{new Date(job.createdAt).toLocaleString()}</td>
                   <td style={{  textAlign: "right", display: "flex", justifyContent: "flex-end", gap: "8px" }}>
                     {job.status === "COMPLETED" && <a href={`/api/translate/${job.id}/download`} className="btn btn-outline btn-xs"><i className="fas fa-download"></i></a>}

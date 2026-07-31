@@ -96,7 +96,7 @@ export default function FormClient({ glossaryData }: { glossaryData: any[] }) {
       sourceLang,
       targetLang,
       srtContent,
-      batchProcessingSize: batchSize || undefined,
+      batchSize: batchSize || undefined,
       glossaryId: glossaryId !== '' ? Number(glossaryId) : undefined,
     };
 

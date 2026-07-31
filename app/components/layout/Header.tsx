@@ -26,7 +26,10 @@ export default function Header() {
         const href = "/" + pathSegments.slice(0, index + 1).join("/");
 
         return {
-          label: formatSegment(seg),
+          label:
+            /^\d+$/.test(seg) && index === pathSegments.length - 1
+              ? "View"
+              : formatSegment(seg),
           href,
         };
       });
