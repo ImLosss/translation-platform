@@ -115,11 +115,11 @@ export class TranslateService {
     await this.prisma.$transaction(async (tx) => {
       // Update row lama
       await Promise.all(
-        updateRows.map((row, index) =>
+        updateRows.map((row) => 
           tx.translationRow.update({
             where: { id: row.id },
             data: {
-              sequence: index + 1,
+              sequence: row.sequence, 
               startTime: row.start,
               endTime: row.end,
               sourceText: row.source,
@@ -132,9 +132,9 @@ export class TranslateService {
       // Tambah row baru
       if (createRows.length) {
         await tx.translationRow.createMany({
-          data: createRows.map((row, index) => ({
+          data: createRows.map((row) => ({ // <--- index dihapus
             translationId,
-            sequence: updateRows.length + index + 1,
+            sequence: row.sequence, // <--- Gunakan sequence langsung dari frontend
             startTime: row.start,
             endTime: row.end,
             sourceText: row.source,

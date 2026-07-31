@@ -2,6 +2,7 @@ import {
   IsArray,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -10,6 +11,9 @@ import { Type } from 'class-transformer';
 export class UpdateSubtitleRowDto {
   @IsInt()
   id!: number;
+
+  @IsNumber()
+  sequence!: number;
 
   @IsString()
   @IsNotEmpty()
