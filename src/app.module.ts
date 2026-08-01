@@ -6,7 +6,6 @@ import { TranslateModule } from './translate/translate.module';
 import { GlosaryModule } from './glosary/glosary.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { GlossaryEntryModule } from './glossary-entry/glossary-entry.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UserModule } from './user/user.module';
 
@@ -20,7 +19,6 @@ import { UserModule } from './user/user.module';
     GlosaryModule,
     AuthModule,
     PrismaModule,
-    GlossaryEntryModule,
     UserModule,
   ],
   controllers: [AppController],

@@ -132,9 +132,9 @@ export class TranslateService {
       // Tambah row baru
       if (createRows.length) {
         await tx.translationRow.createMany({
-          data: createRows.map((row) => ({ // <--- index dihapus
+          data: createRows.map((row) => ({ 
             translationId,
-            sequence: row.sequence, // <--- Gunakan sequence langsung dari frontend
+            sequence: row.sequence, 
             startTime: row.start,
             endTime: row.end,
             sourceText: row.source,

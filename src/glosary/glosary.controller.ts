@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Req, Put } from '@nestjs/common';
 import { GlosaryService } from './glosary.service';
 import { CreateGlosaryDto } from './dto/create-glosary.dto';
 import { UpdateGlosaryDto } from './dto/update-glosary.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
+import { UpdateGlosaryEntryDto } from './dto/update-glosary-entry.dto';
 
 @Controller('glosary')
 @UseGuards(JwtAuthGuard)
@@ -37,5 +38,15 @@ export class GlosaryController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.glosaryService.remove(id);
+  }
+
+  @Put(':id/entries')
+  async updateGlosaryEntries(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateGlosaryEntryDto,
+    @Req() req: any
+  ) {
+    const userId = req.user.sub;
+    return this.glosaryService.updateGlosary(id, userId, dto);
   }
 }
