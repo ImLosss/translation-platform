@@ -393,7 +393,7 @@ export default function SubtitleEditor({
             </div>
 
             {/* Tombol Save */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 12 }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 12, justifyContent: 'end' }}>
                 <button className="btn btn-outline btn-sm" onClick={handleSave} disabled={isSaving}>
                     <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} />{' '}
                     {isSaving ? 'Saving...' : 'Save Changes'}

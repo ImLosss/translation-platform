@@ -7,7 +7,7 @@ interface Glosary {
   name: string;
   sourceLanguage: string;
   targetLanguage: string;
-  rows: {
+  entries: {
     id: number;
     source: string;
     target: string;
@@ -27,7 +27,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   const glosary = await api<Glosary>(`/glosary/${id}`);
 
-  const entries: GlosaryEntry[] = (glosary?.rows || [{ id: -1, source: '', target: '', detail: null }]).map((row) => ({
+  const initialRows = glosary?.entries?.length 
+    ? glosary.entries
+    : [{ id: -1, source: '', target: '', detail: null }];
+
+  const entries: GlosaryEntry[] = initialRows.map((row) => ({
     id: row.id,
     source: row.source, 
     target: row.target,     

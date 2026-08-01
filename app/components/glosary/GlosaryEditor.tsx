@@ -137,9 +137,8 @@ export default function GlosaryEditor({
                     <div 
                         className="glosary-line" 
                         key={entry.id}
-                        style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', marginBottom: '12px' }}
                     >
-                        <div className="sub-field" style={{ flex: 1 }}>
+                        <div className="sub-field">
                             <label>Source Term <span style={{ color: 'red' }}>*</span></label>
                             <textarea
                                 ref={resizeTextarea}
@@ -151,7 +150,7 @@ export default function GlosaryEditor({
                             />
                         </div>
                         
-                        <div className="sub-field" style={{ flex: 1 }}>
+                        <div className="sub-field">
                             <label>Target Translation <span style={{ color: 'red' }}>*</span></label>
                             <textarea
                                 ref={resizeTextarea}
@@ -163,7 +162,7 @@ export default function GlosaryEditor({
                             />
                         </div>
 
-                        <div className="sub-field" style={{ flex: 1.5 }}>
+                        <div className="sub-field">
                             <label>Detail / Context (Opsional)</label>
                             <textarea
                                 ref={resizeTextarea}
@@ -196,11 +195,7 @@ export default function GlosaryEditor({
             </div>
 
             {/* Area Tambah di Akhir & Simpan */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 12, justifyContent: 'space-between' }}>
-                <button className="btn btn-success btn-sm" onClick={() => handleAddEntry()}>
-                    <i className="fas fa-plus" /> Tambah Baris
-                </button>
-                
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 12, justifyContent: 'end' }}>
                 <button className="btn btn-outline btn-sm" onClick={handleSave} disabled={isSaving}>
                     <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} />{' '}
                     {isSaving ? 'Saving...' : 'Save Changes'}
