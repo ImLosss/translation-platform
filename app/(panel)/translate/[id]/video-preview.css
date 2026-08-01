@@ -1,33 +1,12 @@
-/* Tombol play di baris subtitle */
-.btn-play-line {
-  background: none;
-  border: none;
-  color: var(--accent);
-  cursor: pointer;
-  padding: 0.2rem 0.4rem;
-  font-size: 0.85rem;
-  transition: transform 0.1s;
-}
-.btn-play-line:hover {
-  transform: scale(1.2);
-  color: var(--accent-hover);
+/* Highlight untuk blok subtitle yang sedang diputar */
+.subtitle-line {
+  transition: all 0.2s ease; /* Transisi halus agar tidak kaku */
 }
 
-/* Agar video player tidak ikut scroll halaman saat di-drag */
-.floating-video {
-  -webkit-user-select: none;
-  user-select: none;
-  
-}
-
-.floating-video video::cue {
-  font-size: 14px;                 /* Mengecilkan ukuran font agar pas di layar kecil */
-  white-space: pre-wrap;           /* Memaksa teks panjang turun ke baris baru */
-  word-break: break-word;          /* Mencegah teks keluar batas layar */
-  text-align: center;              /* Memastikan teks tetap di tengah */
-  background-color: rgba(0, 0, 0, 0.75); /* Background hitam transparan agar teks terbaca */
-  color: #ffffff;                  /* Warna teks putih */
-  padding: 4px 8px;                /* Memberi sedikit ruang di sekitar teks */
+.subtitle-line.active-line {
+  background-color: rgba(108, 92, 231, 0.1); /* Background biru transparan */
+  border: 2px solid #6C5CE7;                /* Border biru hijau */
+  box-shadow: 0 0 8px rgba(108, 92, 231, 0.5); /* Shadow lembut */
 }
 
 .floating-video-header {
@@ -38,15 +17,4 @@
   align-items: center;
   color: #fff;
   font-size: 12px;
-}
-
-/* Highlight untuk blok subtitle yang sedang diputar */
-.subtitle-line {
-  transition: all 0.1s ease; /* Transisi halus agar tidak kaku */
-}
-
-.subtitle-line.active-line {
-  background-color: rgba(108, 92, 231, 0.1); /* Background biru transparan */
-  border: 2px solid #6C5CE7;                /* Border warna biru */
-  box-shadow: 0 0 8px #8372ff;
 }

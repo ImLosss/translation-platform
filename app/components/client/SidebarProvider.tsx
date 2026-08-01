@@ -96,11 +96,11 @@ export default function SidebarProvider({ children }: { children: ReactNode }) {
           <Link href="/" className={isActive('/') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-th-large"></i> Dashboard
           </Link>
-          <Link href="/projects" className={isActive('/projects') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-file-alt"></i> Projects
-          </Link>
           <Link href="/translate" className={isActive('/translate') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-film"></i> Translations
+          </Link>
+          <Link href="/glosary" className={isActive('/glosary') ? 'active' : ''} onClick={closeSidebar}>
+            <i className="fas fa-file-alt"></i> Glosary
           </Link>
 
           <div className="nav-label" style={{ marginTop: 12 }}>

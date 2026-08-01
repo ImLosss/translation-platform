@@ -25,26 +25,52 @@ export default function SubtitleEditor({
     videoUrl: initialVideoUrl = '',
 }: SubtitleEditorProps) {
     const { showAlert } = useAlert();
-    const [lines, setLines] = useState<SubtitleLine[]>(() => { return [...initialLines].sort((a, b) => a.sequence - b.sequence); });
+    // Simpan inisialisasi awal ke variabel agar bisa dipakai di dua state
+    const initialSortedLines = [...initialLines].sort((a, b) => a.sequence - b.sequence);
+    
+    const [lines, setLines] = useState<SubtitleLine[]>(initialSortedLines);
+    
+    // State baru untuk menyimpan kondisi terakhir kali di-save (atau saat pertama load)
+    const [lastSavedLines, setLastSavedLines] = useState<SubtitleLine[]>(initialSortedLines);
     const [isSaving, setIsSaving] = useState(false);
     const [videoUrl, setVideoUrl] = useState(initialVideoUrl);
     const videoRef = useRef<HTMLVideoElement>(null);
     const [activeLineIndex, setActiveLineIndex] = useState<number | null>(null);
 
+    // -------- State untuk Loading & Tampilan Video --------
+    const [isVideoLoading, setIsVideoLoading] = useState(false);
+    const [showPreview, setShowPreview] = useState(false); // <--- State baru untuk tombol preview
+
     // -------- Drag state untuk video player --------
-    const [videoPos, setVideoPos] = useState({ x: 16, y: 16 }); // posisi awal
+    const [videoPos, setVideoPos] = useState({ x: 16, y: 16 });
     const [dragging, setDragging] = useState(false);
     const dragStart = useRef({ x: 0, y: 0, startX: 0, startY: 0 });
 
     const nextTempId = useRef(-1);
 
-    // ===================== RESET HIGHLIGHT JIKA VIDEO DIHAPUS =====================
+    // ===================== EXTRACT DRIVE ID =====================
+    function extractId(url: string) {
+        const regex1 = /\/file\/d\/([a-zA-Z0-9_-]+)/; const regex2 = /id=([a-zA-Z0-9_-]+)/;
+        let match = url.match(regex1); if (match && match[1]) return match[1];
+        match = url.match(regex2);
+        if (match && match[1]) return match[1];
+        return null;
+    }
+
+    const driveId = extractId(videoUrl);
+
+    // ===================== FUNGSI RESET =====================
+    const handleReset = useCallback(() => {
+        setLines([...lastSavedLines]); // Kembalikan state lines ke kondisi last saved
+        showAlert('Successfully reset to last saved state.', 'info');
+    }, [lastSavedLines, showAlert]);
+
+    // ===================== RESET HIGHLIGHT JIKA VIDEO DIHAPUS / DISEMBUNYIKAN =====================
     useEffect(() => {
-        // Jika videoUrl kosong (dihapus user), kembalikan activeLineIndex ke null
-        if (!videoUrl) {
+        if (!driveId || !showPreview) {
             setActiveLineIndex(null);
         }
-    }, [videoUrl]);
+    }, [driveId, showPreview]);
 
     // ===================== HANDLER SUBTITLE =====================
     const handleAddLine = useCallback(
@@ -113,15 +139,36 @@ export default function SubtitleEditor({
     const handleSave = async () => {
         setIsSaving(true);
         try {
-
-            // 2. Hitung ulang nilai 'sequence' berdasarkan urutan array yang sudah benar
             const sequencedLines = lines.map((line, index) => ({
                 ...line,
-                sequence: index + 1, // Urutan dimulai dari 1, 2, 3, dst...
+                sequence: index + 1,
             }));
             const result = await updateRowAction(translationId, sequencedLines);
             if (result.success) {
                 showAlert('Saved.', 'success');
+                setLastSavedLines(sequencedLines);
+                setLines(sequencedLines); 
+            } else {
+                showAlert(result.message, 'error');
+            }
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleExport = async () => {
+        setIsSaving(true);
+        try {
+            const sequencedLines = lines.map((line, index) => ({
+                ...line,
+                sequence: index + 1,
+            }));
+
+            const result = await updateRowAction(translationId, sequencedLines);
+            if (result.success) {
+                setLastSavedLines(sequencedLines);
+                setLines(sequencedLines); 
+                window.open(`/api/translate/${translationId}/download`);
             } else {
                 showAlert(result.message, 'error');
             }
@@ -131,7 +178,6 @@ export default function SubtitleEditor({
     };
 
     // ===================== HELPER TIMESTAMP & TRACKING =====================
-    // Mengubah "00:00:02,000" menjadi detik (2.0)
     const srtTimeToSeconds = (timestamp: string) => {
         const parts = timestamp.split(',');
         const timePart = parts[0];
@@ -140,12 +186,10 @@ export default function SubtitleEditor({
         return parseInt(hh, 10) * 3600 + parseInt(mm, 10) * 60 + parseInt(ss, 10) + ms / 1000;
     };
 
-    // Fungsi yang dipanggil setiap kali detik video berjalan
     const handleTimeUpdate = () => {
         if (!videoRef.current || lines.length === 0) return;
         const currentTime = videoRef.current.currentTime;
 
-        // Cari baris subtitle mana yang rentang waktunya cocok dengan detik video saat ini
         const currentIndex = lines.findIndex((line) => {
             const startSec = srtTimeToSeconds(line.start);
             const endSec = srtTimeToSeconds(line.end);
@@ -155,16 +199,14 @@ export default function SubtitleEditor({
         setActiveLineIndex(currentIndex !== -1 ? currentIndex : null);
     };
 
-    // ===================== FUNGSI SEEK VIDEO =====================
     const seekToTimestamp = (timestamp: string) => {
-        if (!videoRef.current) return;
+        if (!videoRef.current || !showPreview) return; // Cegah error jika preview ditutup
         videoRef.current.currentTime = srtTimeToSeconds(timestamp);
         videoRef.current.play().catch(() => { });
     };
 
-    // ===================== DRAG HANDLER (MOBILE & DESKTOP) =====================
+    // ===================== DRAG HANDLER =====================
     const onDragStart = (e: React.TouchEvent | React.MouseEvent) => {
-        // Ambil koordinat awal
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
         const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
         dragStart.current = { x: clientX, y: clientY, startX: videoPos.x, startY: videoPos.y };
@@ -188,7 +230,6 @@ export default function SubtitleEditor({
         setDragging(false);
     };
 
-    // ===================== FUNGSI PLAY/PAUSE VIDEO =====================
     const togglePlayPause = () => {
         if (videoRef.current) {
             if (videoRef.current.paused) {
@@ -199,14 +240,13 @@ export default function SubtitleEditor({
         }
     };
 
-    // ===================== GENERATE VTT UNTUK VIDEO =====================
+    // ===================== GENERATE VTT =====================
     const [subtitleTrackUrl, setSubtitleTrackUrl] = useState('');
 
     useEffect(() => {
         if (!lines || lines.length === 0) return;
 
         let vttContent = "WEBVTT\n\n";
-
         lines.forEach((line, index) => {
             const startVtt = line.start.replace(',', '.');
             const endVtt = line.end.replace(',', '.');
@@ -232,23 +272,49 @@ export default function SubtitleEditor({
                     Subtitle Preview (SRT)
                 </h2>
                 <div className="card-actions">
-                    <button className="btn btn-success btn-sm" onClick={() => handleAddLine()}>
-                        <i className="fas fa-plus" /> Add Line
+                    <button className="btn btn-outline btn-sm" onClick={handleReset}>
+                        <i className="fas fa-undo" /> Reset
+                    </button>
+                    <button className="btn btn-primary btn-sm" onClick={handleExport} disabled={isSaving}>
+                        <i className="fas fa-save" /> Save & Export
                     </button>
                 </div>
             </div>
 
-            {/* Input URL Video */}
+            {/* Input URL Video & Tombol Preview */}
             <div className="form-group" style={{ marginBottom: 16 }}>
-                <label htmlFor="videoUrl">Video URL (untuk preview)</label>
-                <input
-                    type="text"
-                    id="videoUrl"
-                    className="form-control"
-                    placeholder="https://example.com/video.mp4"
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                />
+                <label htmlFor="videoUrl">Google Drive Video URL (PUBLIC)</label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <input
+                        type="text"
+                        id="videoUrl"
+                        className="form-control"
+                        placeholder="https://drive.google.com/file/d/ID_VIDEO/view"
+                        value={videoUrl}
+                        onChange={(e) => {
+                            setVideoUrl(e.target.value);
+                            // Otomatis matikan preview jika URL dikosongkan
+                            if (!e.target.value) setShowPreview(false);
+                        }}
+                        style={{ flex: 1, minWidth: '200px' }}
+                    />
+                    {/* Tombol Tampilkan Preview hanya muncul jika driveId ada (link valid) */}
+                    {driveId && (
+                        <button
+                            className={`btn ${showPreview ? 'btn-outline' : 'btn-primary'}`}
+                            onClick={() => setShowPreview(!showPreview)}
+                            style={{ whiteSpace: 'nowrap' }}
+                        >
+                            <i className={`fas ${showPreview ? 'fa-eye-slash' : 'fa-eye'}`} />{' '}
+                            {showPreview ? 'Sembunyikan Preview' : 'Tampilkan Preview'}
+                        </button>
+                    )}
+                </div>
+                {videoUrl && !driveId && (
+                    <small style={{ color: '#dc3545', marginTop: '4px', display: 'block' }}>
+                        *Link tidak valid. Pastikan Anda memasukkan link Google Drive yang benar.
+                    </small>
+                )}
             </div>
 
             {/* Container subtitle */}
@@ -295,12 +361,14 @@ export default function SubtitleEditor({
                             />
                         </div>
                         <div className="sub-actions">
-                            {/* Tombol Play untuk seek video */}
-                            {videoUrl && (
+                            {/* Tombol Play hanya bisa diklik jika preview sedang terbuka */}
+                            {driveId && (
                                 <button
                                     className="btn-play-line"
-                                    title="Seek video to this timestamp"
+                                    title={showPreview ? "Seek video to this timestamp" : "Buka Preview terlebih dahulu"}
                                     onClick={() => seekToTimestamp(line.start)}
+                                    disabled={!showPreview}
+                                    style={{ opacity: showPreview ? 1 : 0.5, cursor: showPreview ? 'pointer' : 'not-allowed' }}
                                 >
                                     <i className="fas fa-play" />
                                 </button>
@@ -332,8 +400,8 @@ export default function SubtitleEditor({
                 </button>
             </div>
 
-            {/* ===== FLOATING VIDEO PLAYER (hanya tampil jika ada videoUrl) ===== */}
-            {videoUrl && (
+            {/* ===== FLOATING VIDEO PLAYER (Tampil jika driveId valid & showPreview true) ===== */}
+            {driveId && showPreview && (
                 <div
                     className="floating-video"
                     style={{
@@ -349,7 +417,7 @@ export default function SubtitleEditor({
                         boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
                         cursor: dragging ? 'grabbing' : 'grab',
                         userSelect: 'none',
-                        touchAction: 'none', // penting untuk mencegah scroll saat drag
+                        touchAction: 'none',
                     }}
                     onMouseDown={onDragStart}
                     onTouchStart={onDragStart}
@@ -359,11 +427,10 @@ export default function SubtitleEditor({
                     onTouchEnd={onDragEnd}
                     onMouseLeave={onDragEnd}
                 >
-                    {/* Handle drag visual */}
                     <div className="floating-video-header">
                         <span>🎥 Video Preview (drag me)</span>
                         <button
-                            onClick={() => setVideoUrl('')} // close
+                            onClick={() => setShowPreview(false)} // <--- Ubah: Hanya hide, bukan reset URL
                             style={{
                                 background: 'none',
                                 border: 'none',
@@ -377,24 +444,49 @@ export default function SubtitleEditor({
                             ✕
                         </button>
                     </div>
-                    <video
-                        ref={videoRef}
-                        src={videoUrl}
-                        onClick={togglePlayPause}
-                        onTimeUpdate={handleTimeUpdate}
-                        style={{ width: '100%', display: 'block' }}
-                    >
-                        {/* TAMBAHKAN TRACK INI UNTUK MENAMPILKAN SUBTITLE */}
-                        {subtitleTrackUrl && (
-                            <track
-                                kind="subtitles"
-                                src={subtitleTrackUrl}
-                                srcLang="id"
-                                label="Translated"
-                                default
-                            />
+
+                    <div style={{ position: 'relative' }}>
+                        {isVideoLoading && (
+                            <div style={{
+                                position: 'absolute',
+                                top: 0, left: 0, right: 0, bottom: 0,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                zIndex: 10,
+                                color: 'white'
+                            }}>
+                                <i className="fas fa-spinner fa-spin fa-2x"></i>
+                            </div>
                         )}
-                    </video>
+
+                        <video
+                            ref={videoRef}
+                            src={`/api/video/preview/${driveId}`}
+                            onClick={togglePlayPause}
+                            onTimeUpdate={handleTimeUpdate}
+                            onLoadStart={() => setIsVideoLoading(true)}
+                            onWaiting={() => setIsVideoLoading(true)}
+                            onCanPlay={() => setIsVideoLoading(false)}
+                            onPlaying={() => setIsVideoLoading(false)}
+                            onError={() => { 
+                                setIsVideoLoading(false);
+                                showAlert("Failed to load video preview. Check the URL or Google Drive sharing settings.", "error"); 
+                            }}
+                            style={{ width: '100%', display: 'block', cursor: 'pointer' }}
+                        >
+                            {subtitleTrackUrl && (
+                                <track
+                                    kind="subtitles"
+                                    src={subtitleTrackUrl}
+                                    srcLang="id"
+                                    label="Translated"
+                                    default
+                                />
+                            )}
+                        </video>
+                    </div>
                 </div>
             )}
         </section>
