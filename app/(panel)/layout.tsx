@@ -9,15 +9,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   return (
-    <SidebarProvider>
-      <UserProvider user={user}>
-        <div className="main-wrapper">
-          <Header />
-          <main className="content">
-            {children}
-          </main>
-        </div>
-      </UserProvider>
-    </SidebarProvider>
+    <UserProvider user={user}>
+      <SidebarProvider user={user}>
+          <div className="main-wrapper">
+            <Header />
+            <main className="content">
+              {children}
+            </main>
+          </div>
+      </SidebarProvider>
+    </UserProvider>
   );
 }

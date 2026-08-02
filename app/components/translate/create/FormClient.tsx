@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useAlert } from '../../ui/Alert';
 import SelectSearch from './SelectSearch';
 import { createAction } from '@/app/actions/translate/createAction';
@@ -30,7 +30,7 @@ const languageOptions = [
   { value: 'ar', label: 'Arabic' },
 ];
 
-export default function FormClient({ glossaryData }: { glossaryData: any[] }) {
+export default function FormClient({ glosaries }: { glosaries: any[] }) {
   const { showAlert } = useAlert();
 
   const [fileName, setFileName] = useState('');
@@ -38,15 +38,39 @@ export default function FormClient({ glossaryData }: { glossaryData: any[] }) {
   const [sourceLang, setSourceLang] = useState<string>('en');
   const [targetLang, setTargetLang] = useState<string>('id');
   const [srtContent, setSrtContent] = useState('');
-  const [batchSize, setBatchSize] = useState<number>(10);
-  const [glossaryId, setGlossaryId] = useState<number | ''>('');
-
-  console.log('Glossary Data:', glossaryData); 
+  const [batchSize, setBatchSize] = useState<number>(25);
+  const [glossaryId, setGlossaryId] = useState<string>(''); // Diubah ke string untuk SelectSearch
 
   // State untuk drag & drop
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
+  // ===================== LOGIKA GLOSARIUM =====================
+  // Filter glosarium berdasarkan Source dan Target (bisa bolak-balik)
+  const filteredGlossaryOptions = useMemo(() => {
+    if (!glosaries) return [{ value: '', label: '-- No Glossary Available --' }];
+    
+    const filtered = glosaries.filter((g) => 
+      (g.sourceLanguage === sourceLang && g.targetLanguage === targetLang) ||
+      (g.sourceLanguage === targetLang && g.targetLanguage === sourceLang)
+    );
+
+    // Format menjadi array of object untuk SelectSearch
+    const options = filtered.map((g) => ({
+      value: String(g.id),
+      label: g.name
+    }));
+
+    if (options.length === 0) return [{ value: '', label: '-- No matching Glossary --' }];
+    return [{ value: '', label: '-- Select Glosary --' }, ...options];
+  }, [glosaries, sourceLang, targetLang]);
+
+  // Reset pilihan glosarium jika kombinasi bahasa sumber/target berubah
+  useEffect(() => {
+    setGlossaryId('');
+  }, [sourceLang, targetLang]);
+
+  // ===================== HANDLER FILE =====================
   const handleFile = useCallback(
     (file: File) => {
       const ext = file.name.split('.').pop()?.toLowerCase();
@@ -97,7 +121,7 @@ export default function FormClient({ glossaryData }: { glossaryData: any[] }) {
       targetLang,
       srtContent,
       batchSize: batchSize || undefined,
-      glossaryId: glossaryId !== '' ? Number(glossaryId) : undefined,
+      glossaryId: glossaryId !== '' ? Number(glossaryId) : undefined, 
     };
 
     const result = await createAction(payload);
@@ -200,14 +224,13 @@ export default function FormClient({ glossaryData }: { glossaryData: any[] }) {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="glossaryId">Glossary ID (optional)</label>
-            <input
-              type="number"
-              className="form-control"
+            <label htmlFor="glossaryId">Glossary (Optional)</label>
+            <SelectSearch
               id="glossaryId"
-              placeholder="e.g. 1"
+              options={filteredGlossaryOptions}
               value={glossaryId}
-              onChange={(e) => setGlossaryId(e.target.value ? parseInt(e.target.value) : '')}
+              onChange={setGlossaryId}
+              placeholder={filteredGlossaryOptions.length > 1 ? "Pilih Glosarium..." : "Glosarium tidak tersedia"}
             />
           </div>
         </div>

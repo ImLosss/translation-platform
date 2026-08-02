@@ -27,7 +27,7 @@ const SidebarContext = createContext<SidebarContextType>({
 
 export const useSidebar = () => useContext(SidebarContext);
 
-export default function SidebarProvider({ children }: { children: ReactNode }) {
+export default function SidebarProvider({ children, user }: { children: ReactNode; user: any }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const { showAlert } = useAlert();
@@ -106,15 +106,25 @@ export default function SidebarProvider({ children }: { children: ReactNode }) {
           <div className="nav-label" style={{ marginTop: 12 }}>
             Management
           </div>
-          <Link href="/users" className={isActive('/users') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-users"></i> Users
-          </Link>
-          <Link href="/settings" className={isActive('/settings') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-cog"></i> Settings
-          </Link>
+          {user?.role === 'ADMIN' && (
+            <>
+              <Link href="/users" className={isActive('/users') ? 'active' : ''} onClick={closeSidebar}>
+                <i className="fas fa-users"></i> Users
+              </Link>
+              <Link href="/logs" className={isActive('/logs') ? 'active' : ''} onClick={closeSidebar}>
+                <i className="fas fa-history"></i> Logs
+              </Link>
+              <Link href="/settings" className={isActive('/settings') ? 'active' : ''} onClick={closeSidebar}>
+                <i className="fas fa-cog"></i> Settings
+              </Link>
+            </>
+          )}
           <Link href="/billing" className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-credit-card"></i> Billing
             <span className="badge">Pro</span>
+          </Link>
+          <Link href="/profile" className={isActive('/profile') ? 'active' : ''} onClick={closeSidebar}>
+            <i className="fas fa-user"></i> Profile
           </Link>
         </nav>
 
