@@ -1,5 +1,5 @@
 // src/translate/translate.service.ts
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { TranslationProcessEvent } from './events/translate.event';
@@ -16,6 +16,7 @@ export interface SrtBlock {
 @Injectable()
 export class TranslateService {
   private srtParser = new SrtParser();
+  private readonly logger = new Logger(TranslateService.name);
 
   constructor(
     private readonly prisma: PrismaService,
@@ -31,6 +32,7 @@ export class TranslateService {
         targetLang: dto.targetLang,
         userId: userId,
         batchSize: dto.batchSize || 50,
+        glossaryId: dto.glossaryId || null,
         // status: 'PENDING' -> Pastikan kolom ini ditambahkan di schema Prisma
       },
     });

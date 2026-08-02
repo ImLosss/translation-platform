@@ -1,28 +1,34 @@
-import { Body, Controller, Get, Header, Param, Patch, Post, Req, Res, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Patch, Post, Req, Res, StreamableFile, UseInterceptors } from '@nestjs/common';
 import { TranslateService } from './translate.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { TranslateDto } from './dto/translate.dto';
 import { UpdateTranslationDto } from './dto/update-subtitle-row.dto';
+import { ActivityLogInterceptor } from 'src/activity-log/activity-log.interceptor';
+import { LogActivity } from 'src/activity-log/log-activity.decorator';
 
 @Controller('translate')
+@UseInterceptors(ActivityLogInterceptor)
 @UseGuards(JwtAuthGuard)
 export class TranslateController {
     constructor(private readonly translateService: TranslateService) {}
 
     @Post()
+    @LogActivity('Create Translation Request')
     async translateText(@Body() translateDto: TranslateDto, @Req() req: any) {
         const userId = req.user.sub;
         return this.translateService.processTranslationInBackground(translateDto, userId); 
     }
 
     @Get()
+    @LogActivity('Get User Translations')
     async getUserTranslations(@Req() req: any) {
         const userId = req.user.sub;
         return this.translateService.getUserTranslations(userId);
     }
 
     @Get(':translationId')
+    @LogActivity('Get Translation Details')
     async getTranslationDetails(@Param('translationId') translationId: string, @Req() req: any) {
         const userId = req.user.sub;
         return this.translateService.getTranslationDetails(Number(translationId), userId);
@@ -38,12 +44,14 @@ export class TranslateController {
     }
 
     @Get('check/:translateId')
+    @LogActivity('Check Translation Status')
     async checkTranslationStatus(@Param('translateId') translateId: number, @Req() req: any) {
         const userId = req.user.sub;
         return this.translateService.checkTranslationStatus(translateId, userId);
     }
 
     @Get('download/:translationId')
+    @LogActivity('Download Translation File')
     @Header('Content-Type', 'application/x-subrip') // MIME type untuk file SRT
     async downloadSrt(
         @Param('translationId') translationId: string,

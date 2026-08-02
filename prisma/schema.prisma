@@ -35,6 +35,23 @@ model User {
 
   glossaries    Glossary[]
   translations Translation[]
+  activityLogs  ActivityLog[]
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?  
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String  
+  method    String 
+  url       String 
+  details   Json?  
+  ipAddress String? 
+  statusCode Int?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
 }
 
 enum Role {
@@ -59,6 +76,7 @@ model Glossary {
   user             User     @relation(fields: [userId], references: [id])
 
   entries          GlossaryEntry[]
+  translations     Translation[]
 
   createdAt        DateTime @default(now())
 }
@@ -81,6 +99,9 @@ model Translation {
   userId      Int
   user        User   @relation(fields: [userId], references: [id])
 
+  glossaryId  Int?
+  glossary    Glossary? @relation(fields: [glossaryId], references: [id])
+
   fileName    String 
   videoSource String?
 
@@ -88,7 +109,6 @@ model Translation {
   targetLang  String   
   batchSize   Int     @default(50)
   totalCost   Float   @default(0)
-  totalTokens Int     @default(0)
 
   status      TranslationStatus @default(PROCESSING)   
 

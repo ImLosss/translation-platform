@@ -58,7 +58,6 @@ export class UserService {
     const translationStats = await this.prisma.translation.aggregate({
       where: { userId: userId },
       _sum: {
-        totalTokens: true,
         totalCost: true,
       },
       // Anda juga bisa menambahkan _avg, _min, atau _max jika diperlukan
@@ -74,7 +73,6 @@ export class UserService {
       },
       statistics: {
         totalTranslations: user._count.translations || 0,
-        totalTokensUsed: translationStats._sum.totalTokens || 0,
         totalCost: translationStats._sum.totalCost || 0,
         processing: processingCount || 0,
       },
