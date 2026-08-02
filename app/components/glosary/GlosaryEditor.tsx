@@ -6,7 +6,7 @@ import { updateGlosaryEntriesAction } from '@/app/actions/glosary/updateGlosaryE
 import { GlosaryData } from '@/app/(panel)/glosary/[id]/page';
 
 export interface GlosaryEntry {
-    id: number; // Gunakan ID negatif untuk entry baru yang belum disave ke DB
+    id: number;
     source: string;
     target: string;
     detail: string;
@@ -32,11 +32,21 @@ export default function GlosaryEditor({
         Math.min(0, ...initialEntries.map(e => e.id)) - 1
     );
 
+    // ===================== DETEKSI DUPLIKAT =====================
+    // Menghitung jumlah kemunculan setiap kata di kolom Source (case-insensitive)
+    const sourceCounts = entries.reduce((acc, entry) => {
+        const val = entry.source.trim().toLowerCase();
+        if (val) {
+            acc[val] = (acc[val] || 0) + 1;
+        }
+        return acc;
+    }, {} as Record<string, number>);
+
     // ===================== FUNGSI RESET =====================
     const handleReset = useCallback(() => {
-        if (window.confirm('Apakah Anda yakin ingin mengembalikan ke kondisi terakhir yang disimpan? Semua perubahan yang belum disimpan akan hilang.')) {
+        if (window.confirm('Are you sure you want to revert to the last saved state? All unsaved changes will be lost.')) {
             setEntries([...lastSavedEntries]);
-            showAlert('Dikembalikan ke kondisi terakhir disimpan.', 'warning');
+            showAlert('Reverted to last saved state.', 'warning');
         }
     }, [lastSavedEntries, showAlert]);
 
@@ -57,7 +67,7 @@ export default function GlosaryEditor({
                 }
                 return [...prev, newEntry];
             });
-            if (afterIndex === undefined) showAlert('Baris glosarium baru ditambahkan.', 'success');
+            if (afterIndex === undefined) showAlert('New glosary entry added.', 'success');
         },
         [showAlert]
     );
@@ -65,11 +75,11 @@ export default function GlosaryEditor({
     const handleDeleteEntry = useCallback(
         (index: number) => {
             if (entries.length <= 1) {
-                showAlert('Minimal harus ada satu baris glosarium.', 'warning');
+                showAlert('At least one glosary entry is required.', 'warning');
                 return;
             }
             setEntries((prev) => prev.filter((_, i) => i !== index));
-            showAlert('Baris glosarium dihapus.', 'warning');
+            showAlert('Glosary entry deleted.', 'warning');
         },
         [entries, showAlert]
     );
@@ -83,7 +93,6 @@ export default function GlosaryEditor({
         []
     );
 
-    // Bantuan untuk otomatis menyesuaikan tinggi textarea
     const resizeTextarea = (el: HTMLTextAreaElement | null) => {
         if (!el) return;
         el.style.height = 'auto';
@@ -92,25 +101,30 @@ export default function GlosaryEditor({
 
     // ===================== SIMPAN DATA =====================
     const handleSave = async () => {
-        // Validasi simpel sebelum dikirim
         const hasEmptyRequired = entries.some(e => !e.source.trim() || !e.target.trim());
         if (hasEmptyRequired) {
-            showAlert('Source dan Target tidak boleh kosong!', 'warning');
+            showAlert('Source and Target cannot be empty!', 'warning');
+            return;
+        }
+
+        // Opsional: Cegah save jika ada duplikat
+        const hasDuplicates = Object.values(sourceCounts).some(count => count > 1);
+        if (hasDuplicates) {
+            showAlert('There are duplicate Source Terms. Please fix them before saving!', 'error');
             return;
         }
 
         setIsSaving(true);
         try {
-            // Panggil action dengan GlosaryId dan array entries
             const result = await updateGlosaryEntriesAction(glosary.id, entries);
             if (result.success) {
-                showAlert('Glosarium berhasil disimpan.', 'success');
-                setLastSavedEntries([...entries]); // Update titik aman untuk fitur Reset
+                showAlert('Glosary entries saved successfully.', 'success');
+                setLastSavedEntries([...entries]);
             } else {
                 showAlert(result.message, 'error');
             }
         } catch (error) {
-            showAlert('Terjadi kesalahan saat menyimpan.', 'error');
+            showAlert('An error occurred while saving.', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -131,70 +145,81 @@ export default function GlosaryEditor({
                 </div>
             </div>
 
-            {/* Container Glosary */}
             <div id="GlosaryContainer" style={{ marginTop: '16px' }}>
-                {entries.map((entry, index) => (
-                    <div 
-                        className="glosary-line" 
-                        key={entry.id}
-                    >
-                        <div className="sub-field">
-                            <label>Source Term <span style={{ color: 'red' }}>*</span></label>
-                            <textarea
-                                ref={resizeTextarea}
-                                className="sub-source"
-                                rows={1}
-                                placeholder="Kata/Frasa Asli"
-                                value={entry.source}
-                                onChange={(e) => handleUpdateEntry(index, 'source', e.target.value)}
-                            />
-                        </div>
-                        
-                        <div className="sub-field">
-                            <label>Target Translation <span style={{ color: 'red' }}>*</span></label>
-                            <textarea
-                                ref={resizeTextarea}
-                                className="sub-translated"
-                                rows={1}
-                                placeholder="Terjemahan"
-                                value={entry.target}
-                                onChange={(e) => handleUpdateEntry(index, 'target', e.target.value)}
-                            />
-                        </div>
+                {entries.map((entry, index) => {
+                    // Cek apakah entry ini duplikat
+                    const sourceVal = entry.source.trim().toLowerCase();
+                    const isDuplicate = sourceVal !== '' && sourceCounts[sourceVal] > 1;
 
-                        <div className="sub-field">
-                            <label>Detail / Context (Opsional)</label>
-                            <textarea
-                                ref={resizeTextarea}
-                                className="sub-detail"
-                                rows={1}
-                                placeholder="Catatan tambahan..."
-                                value={entry.detail || ''}
-                                onChange={(e) => handleUpdateEntry(index, 'detail', e.target.value)}
-                            />
-                        </div>
+                    return (
+                        <div 
+                            className={`glosary-line ${isDuplicate ? 'duplicated-line' : ''}`} 
+                            key={entry.id}
+                        >
+                            <div className="sub-field">
+                                <label>
+                                    Source Term <span style={{ color: 'red' }}>*</span>
+                                    {isDuplicate && (
+                                        <span style={{ color: '#dc3545', marginLeft: '6px', textTransform: 'none', fontWeight: 'bold' }}>
+                                            <i className="fas fa-exclamation-triangle"></i> Duplicate
+                                        </span>
+                                    )}
+                                </label>
+                                <textarea
+                                    ref={resizeTextarea}
+                                    className="sub-source"
+                                    rows={1}
+                                    placeholder="Kata/Frasa Asli"
+                                    value={entry.source}
+                                    onChange={(e) => handleUpdateEntry(index, 'source', e.target.value)}
+                                />
+                            </div>
+                            
+                            <div className="sub-field">
+                                <label>Target Translation <span style={{ color: 'red' }}>*</span></label>
+                                <textarea
+                                    ref={resizeTextarea}
+                                    className="sub-translated"
+                                    rows={1}
+                                    placeholder="Terjemahan"
+                                    value={entry.target}
+                                    onChange={(e) => handleUpdateEntry(index, 'target', e.target.value)}
+                                />
+                            </div>
 
-                        <div className="sub-actions" style={{ display: 'flex', gap: '4px', marginTop: '24px' }}>
-                            <button
-                                className="btn-add-line"
-                                title="Tambahkan entri di bawah ini"
-                                onClick={() => handleAddEntry(index)}
-                            >
-                                <i className="fas fa-plus-circle" />
-                            </button>
-                            <button
-                                className="btn-del-line"
-                                title="Hapus entri ini"
-                                onClick={() => handleDeleteEntry(index)}
-                            >
-                                <i className="fas fa-trash-alt" />
-                            </button>
+                            <div className="sub-field">
+                                <label>Detail / Context (Opsional)</label>
+                                <textarea
+                                    ref={resizeTextarea}
+                                    className="sub-detail"
+                                    rows={1}
+                                    placeholder="Catatan tambahan..."
+                                    value={entry.detail || ''}
+                                    onChange={(e) => handleUpdateEntry(index, 'detail', e.target.value)}
+                                />
+                            </div>
+
+                            <div className="sub-actions">
+                                <button
+                                    className="btn-add-line"
+                                    title="Tambahkan entri di bawah ini"
+                                    onClick={() => handleAddEntry(index)}
+                                >
+                                    <i className="fas fa-plus-circle" />
+                                </button>
+                                <button
+                                    className="btn-del-line"
+                                    title="Hapus entri ini"
+                                    onClick={() => handleDeleteEntry(index)}
+                                >
+                                    <i className="fas fa-trash-alt" />
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
-            {/* Area Tambah di Akhir & Simpan */}
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 12, justifyContent: 'end' }}>
                 <button className="btn btn-outline btn-sm" onClick={handleSave} disabled={isSaving}>
                     <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} />{' '}
