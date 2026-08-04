@@ -106,7 +106,7 @@ export default async function ActivityLogsPage({
         </h2>
       </div>
 
-      <div style={{ padding: '1rem' }}>
+      <div>
         <LogFilters />
         
         {errorMsg ? (

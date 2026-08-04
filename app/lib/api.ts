@@ -8,14 +8,24 @@ export async function api<T>(
 ): Promise<T> {
   const token = (await cookies()).get("auth_token")?.value;
 
+  // 1. Siapkan header dasar (termasuk token jika ada)
+  const defaultHeaders: Record<string, string> = {
+    ...(token && {
+      Authorization: `Bearer ${token}`,
+    }),
+  };
+
+  // 2. HANYA tambahkan Content-Type jika request membawa body
+  if (options?.body) {
+    defaultHeaders["Content-Type"] = "application/json";
+  }
+
+  // 3. Lakukan fetch
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
-      ...(token && {
-        Authorization: `Bearer ${token}`,
-      }),
-      ...options?.headers,
+      ...defaultHeaders,
+      ...options?.headers, // Memungkinkan override header dari luar jika diperlukan
     },
     cache: "no-store",
   });
