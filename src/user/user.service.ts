@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { Role } from 'generated/prisma/enums';
 
 @Injectable()
 export class UserService {
@@ -11,20 +12,79 @@ export class UserService {
     return 'This action adds a new user';
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        // Jangan mengembalikan passwordHash demi keamanan
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          avatar: true,
+          balance: true,
+          provider: true,
+          role: true,
+          createdAt: true,
+        },
+      }),
+      this.prisma.user.count(),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        avatar: true,
+        balance: true,
+        provider: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) throw new NotFoundException('Pengguna tidak ditemukan');
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, data: { username?: string; role?: Role; balance?: number }) {
+    // Pastikan user ada sebelum di-update
+    await this.findOne(id); 
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        username: data.username,
+        role: data.role,
+        balance: Number(data.balance),
+      },
+      select: { id: true, email: true, username: true, role: true, balance: true }
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    await this.findOne(id);
+    // Hapus user (pastikan onDelete: Cascade di schema prisma jika ada relasi yang terkait)
+    return this.prisma.user.delete({
+      where: { id },
+    });
   }
 
   async getUserDashboardStats(userId: number) {

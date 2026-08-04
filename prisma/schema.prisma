@@ -65,7 +65,7 @@ enum AuthProvider {
 }
 
 model Glossary {
-  id               Int      @id @default(autoincrement())
+  id               Int             @id @default(autoincrement())
 
   name             String
 
@@ -73,12 +73,12 @@ model Glossary {
   targetLanguage   String
 
   userId           Int
-  user             User     @relation(fields: [userId], references: [id])
+  user             User             @relation(fields: [userId], references: [id])
 
   entries          GlossaryEntry[]
   translations     Translation[]
 
-  createdAt        DateTime @default(now())
+  createdAt        DateTime         @default(now())
 }
 
 model GlossaryEntry {
@@ -94,21 +94,22 @@ model GlossaryEntry {
 }
 
 model Translation {
-  id          Int    @id @default(autoincrement())
+  id          Int               @id @default(autoincrement())
   
   userId      Int
-  user        User   @relation(fields: [userId], references: [id])
+  user        User              @relation(fields: [userId], references: [id])
 
   glossaryId  Int?
-  glossary    Glossary? @relation(fields: [glossaryId], references: [id])
+  glossary    Glossary?         @relation(fields: [glossaryId], references: [id])
 
   fileName    String 
   videoSource String?
 
   sourceLang  String  
   targetLang  String   
-  batchSize   Int     @default(50)
-  totalCost   Float   @default(0)
+  batchSize   Int               @default(50)
+  totalCost   Float             @default(0)
+  totalToken  Float             @default(0)
 
   status      TranslationStatus @default(PROCESSING)   
 
@@ -120,6 +121,7 @@ model Translation {
 
 enum TranslationStatus {
   PROCESSING
+  ENCODING
   COMPLETED
   ERROR
 }
@@ -146,7 +148,15 @@ model TranslationRow {
 }
 
 model Provider {
-  id      Int    @id @default(autoincrement())
-  name    String
-  pricing Float  @default(0)
+  id                Int            @id @default(autoincrement())
+  name              String
+  inputPricing      Float          @default(0)
+  inputCachePricing Float          @default(0)
+  outputPricing     Float          @default(0)
+  status            ProviderStatus @default(ACTIVE)
+}
+
+enum ProviderStatus {
+  ACTIVE
+  INACTIVE
 }

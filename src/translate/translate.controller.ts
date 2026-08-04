@@ -35,6 +35,7 @@ export class TranslateController {
     }
 
     @Patch(':id')
+    @LogActivity('Update Translation')
     update(
         @Param('id') id: string,
         @Body() dto: UpdateTranslationDto,
