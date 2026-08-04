@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useAlert } from '../../ui/Alert';
-import SelectSearch from './SelectSearch';
 import { redirect } from 'next/navigation';
 import { createGlosaryAction } from '@/app/actions/glosary/createGlosaryAction';
+import SelectSearch from '../../client/SelectSearch';
 
 const languageOptions = [
     { value: 'en', label: 'English' },
@@ -54,7 +54,7 @@ export default function FormClient() {
             <div className="card-header">
                 <h2>
                     <i className="fas fa-pen-fancy" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
-                    New Translation Job
+                    New Glosary
                 </h2>
                 <div className="card-actions">
                     <button

@@ -106,8 +106,8 @@ export default async function TableData() {
                   <td>{job.targetLang}</td>
                   <td><span className={`status-badge ${statusClass[job.status]}`}>{job.status}</span></td>
                   <td>{new Date(job.createdAt).toLocaleString()}</td>
-                  <td style={{  textAlign: "right", display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-                    {job.status === "COMPLETED" && <a href={`/api/translate/${job.id}/download`} className="btn btn-outline btn-xs"><i className="fas fa-download"></i></a>}
+                  <td style={{  textAlign: "right" }}>
+                    {job.status === "COMPLETED" && <a href={`/api/translate/${job.id}/download`} className="btn btn-outline btn-xs" style={{ marginRight: "5px" }}><i className="fas fa-download"></i></a>}
                     <EllipsisDropdown>
                       <Link href={`/translate/${job.id}`} className="dropdown-item">
                         <i className="fas fa-eye"></i> View

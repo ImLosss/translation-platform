@@ -95,7 +95,7 @@ export default async function TableData() {
                   <td>{job.sourceLanguage}</td>
                   <td>{job.targetLanguage}</td>
                   <td>{new Date(job.createdAt).toLocaleString()}</td>
-                  <td style={{  textAlign: "right", display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                  <td style={{  textAlign: "right" }}>
                     <EllipsisDropdown>
                       <Link href={`/glosary/${job.id}`} className="dropdown-item">
                         <i className="fas fa-eye"></i> View

@@ -1,6 +1,6 @@
 /* Highlight untuk blok subtitle yang sedang diputar */
 .subtitle-line {
-  transition: all 0.2s ease; /* Transisi halus agar tidak kaku */
+  transition: all 0.1s ease; /* Transisi halus agar tidak kaku */
 }
 
 .subtitle-line.active-line {

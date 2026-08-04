@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 
-export type AlertType = "success" | "error" | "warning";
+export type AlertType = "success" | "error" | "warning" | "info";
 
 export interface AlertItem {
   id: number;
@@ -92,12 +92,14 @@ function Alert({
     success: "fa-check-circle",
     error: "fa-times-circle",
     warning: "fa-exclamation-circle",
+    info: "fa-info-circle",
   };
 
   const colors = {
     success: "var(--green)",
     error: "var(--red)",
     warning: "var(--yellow)",
+    info: "var(--blue)",
   };
 
   return (
