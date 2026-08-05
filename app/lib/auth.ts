@@ -1,12 +1,5 @@
+import { CurrentUser } from "../components/client/UserProvider";
 import { api } from "./api";
-
-export interface CurrentUser {
-  id: number;
-  username: string;
-  email: string;
-  avatar: string | null;
-  role: "ADMIN" | "USER";
-}
 
 export async function getCurrentUser() {
   try {
