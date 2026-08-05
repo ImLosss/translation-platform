@@ -18,6 +18,7 @@ export class TranslateController {
     constructor(private readonly translateService: TranslateService) {}
 
     @Post()
+    @Roles(Role.ADMIN)
     @LogActivity('Create Translation Request')
     async translateText(@Body() translateDto: TranslateDto, @Req() req: any) {
         const userId = req.user.sub;
