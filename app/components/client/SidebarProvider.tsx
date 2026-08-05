@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useAlert } from '../ui/Alert';
 import { logoutAction } from '@/app/actions/logout';
 import { usePathname, useRouter } from 'next/navigation';
+import { CurrentUser } from './UserProvider';
 
 // Definisikan tipe untuk context
 interface SidebarContextType {
@@ -27,7 +28,7 @@ const SidebarContext = createContext<SidebarContextType>({
 
 export const useSidebar = () => useContext(SidebarContext);
 
-export default function SidebarProvider({ children, user }: { children: ReactNode; user: any }) {
+export default function SidebarProvider({ children, user }: { children: ReactNode; user: CurrentUser }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const { showAlert } = useAlert();
