@@ -86,7 +86,7 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
             <i className="fas fa-language"></i>
           </div>
           <div>
-            <h1>TransLingo</h1>
+            <h1>Subnova</h1>
             <span>Translation Platform</span>
           </div>
         </div>

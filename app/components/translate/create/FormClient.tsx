@@ -5,6 +5,7 @@ import { useAlert } from '../../ui/Alert';
 import { createAction } from '@/app/actions/translate/createAction';
 import { redirect } from 'next/navigation';
 import SelectSearch from '../../client/SelectSearch';
+import { createFromUrlAction } from '@/app/actions/translate/createFromUrlAction';
 
 interface AiModelOption {
   value: string;
@@ -116,17 +117,6 @@ export default function FormClient({ glosaries }: { glosaries: any[] }) {
       return;
     }
 
-    // Validasi berdasarkan Metode Input
-    if (inputMethod === 'file' && !srtContent) {
-      showAlert('Harap unggah file SRT atau tempel kontennya.', 'error');
-      return;
-    }
-
-    if (inputMethod === 'video' && !videoUrl) {
-      showAlert('Harap masukkan URL Video Public Drive.', 'error');
-      return;
-    }
-
     // Susun Payload
     const payload: any = {
       fileName,
@@ -138,14 +128,11 @@ export default function FormClient({ glosaries }: { glosaries: any[] }) {
       videoSource: videoUrl || undefined, // Selalu kirim jika ada isinya
     };
 
+    let result;
     if (inputMethod === 'file') {
       payload.srtContent = srtContent;
-    } else {
-      // Jika via extract video, SRT dikosongkan karena akan di-generate backend
-      payload.srtContent = ''; 
-    }
-
-    const result = await createAction(payload);
+      result = await createAction(payload);
+    } else result = await createFromUrlAction(payload);
 
     if (!result.success) {
       showAlert(result.message || 'Gagal membuat job.', 'error');

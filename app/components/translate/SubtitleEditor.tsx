@@ -255,6 +255,8 @@ export default function SubtitleEditor({
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent | TouchEvent) => {
             if (dragging) {
+                if (e.cancelable) e.preventDefault();
+
                 const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
                 const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
                 setVideoPos({
@@ -262,6 +264,8 @@ export default function SubtitleEditor({
                     y: dragStart.current.startY + (clientY - dragStart.current.y),
                 });
             } else if (resizing) {
+                if (e.cancelable) e.preventDefault();
+
                 const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
                 let newWidth = resizeStart.current.startWidth + (clientX - resizeStart.current.x);
                 if (newWidth < 250) newWidth = 250;
@@ -341,44 +345,82 @@ export default function SubtitleEditor({
 
             <div id="subtitleContainer">
                 {lines.map((line, index) => (
-                    <div className={`subtitle-line ${activeLineIndex === index ? 'active-line' : ''}`} key={line.id}>
-                        <div className="sub-field">
-                            <label>Start</label>
+                    <div 
+                        className={`subtitle-line ${activeLineIndex === index ? 'active-line' : ''}`} 
+                        key={line.id}
+                        // 1. Tambahkan relative dan padding bawah agar teks tidak tertimpa tombol
+                        style={{ position: 'relative', paddingBottom: '36px' }} 
+                        // onClick={() => seekToTimestamp(line.start)}
+                    >
+                        
+                        {/* KOLOM WAKTU (START & END DITUMPUK) */}
+                        <div className="sub-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <input 
                                 type="text" 
                                 className="sub-start" 
+                                title="Start Time"
                                 value={line.start} 
                                 onChange={(e) => handleTimeChange(e, index, 'start')} 
                                 onBlur={() => handleTimeBlur(index, 'start')}
+                                style={{ textAlign: 'center' }}
                             />
-                        </div>
-                        <div className="sub-field">
-                            <label>End</label>
                             <input 
                                 type="text" 
                                 className="sub-end" 
+                                title="End Time"
                                 value={line.end} 
                                 onChange={(e) => handleTimeChange(e, index, 'end')} 
                                 onBlur={() => handleTimeBlur(index, 'end')}
+                                style={{ textAlign: 'center' }}
                             />
                         </div>
-                        <div className="sub-field">
-                            <label>Source (read-only)</label>
-                            <textarea ref={resizeTextarea} readOnly className="sub-source" rows={1} value={line.source} onChange={(e) => handleUpdateLine(index, 'source', e.target.value)} />
+
+                        {/* KOLOM SOURCE */}
+                        <div className="sub-field" style={{ flex: 1, borderBottom: '1px solid var(--border-color)' }}>
+                            <label>Source</label>
+                            <textarea 
+                                ref={resizeTextarea} 
+                                readOnly 
+                                className="sub-source" 
+                                rows={1} 
+                                value={line.source} 
+                                onChange={(e) => handleUpdateLine(index, 'source', e.target.value)} 
+                            />
                         </div>
-                        <div className="sub-field">
+
+                        {/* KOLOM TRANSLATION */}
+                        <div className="sub-field" style={{ flex: 1, borderBottom: '1px solid var(--border-color)' }}>
                             <label>Translation</label>
-                            <textarea ref={resizeTextarea} className="sub-translated" rows={1} value={line.translated} onChange={(e) => handleUpdateLine(index, 'translated', e.target.value)} />
+                            <textarea 
+                                ref={resizeTextarea} 
+                                className="sub-translated" 
+                                rows={1} 
+                                value={line.translated} 
+                                onChange={(e) => handleUpdateLine(index, 'translated', e.target.value)} 
+                            />
                         </div>
+
+                        {/* KOLOM AKSI (KELUAR DARI GRID, MENGAMBANG DI KANAN BAWAH) */}
                         <div className="sub-actions">
                             {driveId && (
-                                <button className="btn-play-line" title={showPreview ? "Seek video to this timestamp" : "Buka Preview terlebih dahulu"} onClick={() => seekToTimestamp(line.start)} disabled={!showPreview} style={{ opacity: showPreview ? 1 : 0.5, cursor: showPreview ? 'pointer' : 'not-allowed' }}>
+                                <button 
+                                    className="btn-play-line" 
+                                    title={showPreview ? "Seek video to this timestamp" : "Buka Preview terlebih dahulu"} 
+                                    onClick={() => seekToTimestamp(line.start)} 
+                                    disabled={!showPreview} 
+                                    style={{ opacity: showPreview ? 1 : 0.5, cursor: showPreview ? 'pointer' : 'not-allowed' }}
+                                >
                                     <i className="fas fa-play" />
                                 </button>
                             )}
-                            <button className="btn-add-line" onClick={() => handleAddLine(index)}><i className="fas fa-plus-circle" /></button>
-                            <button className="btn-del-line" onClick={() => handleDeleteLine(index)}><i className="fas fa-trash-alt" /></button>
+                            <button className="btn-add-line" title="Add Line" onClick={() => handleAddLine(index)}>
+                                <i className="fas fa-plus-circle" />
+                            </button>
+                            <button className="btn-del-line" title="Delete Line" onClick={() => handleDeleteLine(index)}>
+                                <i className="fas fa-trash-alt" />
+                            </button>
                         </div>
+
                     </div>
                 ))}
             </div>
@@ -406,6 +448,7 @@ export default function SubtitleEditor({
                         boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
                         display: 'flex',
                         flexDirection: 'column',
+                        touchAction: 'none',
                     }}
                 >
                     <div 

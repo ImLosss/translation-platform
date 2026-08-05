@@ -24,7 +24,7 @@ function AuthContent() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      showAlert('Welcome to TransLingo! Please log in.', 'success');
+      showAlert('Welcome to Subnova! Please log in.', 'success');
     }, 300);
     return () => clearTimeout(timer);
   }, []);
@@ -115,7 +115,7 @@ function AuthContent() {
         {/* Brand */}
         <div className="auth-brand">
           <div className="logo-icon"><i className="fas fa-language"></i></div>
-          <h1>TransLingo</h1>
+          <h1>Subnova</h1>
           <p>Translation Platform &middot; LLM Powered</p>
         </div>
 
