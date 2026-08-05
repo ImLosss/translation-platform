@@ -47,7 +47,7 @@ export async function signupAction(formData: FormData) {
     return { success: false, message: 'Pastikan semua data valid (Password min 8 karakter).' };
   }
 
-  const data = await api('/auth/signup', {
+  const data = await api<any>('/auth/signup', {
     method: 'POST',
     body: JSON.stringify({ username: name, email, password }),
   }).catch((error) => { return { success: false, message: error.message }; });
@@ -74,7 +74,7 @@ export async function signupAction(formData: FormData) {
 // ==========================================
 export async function googleLoginAction(accessToken: string) {
   try {
-    const data = await api("/auth/google", {
+    const data = await api<any>("/auth/google", {
       method: "POST",
       body: JSON.stringify({
         accessToken,
