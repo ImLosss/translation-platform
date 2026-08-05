@@ -58,6 +58,8 @@ const runTranscribeProcess = (taskId, inputFile) => {
             status: 'processing',
             input: inputFile,
             progress: 0,
+            language: null,
+            probability: null,
             details: {}
         });
 
