@@ -1,5 +1,5 @@
 // src/translate/translate.service.ts
-import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger, NotImplementedException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { TranslationProcessEvent } from './events/translate.event';
@@ -177,7 +177,7 @@ export class TranslateService {
     const audioPath = await this.extractAudioAndDeleteVideo(videoData.path);
 
     this.logger.log(`Audio extracted to: ${audioPath}`);
-    return { success: false, message: 'Fitur ini belum diimplementasikan.' };
+    throw new NotImplementedException('Fitur ini belum diimplementasikan.');
   }
 
   async checkTranslationStatus(translationId: number, userId: number) {
