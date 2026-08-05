@@ -6,6 +6,11 @@ import { TranslationProcessEvent } from './events/translate.event';
 import SrtParser from 'srt-parser-2';
 import { TranslateDto } from './dto/translate.dto';
 import { UpdateTranslationDto } from './dto/update-subtitle-row.dto';
+import { TranslateFromDriveDto } from './dto/translate-from-drive.dto';
+import { DriveService } from 'src/drive/drive.service';
+import ffmpeg = require('fluent-ffmpeg');
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 export interface SrtBlock {
   line: number;
@@ -20,8 +25,12 @@ export class TranslateService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private eventEmitter: EventEmitter2, // Injeksi Event Emitter
-  ) { }
+    private eventEmitter: EventEmitter2,
+    private readonly driveService: DriveService,
+  ) {
+    ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
+    ffmpeg.setFfprobePath('/usr/bin/ffprobe');
+  }
 
   async processTranslationInBackground(dto: TranslateDto, userId: number) {
     // 1. Catat ke database dengan status 'PENDING'
@@ -163,6 +172,14 @@ export class TranslateService {
     };
   }
 
+  async processTranslationFromDriveInBackground(dto: TranslateFromDriveDto, userId: number) {
+    const videoData = await this.driveService.downloadVideoPublic(dto.videoSource);
+    const audioPath = await this.extractAudioAndDeleteVideo(videoData.path);
+
+    this.logger.log(`Audio extracted to: ${audioPath}`);
+    return { success: false, message: 'Fitur ini belum diimplementasikan.' };
+  }
+
   async checkTranslationStatus(translationId: number, userId: number) {
     const translation = await this.prisma.translation.findUnique({
       where: { id: translationId, userId: userId },
@@ -209,5 +226,44 @@ export class TranslateService {
       orderBy: { createdAt: 'desc' }
     });
     return translations;
+  }
+
+  private async extractAudioAndDeleteVideo(videoPath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      // Tentukan path audio (ganti ekstensi video menjadi .mp3)
+      const audioPath = videoPath.replace(path.extname(videoPath), '.mp3');
+
+      ffmpeg(videoPath)
+        .noVideo() // Abaikan stream video, ambil audionya saja
+        .audioCodec('libmp3lame') // Format MP3
+        .audioChannels(1) // (Opsional) 1 channel (mono) sudah cukup untuk Speech-to-Text dan ukuran file lebih kecil
+        .audioFrequency(16000) // (Opsional) 16kHz adalah standar optimal untuk AI seperti Whisper
+        .on('start', () => {
+          this.logger.log('Memulai proses ekstraksi audio...');
+        })
+        .on('end', async () => {
+          this.logger.log('Ekstraksi audio selesai!');
+          try {
+            // Hapus file video asli setelah audio berhasil dibuat
+            await fs.unlink(videoPath);
+            this.logger.log(`Video asli berhasil dihapus: ${videoPath}`);
+            resolve(audioPath); // Kembalikan lokasi file audio
+          } catch (err) {
+            this.logger.error(`Gagal menghapus video asli: ${err.message}`);
+            resolve(audioPath); // Tetap kembalikan path audio meski video gagal dihapus
+          }
+        })
+        .on('error', async (err) => {
+          this.logger.error(`Error saat mengekstrak audio: ${err.message}`);
+          
+          // Jika gagal ekstrak, usahakan tetap hapus videonya agar tidak menjadi sampah
+          try {
+             await fs.unlink(videoPath);
+          } catch(e) {}
+
+          reject(err);
+        })
+        .save(audioPath); // Simpan ke audioPath
+    });
   }
 }

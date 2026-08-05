@@ -6,10 +6,14 @@ import { TranslateDto } from './dto/translate.dto';
 import { UpdateTranslationDto } from './dto/update-subtitle-row.dto';
 import { ActivityLogInterceptor } from 'src/activity-log/activity-log.interceptor';
 import { LogActivity } from 'src/activity-log/log-activity.decorator';
+import { TranslateFromDriveDto } from './dto/translate-from-drive.dto';
+import { RolesGuard } from 'src/auth/role.guard';
+import { Role } from 'generated/prisma/enums';
+import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('translate')
 @UseInterceptors(ActivityLogInterceptor)
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class TranslateController {
     constructor(private readonly translateService: TranslateService) {}
 
@@ -18,6 +22,14 @@ export class TranslateController {
     async translateText(@Body() translateDto: TranslateDto, @Req() req: any) {
         const userId = req.user.sub;
         return this.translateService.processTranslationInBackground(translateDto, userId); 
+    }
+
+    @Post('drive')
+    @LogActivity('Create Translation Request from Drive')
+    @Roles(Role.ADMIN)
+    async translateFromDrive(@Body() translateFromDriveDto: TranslateFromDriveDto, @Req() req: any) {
+        const userId = req.user.sub;
+        return this.translateService.processTranslationFromDriveInBackground(translateFromDriveDto, userId); 
     }
 
     @Get()

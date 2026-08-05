@@ -17,13 +17,9 @@ export interface SrtBlock {
 
 @ValidatorConstraint({ name: 'isSrtFormat', async: false })
 export class IsSrtConstraint implements ValidatorConstraintInterface {
-  private customErrorMessage = 'Format SRT tidak valid';
+  private customErrorMessage = 'srt content is not valid.';
 
   validate(content: string, args: ValidationArguments) {
-    if (typeof content !== 'string' || content.trim() === '') {
-      this.customErrorMessage = 'srtContent tidak boleh kosong dan harus berupa teks.';
-      return false;
-    }
 
     try {
       // Kita jalankan fungsi parse Anda untuk menguji formatnya

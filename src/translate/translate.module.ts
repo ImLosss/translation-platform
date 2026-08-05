@@ -5,9 +5,10 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { TranslateListener } from './translate.listener';
 import { LlmModule } from '../llm/llm.module';
 import { ActivityLogModule } from 'src/activity-log/activity-log.module';
+import { DriveModule } from 'src/drive/drive.module';
 
 @Module({
-  imports: [PrismaModule, LlmModule, ActivityLogModule],
+  imports: [PrismaModule, LlmModule, ActivityLogModule, DriveModule],
   controllers: [TranslateController],
   providers: [TranslateService, TranslateListener]
 })
