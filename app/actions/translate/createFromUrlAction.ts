@@ -6,7 +6,7 @@ export async function createFromUrlAction(payload: any) {
 
   console.log("Payload to be sent:", payload);
 
-  const response = await api("/translate/drive", {
+  const response = await api<any>("/translate/drive", {
     method: "POST",
     body: JSON.stringify(payload),
   }).catch((error) => { return { success: false, message: error.message }; });

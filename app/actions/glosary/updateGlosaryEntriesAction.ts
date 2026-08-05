@@ -6,7 +6,7 @@ import { GlosaryEntry } from "@/app/components/glosary/GlosaryEditor"; // Sesuai
 export async function updateGlosaryEntriesAction(glosaryId: number, entries: GlosaryEntry[]) {
   try {
     // Sesuaikan endpoint sesuai dengan yang kamu daftarkan di NestJS Controller
-    await api(`/glosary/${glosaryId}/entries`, {
+    await api<any>(`/glosary/${glosaryId}/entries`, {
       method: "PUT",
       body: JSON.stringify({ entries }),
     });

@@ -7,7 +7,7 @@ export async function updateRowAction(
   lines: any[],
 ) {
   try {
-    return await api(`/translate/${translationId}`, {
+    return await api<any>(`/translate/${translationId}`, {
       method: "PATCH",
       body: JSON.stringify({
         lines,

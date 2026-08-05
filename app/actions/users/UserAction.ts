@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 export async function deleteUser(userId: number) {
     try {
         // Karena ini berjalan di server, kita bebas memanggil api() yang punya next/headers
-        await api(`/user/${userId}`, { method: 'DELETE' });
+        await api<any>(`/user/${userId}`, { method: 'DELETE' });
 
         // Refresh cache halaman users agar data yang dihapus langsung hilang
         revalidatePath('/users');
@@ -22,7 +22,7 @@ export async function deleteUser(userId: number) {
 
 export async function updateUser(userId: number, data: { username: string; role: string; balance: number }) {
     try {
-        await api(`/user/${userId}`, {
+        await api<any>(`/user/${userId}`, {
             method: 'PATCH',
             body: JSON.stringify(data),
         });

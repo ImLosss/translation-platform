@@ -4,7 +4,7 @@ import { api } from "@/app/lib/api";
 
 export async function createGlosaryAction(payload: any) {
   try {
-    await api("/glosary", {
+    await api<any>("/glosary", {
       method: "POST",
       body: JSON.stringify(payload),
     });
