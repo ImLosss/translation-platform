@@ -78,22 +78,19 @@ const runTranscribeProcess = (taskId, inputFile) => {
                         
                         if (parsedData.type === 'language') {
                             taskData.language = parsedData.language; 
-                            Object.assign(taskData.details, parsedData);
-                        } 
-                        else if (parsedData.type === 'progress') {
+                            taskData.probability = parsedData.probability;
+                            taskData.details = parsedData;
+                        } else if (parsedData.type === 'progress') {
                             taskData.progress = parsedData.progress;
-                            Object.assign(taskData.details, parsedData);
-                        } 
-                        else if (parsedData.type === 'error') {
+                            taskData.details = parsedData;
+                        } else if (parsedData.type === 'error') {
                             taskData.status = 'error';
                             taskData.error = parsedData.message;
-                        } 
-                        else if (parsedData.type === 'done') {
+                        } else if (parsedData.type === 'done') {
                             taskData.status = 'completed';
                             taskData.progress = 100;
-                            Object.assign(taskData.details, parsedData);
-                        } 
-                        else {
+                            taskData.details = parsedData; // srt_content ada di dalam sini
+                        } else {
                             Object.assign(taskData.details, parsedData);
                         }
                         
