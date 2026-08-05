@@ -14,7 +14,7 @@ export async function loginAction(formData: FormData) {
     return { success: false, message: 'Email dan password wajib diisi.' };
   }
 
-  const data = await api('/auth/login', {
+  const data = await api<any>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   }).catch((error) => { return { success: false, message: error.message }; });
