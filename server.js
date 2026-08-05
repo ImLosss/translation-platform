@@ -61,12 +61,11 @@ const runTranscribeProcess = (taskId, inputFile, outputFile) => {
             id: taskId,
             status: 'processing',
             input: inputFile,
-            output: outputFile,
             progress: 0,
             details: {}
         });
 
-        const pythonProcess = spawn('python3', ['whisper.py', inputFile, outputFile]);
+        const pythonProcess = spawn('python3', ['whisper.py', inputFile]);
         let stdoutBuffer = '';
 
         // Menangani output dari Python (JSON baris demi baris)
@@ -131,32 +130,27 @@ const runTranscribeProcess = (taskId, inputFile, outputFile) => {
  * 1. Endpoint untuk submit tugas audio2srt
  */
 app.post('/api/transcribe', upload.single('media_file'), (req, res) => {
-    // req.file berisi informasi file yang baru saja diunggah
     if (!req.file) {
         return res.status(400).json({ error: 'File media_file wajib diunggah!' });
     }
 
     const taskId = uuidv4();
-    const input_file = req.file.path; // Path file yang tersimpan di folder uploads/
-    
-    // Jika output_file dikirim via text form, gunakan itu. Jika tidak, buat otomatis.
-    const output_file = req.body.output_file || `uploads/${taskId}.srt`; 
+    const input_file = req.file.path; 
 
     tasks.set(taskId, {
         id: taskId,
         status: 'queued',
         input: input_file,
-        output: output_file,
         progress: 0,
         details: {}
     });
 
-    queue.add(() => runTranscribeProcess(taskId, input_file, output_file));
+    // Panggil antrian tanpa parameter output_file
+    queue.add(() => runTranscribeProcess(taskId, input_file));
 
     res.status(202).json({
         message: 'File successfully uploaded and task added to queue',
-        taskId: taskId,
-        saved_as: input_file
+        taskId: taskId
     });
 });
 

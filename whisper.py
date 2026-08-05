@@ -44,26 +44,25 @@ def format_srt_time(seconds):
 
 try:
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         emit({
             "type": "error",
-            "message": "Usage: python transcribe.py input output.srt"
+            "message": "Usage: python whisper.py input_file.mp4"
         })
         sys.exit(1)
 
     input_file = sys.argv[1]
-    output_file = sys.argv[2]
 
     duration = get_duration(input_file)
 
     emit({
         "type": "start",
         "input": input_file,
-        "output": output_file,
         "duration": duration,
         "model": "turbo"
     })
 
+    # Inisialisasi model
     model = WhisperModel(
         "turbo",
         device="cpu",
@@ -86,45 +85,41 @@ try:
     })
 
     count = 1
+    srt_content = "" # Variabel penampung hasil teks SRT
 
-    with open(output_file, "w", encoding="utf8") as f:
+    for segment in segments:
+        
+        # Masukkan format teks SRT ke dalam variabel string
+        srt_content += f"{count}\n"
+        srt_content += f"{format_srt_time(segment.start)} --> {format_srt_time(segment.end)}\n"
+        srt_content += f"{segment.text.strip()}\n\n"
 
-        for segment in segments:
+        progress = min(segment.end / duration * 100, 100)
+        elapsed = time.time() - started
+        eta = 0
 
-            f.write(f"{count}\n")
-            f.write(
-                f"{format_srt_time(segment.start)} --> {format_srt_time(segment.end)}\n"
-            )
-            f.write(segment.text.strip())
-            f.write("\n\n")
+        if progress > 0:
+            eta = elapsed * (100 - progress) / progress
 
-            progress = min(segment.end / duration * 100, 100)
+        emit({
+            "type": "progress",
+            "progress": round(progress, 2),
+            "elapsed": round(elapsed, 2),
+            "eta": round(eta, 2),
+            "segment": count,
+            "start": round(segment.start, 3),
+            "end": round(segment.end, 3),
+            "text": segment.text.strip()
+        })
 
-            elapsed = time.time() - started
+        count += 1
 
-            eta = 0
-
-            if progress > 0:
-                eta = elapsed * (100 - progress) / progress
-
-            emit({
-                "type": "progress",
-                "progress": round(progress, 2),
-                "elapsed": round(elapsed, 2),
-                "eta": round(eta, 2),
-                "segment": count,
-                "start": round(segment.start, 3),
-                "end": round(segment.end, 3),
-                "text": segment.text.strip()
-            })
-
-            count += 1
-
+    # Mengirimkan srt_content ketika proses selesai
     emit({
         "type": "done",
         "elapsed": round(time.time() - started, 2),
-        "output": output_file,
-        "segments": count - 1
+        "segments": count - 1,
+        "srt_content": srt_content
     })
 
 except KeyboardInterrupt:
