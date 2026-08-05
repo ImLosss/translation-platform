@@ -29,7 +29,7 @@ const upload = multer({ storage: storage });
 // Konfigurasi P-Queue dengan concurrency: 1
 const queue = new PQueue({ concurrency: 1 });
 const tasks = new Map();
-const PRIVATE_TOKEN = 'rahasia_super_aman_123';
+const PRIVATE_TOKEN = 'IAJDHIAUWDHIAi9fi9shfjiasHNSADIASHID9284039hjios89u9iwr9ui4u890jdifgjmjiopj98';
 
 // Middleware untuk memvalidasi Bearer Token
 const requireBearerToken = (req, res, next) => {
