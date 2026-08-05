@@ -20,7 +20,7 @@ const stats: StatCardProps[] = [
 ];
 
 export default async function StatsGrid() {
-  const data = await api("/user/profile-stats");
+  const data = await api<any>("/user/profile-stats");
 
   console.log(data);
   return (
