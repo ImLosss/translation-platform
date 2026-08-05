@@ -4,10 +4,12 @@ import { getCurrentUser } from "../lib/auth";
 import { UserProvider } from "../components/client/UserProvider";
 import Header from "../components/layout/Header";
 import "./panel.css";
+import { Role } from '../../../tl-api/dist/generated/prisma/enums';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
   return (
     <UserProvider user={user}>
       <SidebarProvider user={user}>
