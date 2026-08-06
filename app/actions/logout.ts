@@ -1,9 +1,6 @@
 "use server";
-
-import { cookies } from "next/headers";
+import { clearAuthCookie } from "../lib/auth";
 
 export async function logoutAction() {
-  const cookieStore = await cookies();
-
-  cookieStore.delete("auth_token");
+  await clearAuthCookie();
 }
