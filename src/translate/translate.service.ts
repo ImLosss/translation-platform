@@ -95,7 +95,8 @@ export class TranslateService {
         userId: userId,
         batchSize: dto.batchSize || 50,
         glossaryId: dto.glossaryId || null,
-        videoSource: dto.videoSource
+        videoSource: dto.videoSource,
+        status: 'TRANSCRIBING'
       },
       include: {
         provider: true,

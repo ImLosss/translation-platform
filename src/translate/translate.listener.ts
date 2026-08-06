@@ -191,7 +191,7 @@ export class TranslateListener {
       formData.append('media_file', fs.createReadStream(audioPath));
 
       // Gunakan URL server Node.js Whisper Anda (misal: localhost:2055)
-      const WHISPER_API_URL = process.env.WHISPER_API_URL || 'http://localhost:2055';
+      const WHISPER_API_URL = process.env.WHISPER_API_URL;
       const WEBHOOK_TOKEN = 'sbwhook-lwatbodiymchocuj2fdbt1qs'; // Sesuaikan dengan token Anda
 
       // 3. Masukkan ke antrean API Whisper
@@ -204,6 +204,11 @@ export class TranslateListener {
 
       const taskId = uploadRes.data.taskId;
       this.logger.log(`Berhasil masuk antrean Whisper. Task ID: ${taskId}`);
+
+      await this.prisma.translation.update({
+        where: { id: payload.translation.id },
+        data: { whisperId: taskId },
+      });
 
       // 4. Polling untuk mengecek status (misal: cek setiap 5 detik)
       let srtContent = null;
