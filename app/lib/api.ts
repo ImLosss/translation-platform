@@ -31,7 +31,7 @@ export async function api<T>(
     cache: "no-store",
   });
 
-  if (response.status === 401) redirect("/login");
+  if (response.status === 401) redirect("/logout");
 
   const data = await response.json();
 
