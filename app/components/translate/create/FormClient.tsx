@@ -6,19 +6,8 @@ import { createAction } from '@/app/actions/translate/createAction';
 import { redirect } from 'next/navigation';
 import SelectSearch from '../../client/SelectSearch';
 import { createFromUrlAction } from '@/app/actions/translate/createFromUrlAction';
+import { AiModelOption } from '@/app/(panel)/translate/create/page';
 
-interface AiModelOption {
-  value: string;
-  label: string;
-}
-
-const modelOptions: AiModelOption[] = [
-  { value: 'deepseek', label: 'Deepseek' },
-  { value: 'GPT-4 Turbo', label: 'GPT-4 Turbo' },
-  { value: 'Claude 3.5 Sonnet', label: 'Claude 3.5 Sonnet' },
-  { value: 'Gemini Pro', label: 'Gemini Pro' },
-  { value: 'LLaMA 3', label: 'LLaMA 3' },
-];
 
 const languageOptions = [
   { value: 'en', label: 'English' },
@@ -31,11 +20,11 @@ const languageOptions = [
   { value: 'ar', label: 'Arabic' },
 ];
 
-export default function FormClient({ glosaries }: { glosaries: any[] }) {
+export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; aiModels: AiModelOption[] }) {
   const { showAlert } = useAlert();
 
   const [fileName, setFileName] = useState('');
-  const [model, setModel] = useState<string>('Claude 3.5 Sonnet');
+  const [model, setModel] = useState<string>('');
   const [sourceLang, setSourceLang] = useState<string>('en');
   const [targetLang, setTargetLang] = useState<string>('id');
   const [batchSize, setBatchSize] = useState<number>(25);
@@ -120,7 +109,7 @@ export default function FormClient({ glosaries }: { glosaries: any[] }) {
     // Susun Payload
     const payload: any = {
       fileName,
-      model,
+      providerId: model,
       sourceLang,
       targetLang,
       batchSize: batchSize || undefined,
@@ -158,7 +147,7 @@ export default function FormClient({ glosaries }: { glosaries: any[] }) {
               setSrtContent('');
               setVideoUrl('');
               setUploadedFile(null);
-              setModel('Claude 3.5 Sonnet');
+              setModel('');
               setSourceLang('en');
               setTargetLang('id');
               setBatchSize(25);
@@ -212,7 +201,7 @@ export default function FormClient({ glosaries }: { glosaries: any[] }) {
             <label htmlFor="model">LLM Model</label>
             <SelectSearch
               id="model"
-              options={modelOptions}
+              options={aiModels}
               value={model}
               onChange={setModel}
               placeholder="Select LLM Model"

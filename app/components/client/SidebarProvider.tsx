@@ -107,10 +107,20 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
           <div className="nav-label" style={{ marginTop: 12 }}>
             Management
           </div>
+          <Link href="/billing" className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
+            <i className="fas fa-credit-card"></i> Billing
+            <span className="badge">Pro</span>
+          </Link>
+          <Link href="/profile" className={isActive('/profile') ? 'active' : ''} onClick={closeSidebar}>
+            <i className="fas fa-user"></i> Profile
+          </Link>
           {user?.role === 'ADMIN' && (
             <>
               <Link href="/users" className={isActive('/users') ? 'active' : ''} onClick={closeSidebar}>
                 <i className="fas fa-users"></i> Users
+              </Link>
+              <Link href="/providers" className={isActive('/providers') ? 'active' : ''} onClick={closeSidebar}>
+                <i className="fas fa-server"></i> Provider
               </Link>
               <Link href="/logs" className={isActive('/logs') ? 'active' : ''} onClick={closeSidebar}>
                 <i className="fas fa-history"></i> Logs
@@ -120,13 +130,6 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
               </Link>
             </>
           )}
-          <Link href="/billing" className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-credit-card"></i> Billing
-            <span className="badge">Pro</span>
-          </Link>
-          <Link href="/profile" className={isActive('/profile') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-user"></i> Profile
-          </Link>
         </nav>
 
         <div className="sidebar-footer">

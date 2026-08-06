@@ -7,7 +7,7 @@ import LogFilters from './LogFilters';
 // ==============================
 interface UserInfo {
   id: number;
-  name: string | null;
+  username: string | null;
   email: string;
 }
 
@@ -137,7 +137,7 @@ export default async function ActivityLogsPage({
                         <td style={{ padding: '12px 8px' }}>
                           {log.user ? (
                             <div>
-                              <strong>{log.user.name || 'User'}</strong>
+                              <strong>{log.user.username || 'User'}</strong>
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                 {log.user.email}
                               </div>

@@ -18,3 +18,11 @@
   color: #fff;
   font-size: 12px;
 }
+
+video::cue {
+  white-space: pre-wrap; /* Mempertahankan spasi/enter namun tetap melakukan wrap */
+  word-wrap: break-word; /* Memaksa kata yang terlalu panjang untuk dipotong ke bawah */
+  word-break: break-word;
+  background-color: rgba(0, 0, 0, 0.7); /* Opsional: Membuat background lebih mudah dibaca */
+  text-align: center;
+}
