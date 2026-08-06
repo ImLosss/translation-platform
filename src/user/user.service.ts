@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -110,7 +110,7 @@ export class UserService {
     });
 
     if (!user) {
-      throw new NotFoundException('User tidak ditemukan');
+      throw new UnauthorizedException();
     }
 
     // 2. (Opsional tapi sering dibutuhkan) Mengambil agregat jumlah token atau biaya 
