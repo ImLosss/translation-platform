@@ -1,12 +1,14 @@
-import { redirect } from "next/dist/client/components/redirect";
 import SidebarProvider from "../components/client/SidebarProvider";
 import { getCurrentUser } from "../lib/auth";
 import { UserProvider } from "../components/client/UserProvider";
 import Header from "../components/layout/Header";
 import "./panel.css";
+import { redirect } from "next/navigation";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  console.log("AdminLayout rendered");
   const user = await getCurrentUser();
+  console.log("Current User:", user);
   if (!user) redirect("/login");
 
   return (
