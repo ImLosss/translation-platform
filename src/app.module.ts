@@ -9,6 +9,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UserModule } from './user/user.module';
 import { DriveModule } from './drive/drive.module';
+import { ProviderModule } from './provider/provider.module';
+import { CurrencyModule } from './currency/currency.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { DriveModule } from './drive/drive.module';
     PrismaModule,
     UserModule,
     DriveModule,
+    ProviderModule,
+    CurrencyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

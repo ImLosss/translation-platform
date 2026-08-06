@@ -1,5 +1,5 @@
 // src/translate/translate.service.ts
-import { Injectable, BadRequestException, NotFoundException, Logger, NotImplementedException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger, NotImplementedException, ConflictException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { TranslationProcessEvent } from './events/translate.event';
@@ -7,7 +7,6 @@ import SrtParser from 'srt-parser-2';
 import { TranslateDto } from './dto/translate.dto';
 import { UpdateTranslationDto } from './dto/update-subtitle-row.dto';
 import { TranslateFromDriveDto } from './dto/translate-from-drive.dto';
-import { DriveService } from 'src/drive/drive.service';
 
 export interface SrtBlock {
   line: number;
@@ -23,20 +22,35 @@ export class TranslateService {
   constructor(
     private readonly prisma: PrismaService,
     private eventEmitter: EventEmitter2,
-    private readonly driveService: DriveService,
   ) { }
 
   async processTranslationInBackground(dto: TranslateDto, userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    if(user.balance < 2000) {
+      throw new ConflictException('Required balance is at least 2000. Please top up your balance.');
+    }
+
     // 1. Catat ke database dengan status 'PENDING'
     const translationRecord = await this.prisma.translation.create({
       data: {
         fileName: dto.fileName || 'Untitled',
         sourceLang: dto.sourceLang,
         targetLang: dto.targetLang,
+        providerId: dto.providerId,
         userId: userId,
         batchSize: dto.batchSize || 50,
         glossaryId: dto.glossaryId || null,
         // status: 'PENDING' -> Pastikan kolom ini ditambahkan di schema Prisma
+      },
+      include: {
+        provider: true,
       },
     });
 
@@ -59,14 +73,13 @@ export class TranslateService {
     // 2. Siapkan payload event
     const translationEvent = new TranslationProcessEvent();
     translationEvent.translation = translationRecord;
-    translationEvent.model = dto.model;
 
     // 3. Pancarkan (emit) event. Proses ini tidak ditunggu (non-blocking).
     this.eventEmitter.emit('translation.process', translationEvent);
 
     // 4. Langsung berikan respons ke user
     return {
-      status: 'success',
+      success: true,
       message: 'Translation started in background.',
       translationId: translationRecord.id,
     };
@@ -78,20 +91,23 @@ export class TranslateService {
         fileName: dto.fileName || 'Untitled',
         sourceLang: dto.sourceLang,
         targetLang: dto.targetLang,
+        providerId: dto.providerId,
         userId: userId,
         batchSize: dto.batchSize || 50,
         glossaryId: dto.glossaryId || null,
         videoSource: dto.videoSource
       },
+      include: {
+        provider: true,
+      },
     });
 
     const translationEvent = new TranslationProcessEvent();
     translationEvent.translation = translationRecord;
-    translationEvent.model = dto.model;
     this.eventEmitter.emit('translation.drive.process', translationEvent);
     
     return {
-      status: 'success',
+      success: true,
       message: 'Translation started in background.',
       translationId: translationRecord.id
     }
@@ -129,7 +145,7 @@ export class TranslateService {
     });
 
     if (!translation) {
-      throw new NotFoundException('Translation tidak ditemukan.');
+      throw new NotFoundException('Translation not found.');
     }
 
     const oldRows = translation.rows;

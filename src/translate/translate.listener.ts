@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { TranslationProcessEvent } from './events/translate.event';
 import { LlmService } from '../llm/llm.service';
 import { DriveService } from 'src/drive/drive.service';
 import ffmpeg = require('fluent-ffmpeg');
-import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as fs from 'fs';
+import FormData from 'form-data';
+import axios from 'axios';
+import { CurrencyService } from 'src/currency/currency.service';
+import SrtParser from 'srt-parser-2';
 
 
 interface ChatMessage {
@@ -17,11 +21,14 @@ interface ChatMessage {
 @Injectable()
 export class TranslateListener {
   private readonly logger = new Logger(TranslateListener.name);
+  private srtParser = new SrtParser();
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly llmService: LlmService,
     private readonly driveService: DriveService,
+    private readonly currencyService: CurrencyService,
+    private eventEmitter: EventEmitter2,
   ) {
     ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
     ffmpeg.setFfprobePath('/usr/bin/ffprobe');
@@ -52,6 +59,8 @@ export class TranslateListener {
       let tempChatHistory: ChatMessage[] = [];
       let totReq = 0;
       let repeatReq = 0;
+      let totalTokens = 0;
+      let totalCost = 0;
 
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
@@ -75,7 +84,7 @@ export class TranslateListener {
 
         this.logger.debug(`Chat History untuk Batch ${i + 1}: ${JSON.stringify(chatHistory)}`);
 
-        const response = await this.llmService.processTranslation(payload.model, chatHistory);
+        const response = await this.llmService.processTranslation(payload.translation.provider.name, chatHistory);
 
         if (!response.status) {
           this.logger.warn(`Request gagal pada batch ${i + 1}. Mengulang...`);
@@ -117,16 +126,40 @@ export class TranslateListener {
           await new Promise(resolve => setTimeout(resolve, 2000)); // Delay lebih lama jika gagal
           continue;
         }
+
+        // Update total tokens dan biaya
+        let inputTokens = response.inputTokens || 0;
+        let inputCacheTokens = response.inputCacheTokens || 0;
+        let outputTokens = response.outputTokens || 0;
+
+        const ONE_MILLION = 1_000_000;
+
+        const inputCost = (inputTokens / ONE_MILLION) * payload.translation.provider.inputPricing;
+        const cacheCost = (inputCacheTokens / ONE_MILLION) * payload.translation.provider.inputCachePricing;
+        const outputCost = (outputTokens / ONE_MILLION) * payload.translation.provider.outputPricing;
+
+        totalCost += inputCost + cacheCost + outputCost;
+        totalTokens += response.totalTokens || 0;
           
 
         // Delay untuk mencegah Rate Limit (429)
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
+      // biaya fee 5%
+      totalCost = totalCost * 1.05;
+
+      let cv = await this.currencyService.convert(totalCost, 'USD', 'IDR');
+
       // 5. Tandai selesai
       await this.prisma.translation.update({
         where: { id: payload.translation.id },
-        data: { status: 'COMPLETED' },
+        data: { status: 'COMPLETED', totalToken: totalTokens, totalCost: cv.result },
+      });
+
+      await this.prisma.user.update({
+        where: { id: payload.translation.userId },
+        data: { balance: { decrement: cv.result } },
       });
 
       this.logger.log(`Translasi ID ${payload.translation.id} selesai! Total Request: ${totReq}`);
@@ -143,9 +176,101 @@ export class TranslateListener {
   @OnEvent('translation.drive.process', { async: true }) 
   async handleTranslationDriveProcessEvent(payload: TranslationProcessEvent) {
     this.logger.log(`Memulai proses translasi dari Drive untuk ID: ${payload.translation.id}...`);
-    const videoData = await this.driveService.downloadVideoPublic(payload.translation.videoSource);
-    const audioPath = await this.extractAudioAndDeleteVideo(videoData.path);
+    this.logger.debug(`Payload Event: ${JSON.stringify(payload)}`);
     
+    let audioPath: string | null = null;
+    
+    try {
+      // 1. Download dan Ekstrak Audio
+      const videoData = await this.driveService.downloadVideoPublic(payload.translation.videoSource);
+      audioPath = await this.extractAudioAndDeleteVideo(videoData.path);
+
+      // 2. Siapkan form-data untuk mengirim file ke API Whisper
+      this.logger.log('Mengirim file audio ke server Whisper...');
+      const formData = new FormData();
+      formData.append('media_file', fs.createReadStream(audioPath));
+
+      // Gunakan URL server Node.js Whisper Anda (misal: localhost:2055)
+      const WHISPER_API_URL = process.env.WHISPER_API_URL || 'http://localhost:2055';
+      const WEBHOOK_TOKEN = 'sbwhook-lwatbodiymchocuj2fdbt1qs'; // Sesuaikan dengan token Anda
+
+      // 3. Masukkan ke antrean API Whisper
+      const uploadRes = await axios.post(`${WHISPER_API_URL}/transcribe`, formData, {
+        headers: {
+          ...formData.getHeaders(),
+          'sb-webhook-token': WEBHOOK_TOKEN,
+        },
+      });
+
+      const taskId = uploadRes.data.taskId;
+      this.logger.log(`Berhasil masuk antrean Whisper. Task ID: ${taskId}`);
+
+      // 4. Polling untuk mengecek status (misal: cek setiap 5 detik)
+      let srtContent = null;
+      let detectedLanguage = null;
+
+      while (true) {
+        // Jeda 5 detik
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        const statusRes = await axios.get(`${WHISPER_API_URL}/tasks/${taskId}`, {
+          headers: { 'sb-webhook-token': WEBHOOK_TOKEN },
+        });
+
+        const taskData = statusRes.data;
+
+        if (taskData.status === 'not_found') {
+          throw new Error('Task Whisper dibatalkan atau tidak ditemukan.');
+        }
+
+        if (taskData.status === 'completed') {
+          srtContent = taskData.details.srt_content;
+          detectedLanguage = taskData.language;
+          this.logger.log(`Ekstraksi SRT selesai. Bahasa terdeteksi: ${detectedLanguage}`);
+          break;
+        }
+
+        if (taskData.status === 'error') {
+          throw new Error(`Error dari Whisper: ${taskData.errorStr || 'Unknown error'}`);
+        }
+
+        // Tampilkan progres
+        this.logger.debug(`Progres ekstrak audio [Task ${taskId}]: ${taskData.progress}%`);
+      }
+
+      const parsedSrt = this.srtParser.fromSrt(srtContent!);
+
+      const rowsData = parsedSrt.map((item) => ({
+        translationId: payload.translation.id,
+        sequence: parseInt(item.id, 10),
+        startTime: item.startTime,
+        endTime: item.endTime,
+        sourceText: item.text,
+      }));
+
+      // Simpan ke database menggunakan createMany
+      await this.prisma.translationRow.createMany({
+        data: rowsData,
+        skipDuplicates: true, // (Opsional) Mengabaikan error jika kebetulan ada data duplikat
+      });
+
+      // 6. Lanjut panggil event translasi LLM
+      this.logger.log('Memicu event translation.process (LLM)...');
+      this.eventEmitter.emit('translation.process', payload);
+
+    } catch (error) {
+      this.logger.error(`Gagal melakukan ekstraksi audio/srt: ${error.message}`, error.stack);
+      await this.prisma.translation.update({
+        where: { id: payload.translation.id },
+        data: { status: 'ERROR' },
+      });
+    } finally {
+      // 7. Bersihkan file audio lokal di server NestJS agar storage tidak penuh
+      if (audioPath && fs.existsSync(audioPath)) {
+        fs.unlinkSync(audioPath);
+        this.logger.debug(`File audio sementara dihapus: ${audioPath}`);
+      }
+    }
   }
 
   // =====================================================================

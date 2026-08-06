@@ -2,19 +2,14 @@
 import { IsString, IsNotEmpty, IsEnum, IsOptional, IsInt } from 'class-validator';
 import { IsValidSrt } from './is-valid-srt.validator';
 
-export enum AiModel {
-  OPENAI = 'openai',
-  DEEPSEEK = 'deepseek',
-}
-
 export class TranslateDto {
   @IsString()
   @IsNotEmpty()
   fileName!: string;
 
-  @IsEnum(AiModel)
+  @IsInt()
   @IsNotEmpty()
-  model!: AiModel;
+  providerId!: number;
 
   @IsString()
   @IsNotEmpty()

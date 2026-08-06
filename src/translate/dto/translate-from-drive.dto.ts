@@ -1,18 +1,13 @@
 import { IsString, IsNotEmpty, IsEnum, IsOptional, IsInt, isString } from 'class-validator';
 
-export enum AiModel {
-  OPENAI = 'openai',
-  DEEPSEEK = 'deepseek',
-}
-
 export class TranslateFromDriveDto {
   @IsString()
   @IsNotEmpty()
   fileName!: string;
 
-  @IsEnum(AiModel)
+  @IsInt()
   @IsNotEmpty()
-  model!: AiModel;
+  providerId!: number;
 
   @IsString()
   @IsNotEmpty()

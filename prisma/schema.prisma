@@ -102,6 +102,11 @@ model Translation {
   glossaryId  Int?
   glossary    Glossary?         @relation(fields: [glossaryId], references: [id])
 
+  providerId  Int               
+  provider    Provider          @relation(fields: [providerId], references: [id])
+
+  whisperId   String?
+
   fileName    String 
   videoSource String?
 
@@ -120,6 +125,7 @@ model Translation {
 }
 
 enum TranslationStatus {
+  TRANSCRIBING
   PROCESSING
   ENCODING
   COMPLETED
@@ -154,6 +160,8 @@ model Provider {
   inputCachePricing Float          @default(0)
   outputPricing     Float          @default(0)
   status            ProviderStatus @default(ACTIVE)
+
+  translations      Translation[]
 }
 
 enum ProviderStatus {

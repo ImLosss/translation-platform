@@ -15,6 +15,11 @@ export class DeepseekService implements LlmProvider {
   ) {}
 
   async generateTranslation(chatHistory: any[], isJsonFormat: boolean): Promise<LlmResponse> {
+    const available = await this.isAvailable();
+    if (!available) {
+      this.logger.error('DeepSeek API tidak tersedia atau API Key tidak valid.');
+      throw new Error('DeepSeek API tidak tersedia atau API Key tidak valid.');
+    }
     // 1. Ambil API Key dengan aman dari .env
     const apiKey = this.configService.get<string>('DEEPSEEK_APIKEY');
     
@@ -73,6 +78,9 @@ export class DeepseekService implements LlmProvider {
       return {
         status: true,
         message: responseMessage,
+        inputTokens: promptCacheMissTokens,
+        inputCacheTokens: promptCacheHitTokens,
+        outputTokens: completionTokens,
         totalTokens: usage.total_tokens || 0,
         cost: costInputHitCny + costInputMissCny + costOutputCny,
       };
@@ -88,6 +96,33 @@ export class DeepseekService implements LlmProvider {
         status: false,
         message: error.response?.data?.error?.message || error.message || 'Terjadi kesalahan saat menghubungi API DeepSeek.',
       };
+    }
+  }
+
+  async isAvailable(): Promise<boolean> {
+    const apiKey = this.configService.get<string>('DEEPSEEK_APIKEY');
+    if (!apiKey) {
+      this.logger.warn('DEEPSEEK_APIKEY tidak ditemukan di environment variables!');
+      return false;
+    }
+
+    try {
+      const headers = {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      };
+
+      const response = await firstValueFrom(
+        this.httpService.get('https://api.deepseek.com/user/balance', { headers })
+      );
+
+      const responseData = response.data;
+
+      
+      return responseData.is_available;
+    } catch (error) {
+      this.logger.error(`Failed to check DeepSeek availability: ${error.message}`, error.stack);
+      return false;
     }
   }
 }
