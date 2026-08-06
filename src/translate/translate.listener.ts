@@ -70,7 +70,7 @@ export class TranslateListener {
         const chatHistory: ChatMessage[] = [];
         chatHistory.push({ role: 'system', content: globalSystemPrompt });
         chatHistory.push({ role: 'system', content: glossaryPrompt });
-        
+
         // Masukkan konteks percakapan sebelumnya (jika ada)
         if (tempChatHistory.length > 0) {
           chatHistory.push(...tempChatHistory);
@@ -140,7 +140,7 @@ export class TranslateListener {
 
         totalCost += inputCost + cacheCost + outputCost;
         totalTokens += response.totalTokens || 0;
-          
+
 
         // Delay untuk mencegah Rate Limit (429)
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -173,13 +173,13 @@ export class TranslateListener {
     }
   }
 
-  @OnEvent('translation.drive.process', { async: true }) 
+  @OnEvent('translation.drive.process', { async: true })
   async handleTranslationDriveProcessEvent(payload: TranslationProcessEvent) {
     this.logger.log(`Memulai proses translasi dari Drive untuk ID: ${payload.translation.id}...`);
     this.logger.debug(`Payload Event: ${JSON.stringify(payload)}`);
-    
+
     let audioPath: string | null = null;
-    
+
     try {
       // 1. Download dan Ekstrak Audio
       const videoData = await this.driveService.downloadVideoPublic(payload.translation.videoSource);
@@ -334,12 +334,12 @@ Detail yang perlu diperhatikan dalam penerjemahan dari ${sourceLang} ke ${target
    * Memecah array menjadi batch yang lebih kecil
    */
   private chunkArray<T>(arr: T[], size: number = 50): T[][] {
-    const chunks: T[][] = []; 
-    
+    const chunks: T[][] = [];
+
     for (let i = 0; i < arr.length; i += size) {
       chunks.push(arr.slice(i, i + size));
     }
-    
+
     return chunks;
   }
 
@@ -361,15 +361,15 @@ Detail yang perlu diperhatikan dalam penerjemahan dari ${sourceLang} ke ${target
     }
 
     const translations = parsedResult.translations || parsedResult;
-    
+
     if (!Array.isArray(translations)) {
       this.logger.warn('Format data bukan array, membatalkan penyimpanan ke DB.', translations);
-      return false; 
+      return false;
     }
 
-    const updatePromises = translations.map(t => 
+    const updatePromises = translations.map(t =>
       this.prisma.translationRow.updateMany({
-        where: { 
+        where: {
           translationId: translationId,
           sequence: Number(t.line)
         },
@@ -406,7 +406,7 @@ Detail yang perlu diperhatikan dalam penerjemahan dari ${sourceLang} ke ${target
           this.logger.log('Ekstraksi audio selesai!');
           try {
             // Hapus file video asli setelah audio berhasil dibuat
-            await fs.unlink(videoPath);
+            fs.unlinkSync(videoPath);
             this.logger.log(`Video asli berhasil dihapus: ${videoPath}`);
             resolve(audioPath); // Kembalikan lokasi file audio
           } catch (err) {
@@ -416,11 +416,11 @@ Detail yang perlu diperhatikan dalam penerjemahan dari ${sourceLang} ke ${target
         })
         .on('error', async (err) => {
           this.logger.error(`Error saat mengekstrak audio: ${err.message}`);
-          
+
           // Jika gagal ekstrak, usahakan tetap hapus videonya agar tidak menjadi sampah
           try {
-             await fs.unlink(videoPath);
-          } catch(e) {}
+            fs.unlinkSync(videoPath);
+          } catch (e) { }
 
           reject(err);
         })
