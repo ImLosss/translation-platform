@@ -6,9 +6,7 @@ import "./panel.css";
 import { redirect } from "next/navigation";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  console.log("AdminLayout rendered");
   const user = await getCurrentUser();
-  console.log("Current User:", user);
   if (!user) redirect("/login");
 
   return (
