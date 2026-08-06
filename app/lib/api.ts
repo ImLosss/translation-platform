@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const API_URL = process.env.API_URL!; // TANPA NEXT_PUBLIC
 
@@ -29,6 +30,8 @@ export async function api<T>(
     },
     cache: "no-store",
   });
+
+  if (response.status === 401) redirect("/login");
 
   const data = await response.json();
 
