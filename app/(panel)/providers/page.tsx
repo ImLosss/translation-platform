@@ -43,7 +43,7 @@ export default function ProviderManager() {
             showAlert(result.message, 'error');
             setProviders([]); // Kosongkan data jika error
         } else {
-            setProviders(result.data);
+            setProviders(result.data ?? []);
         }
         
         setIsLoading(false);
