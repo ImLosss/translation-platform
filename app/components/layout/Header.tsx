@@ -5,10 +5,11 @@ import Link from 'next/link';
 import HamburgerButton from '../client/HamburgerButton';
 import NotifButtonAndModal from '../client/NotifButtonModal';
 import { useUser } from '../client/UserProvider';
+import Image from 'next/image';
 
 export default function Header() {
   const user = useUser();
-  const pathname = usePathname(); // 🆕 ambil path saat ini
+  const pathname = usePathname(); 
 
   // Fungsi untuk mengubah segmen path menjadi label yang rapi
   const formatSegment = (segment: string) =>
@@ -63,8 +64,22 @@ export default function Header() {
         <NotifButtonAndModal />
         <div className="profile-mini">
           <div className="avatar">
-            {user.username?.charAt(0).toUpperCase() ||
-              user.email.charAt(0).toUpperCase()}
+            {user.avatar ? (
+              <Image
+                src={user.avatar}
+                alt={user.username ?? "Avatar"}
+                width={36}
+                height={36}
+                style={{
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <span className="avatar-initial">
+                {(user.username ?? user.email).charAt(0).toUpperCase()}
+              </span>
+            )}
           </div>
           <span className="name">{user.username || user.email}</span>
         </div>

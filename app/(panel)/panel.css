@@ -351,10 +351,22 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden; /* penting */
+    flex-shrink: 0;
+}
+
+.header-right .profile-mini .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.header-right .profile-mini .avatar-initial {
+    color: #fff;
     font-weight: 700;
     font-size: 14px;
-    color: #fff;
-    flex-shrink: 0;
+    text-transform: uppercase;
+    user-select: none;
 }
 
 .header-right .profile-mini .name {
@@ -983,20 +995,23 @@ table .status-badge {
 /* ---------- ALERT NOTIFICATIONS ---------- */
 .alert-container {
     position: fixed;
-    top: 80px;
-    right: 24px;
+    top: 80px; /* Sesuaikan dengan tinggi navbar Anda, misal 80px jika perlu */
+    right: 16px;
     z-index: 3000;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-width: 400px;
-    width: 100%;
+    
+    /* Kunci agar responsif tanpa media query: */
+    width: calc(100% - 32px); /* Lebar 100% dikurangi margin kiri 16px & kanan 16px */
+    max-width: 400px; /* Batas maksimal lebar untuk tampilan desktop */
+    
     pointer-events: none;
 }
 
 .alert-container .alert {
     pointer-events: auto;
-    padding: 14px 20px;
+    padding: 14px 16px;
     border-radius: var(--radius-sm);
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
@@ -1009,8 +1024,10 @@ table .status-badge {
     box-shadow: var(--shadow);
     animation: slideInAlert 0.35s ease;
     border-left: 4px solid var(--accent);
+    word-break: break-word; /* Mencegah teks panjang keluar kotak */
 }
 
+/* Warna Varian Alert */
 .alert-container .alert.success {
     border-left-color: var(--green);
 }
@@ -1025,6 +1042,7 @@ table .status-badge {
 
 .alert-container .alert .alert-icon {
     font-size: 18px;
+    flex-shrink: 0; /* Mencegah ikon mengecil saat di mobile */
 }
 
 .alert-container .alert .alert-close {
@@ -1035,6 +1053,9 @@ table .status-badge {
     cursor: pointer;
     font-size: 16px;
     padding: 0 4px;
+    flex-shrink: 0; /* Mencegah tombol close mengecil saat di mobile */
+    display: flex;
+    align-items: center;
 }
 
 /* ---------- SELECT SEARCH ---------- */
@@ -1363,6 +1384,31 @@ table .status-badge {
     .dropzone {
         padding: 28px 16px;
     }
+}
+
+@media (max-width: 640px) {
+  .profile-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .profile-card .profile-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+  }
+
+  .profile-card .profile-info {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .profile-card .profile-info .details {
+    margin-top: 20px;
+    grid-template-columns: 1fr 1fr;  /* 2 kolom */
+    gap: 12px 0;
+  }
 }
 
 /* ---------- OVERLAY (sidebar mobile) ---------- */

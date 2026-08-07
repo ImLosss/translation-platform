@@ -89,7 +89,7 @@ export default async function TableData() {
           <tbody>
             {jobs.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: "center", padding: "40px" }}>
+                <td colSpan={8} style={{ textAlign: "center", padding: "40px" }}>
                   <i
                     className="fas fa-inbox"
                     style={{

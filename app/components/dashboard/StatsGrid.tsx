@@ -35,9 +35,11 @@ export default async function StatsGrid() {
           <span className="currency">IDR</span>
           {data.profile.balance.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
-        {/* <div className={`stat-change ${stat.direction}`}>
-          <i className={`fas fa-arrow-${stat.direction}`}></i> {stat.change}
-        </div> */}
+        {data.statistics.totalCostToday !== 0 && (
+          <div className={`stat-change down`}>
+            <i className={`fas fa-arrow-down`}></i> -{data.statistics.totalCostToday.toFixed(2)}
+          </div>
+        )}
       </div>
       <div className="stat-card">
         <div className="stat-icon">
