@@ -175,12 +175,13 @@ export class AuthService {
         };
     }
 
-    private async createToken(user: Pick<User, 'id' | 'email' | 'role' | 'username'>) {
+    private async createToken(user: Pick<User, 'id' | 'email' | 'role' | 'username' | 'avatar'>) {
         const payload = {
             sub: user.id,
             username: user.username,
             email: user.email,
             role: user.role,
+            avatar: user.avatar,
         };
 
         return this.jwt.signAsync(payload);

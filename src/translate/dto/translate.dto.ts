@@ -1,6 +1,7 @@
 // src/translate/dto/translate.dto/translate.dto.ts
-import { IsString, IsNotEmpty, IsEnum, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional, IsInt, Min, Max } from 'class-validator';
 import { IsValidSrt } from './is-valid-srt.validator';
+import { IsDifferentFrom } from './is-different.decorator';
 
 export class TranslateDto {
   @IsString()
@@ -13,6 +14,7 @@ export class TranslateDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsDifferentFrom('targetLang')
   sourceLang!: string;
 
   @IsString()
@@ -26,6 +28,8 @@ export class TranslateDto {
 
   @IsInt()
   @IsOptional()
+  @Min(5)
+  @Max(50)
   batchSize?: number; 
 
   @IsInt()

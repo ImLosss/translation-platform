@@ -1,5 +1,5 @@
 // src/translate/translate.service.ts
-import { Injectable, BadRequestException, NotFoundException, Logger, NotImplementedException, ConflictException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger, NotImplementedException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { TranslationProcessEvent } from './events/translate.event';
@@ -30,7 +30,7 @@ export class TranslateService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found.');
+      throw new UnauthorizedException();
     }
 
     if(user.balance < 2000) {
@@ -86,6 +86,18 @@ export class TranslateService {
   }
 
   async processTranslationFromDriveInBackground(dto: TranslateFromDriveDto, userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    if(user.balance < 2000) {
+      throw new ConflictException('Required balance is at least 2000. Please top up your balance.');
+    }
+
     const translationRecord = await this.prisma.translation.create({
       data: {
         fileName: dto.fileName || 'Untitled',

@@ -3,10 +3,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from 'generated/prisma/enums';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
@@ -66,7 +67,7 @@ export class UserService {
 
   async update(id: number, data: { username?: string; role?: Role; balance?: number }) {
     // Pastikan user ada sebelum di-update
-    await this.findOne(id); 
+    await this.findOne(id);
 
     return this.prisma.user.update({
       where: { id },
@@ -88,26 +89,53 @@ export class UserService {
   }
 
   async getUserDashboardStats(userId: number) {
-    // 1. Mengambil data user sekaligus menghitung total relasi terjemahannya (Total Translate)
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        role: true,
-        _count: {
-          select: { translations: true }, // Prisma akan melakukan query COUNT() di belakang layar
-        },
-      },
-    });
+    const timeZone = 'Asia/Makassar';
 
-    const processingCount = await this.prisma.translation.count({
-      where: {
-        userId: userId,
-        status: 'PROCESSING',
-      },
-    });
+    // Awal & akhir hari berdasarkan WITA
+    const now = toZonedTime(new Date(), timeZone);
+
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(endOfDay.getDate() + 1);
+
+    // Konversi kembali ke UTC untuk query Prisma
+    const today = fromZonedTime(startOfDay, timeZone);
+    const tomorrow = fromZonedTime(endOfDay, timeZone);
+
+    const [user, todayStats] = await this.prisma.$transaction([
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          balance: true,
+          role: true,
+          _count: {
+            select: {
+              translations: true,
+            },
+          },
+        },
+      }),
+
+      this.prisma.translation.aggregate({
+        where: {
+          userId,
+          status: 'COMPLETED',
+          createdAt: {
+            gte: today,
+            lt: tomorrow,
+          },
+        },
+        _sum: {
+          totalCost: true,
+          totalToken: true,
+        },
+        _count: {
+          id: true,
+        },
+      }),
+    ]);
 
     if (!user) {
       throw new UnauthorizedException();
@@ -126,15 +154,13 @@ export class UserService {
     // 3. Format dan kembalikan data agar mudah dibaca oleh Frontend
     return {
       profile: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
+        balance: user.balance,
         role: user.role,
       },
       statistics: {
         totalTranslations: user._count.translations || 0,
-        totalCost: translationStats._sum.totalCost || 0,
-        processing: processingCount || 0,
+        totalCostToday: todayStats._sum.totalCost || 0,
+        processing: user._count.translations || 0,
       },
     };
   }

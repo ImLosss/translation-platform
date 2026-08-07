@@ -18,7 +18,6 @@ export class TranslateController {
     constructor(private readonly translateService: TranslateService) {}
 
     @Post()
-    @Roles(Role.ADMIN)
     @LogActivity('Create Translation Request')
     async translateText(@Body() translateDto: TranslateDto, @Req() req: any) {
         const userId = req.user.sub;
@@ -27,7 +26,6 @@ export class TranslateController {
 
     @Post('drive')
     @LogActivity('Create Translation Request from Drive')
-    @Roles(Role.ADMIN)
     async translateFromDrive(@Body() translateFromDriveDto: TranslateFromDriveDto, @Req() req: any) {
         const userId = req.user.sub;
         return this.translateService.processTranslationFromDriveInBackground(translateFromDriveDto, userId); 

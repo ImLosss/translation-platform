@@ -1,15 +1,17 @@
 import { IsString, IsNotEmpty, IsInt } from 'class-validator';
+import { IsDifferentFrom } from './is-different.decorator';
 
 export class CreateGlosaryDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsString()
   @IsNotEmpty()
-  sourceLanguage: string;
+  @IsDifferentFrom('targetLanguage')
+  sourceLanguage!: string;
 
   @IsString()
   @IsNotEmpty()
-  targetLanguage: string;
+  targetLanguage!: string;
 }

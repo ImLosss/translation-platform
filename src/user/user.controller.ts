@@ -1,14 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { Role } from 'generated/prisma/enums';
 import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/role.guard';
+import { ActivityLogInterceptor } from 'src/activity-log/activity-log.interceptor';
+import { LogActivity } from 'src/activity-log/log-activity.decorator';
 
 @Controller('user')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@UseInterceptors(ActivityLogInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -54,5 +56,12 @@ export class UserController {
     const userId = Number(req.user.sub); 
     
     return await this.userService.getUserDashboardStats(userId);
+  }
+
+  @Get('me')
+  @LogActivity('Create Translation Request')
+  async getMe(@Req() req: any) {
+    const userId = Number(req.user.sub);
+    return await this.userService.findOne(userId);
   }
 }

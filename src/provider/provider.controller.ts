@@ -9,11 +9,11 @@ import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('provider')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN)
 export class ProviderController {
   constructor(private readonly providerService: ProviderService) {}
 
   @Post()
+  @Roles(Role.ADMIN)
   create(@Body() createProviderDto: CreateProviderDto) {
     return this.providerService.create(createProviderDto);
   }
@@ -24,16 +24,19 @@ export class ProviderController {
   }
 
   @Get(':id')
+  @Roles(Role.ADMIN)
   findOne(@Param('id') id: string) {
     return this.providerService.findOne(+id);
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN)
   update(@Param('id') id: string, @Body() updateProviderDto: UpdateProviderDto) {
     return this.providerService.update(+id, updateProviderDto);
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)
   remove(@Param('id') id: string) {
     return this.providerService.remove(+id);
   }

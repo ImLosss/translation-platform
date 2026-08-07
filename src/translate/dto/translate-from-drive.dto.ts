@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional, IsInt, isString } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional, IsInt, isString, Max, Min } from 'class-validator';
+import { IsDifferentFrom } from './is-different.decorator';
 
 export class TranslateFromDriveDto {
   @IsString()
@@ -11,6 +12,7 @@ export class TranslateFromDriveDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsDifferentFrom('targetLang')
   sourceLang!: string;
 
   @IsString()
@@ -23,6 +25,8 @@ export class TranslateFromDriveDto {
 
   @IsInt()
   @IsOptional()
+  @Min(5)
+  @Max(50)
   batchSize?: number; 
 
   @IsInt()
