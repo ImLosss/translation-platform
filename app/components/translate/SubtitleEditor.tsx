@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { useAlert } from '../ui/Alert';
 import { updateRowAction } from '@/app/actions/translate/updateRowAction';
 
@@ -19,6 +19,107 @@ interface SubtitleEditorProps {
     videoUrl?: string;
 }
 
+// ======== KOMPONEN SUBTITLE ROW YANG DI-MEMOISASI ========
+const SubtitleRow = memo(({
+    line,
+    index,
+    isActive,
+    showPreview,
+    driveId,
+    handleTimeChange,
+    handleTimeBlur,
+    handleUpdateLine,
+    seekToTimestamp,
+    handleAddLine,
+    handleDeleteLine,
+    resizeTextarea
+}: any) => {
+    return (
+        <div
+            className={`subtitle-line ${isActive ? 'active-line' : ''}`}
+            style={{ position: 'relative', paddingBottom: '36px' }}
+        >
+            {/* KOLOM WAKTU */}
+            <div className="sub-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <input
+                    type="text"
+                    className="sub-start"
+                    title="Start Time"
+                    value={line.start}
+                    onChange={(e) => handleTimeChange(e, index, 'start')}
+                    onBlur={() => handleTimeBlur(index, 'start')}
+                    style={{ textAlign: 'center' }}
+                />
+                <input
+                    type="text"
+                    className="sub-end"
+                    title="End Time"
+                    value={line.end}
+                    onChange={(e) => handleTimeChange(e, index, 'end')}
+                    onBlur={() => handleTimeBlur(index, 'end')}
+                    style={{ textAlign: 'center' }}
+                />
+            </div>
+
+            {/* KOLOM SOURCE */}
+            <div className="sub-field" style={{ flex: 1, borderBottom: '1px solid var(--border-color)' }}>
+                <label>Source</label>
+                <textarea
+                    ref={resizeTextarea}
+                    readOnly
+                    className="sub-source"
+                    rows={1}
+                    value={line.source}
+                    onChange={(e) => handleUpdateLine(index, 'source', e.target.value)}
+                />
+            </div>
+
+            {/* KOLOM TRANSLATION */}
+            <div className="sub-field" style={{ flex: 1, borderBottom: '1px solid var(--border-color)' }}>
+                <label>Translation</label>
+                <textarea
+                    ref={resizeTextarea}
+                    className="sub-translated"
+                    rows={1}
+                    value={line.translated}
+                    onChange={(e) => handleUpdateLine(index, 'translated', e.target.value)}
+                />
+            </div>
+
+            {/* KOLOM AKSI */}
+            <div className="sub-actions">
+                {driveId && (
+                    <button
+                        className="btn-play-line"
+                        title={showPreview ? "Seek video to this timestamp" : "Buka Preview terlebih dahulu"}
+                        onClick={() => seekToTimestamp(line.start)}
+                        disabled={!showPreview}
+                        style={{ opacity: showPreview ? 1 : 0.5, cursor: showPreview ? 'pointer' : 'not-allowed' }}
+                    >
+                        <i className="fas fa-play" />
+                    </button>
+                )}
+                <button className="btn-add-line" title="Add Line" onClick={() => handleAddLine(index)}>
+                    <i className="fas fa-plus-circle" />
+                </button>
+                <button className="btn-del-line" title="Delete Line" onClick={() => handleDeleteLine(index)}>
+                    <i className="fas fa-trash-alt" />
+                </button>
+            </div>
+        </div>
+    );
+}, (prevProps, nextProps) => {
+    // Custom perbandingan agar hanya baris yang berubah yang di-render ulang
+    return (
+        prevProps.line === nextProps.line &&
+        prevProps.isActive === nextProps.isActive &&
+        prevProps.showPreview === nextProps.showPreview &&
+        prevProps.index === nextProps.index
+    );
+});
+
+
+// ======== KOMPONEN UTAMA ========
 export default function SubtitleEditor({
     lines: initialLines,
     translationId,
@@ -26,7 +127,7 @@ export default function SubtitleEditor({
 }: SubtitleEditorProps) {
     const { showAlert } = useAlert();
     const initialSortedLines = [...initialLines].sort((a, b) => a.sequence - b.sequence);
-    
+
     const [lines, setLines] = useState<SubtitleLine[]>(initialSortedLines);
     const [lastSavedLines, setLastSavedLines] = useState<SubtitleLine[]>(initialSortedLines);
     const [isSaving, setIsSaving] = useState(false);
@@ -36,7 +137,7 @@ export default function SubtitleEditor({
 
     const [isVideoLoading, setIsVideoLoading] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
-    
+
     // -------- State Video Pause/Play --------
     const [isPaused, setIsPaused] = useState(true);
     const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
@@ -46,7 +147,7 @@ export default function SubtitleEditor({
     const [videoWidth, setVideoWidth] = useState(320);
     const [dragging, setDragging] = useState(false);
     const [resizing, setResizing] = useState(false);
-    
+
     const dragStart = useRef({ x: 0, y: 0, startX: 0, startY: 0 });
     const resizeStart = useRef({ x: 0, startWidth: 0 });
     const nextTempId = useRef(-1);
@@ -62,7 +163,7 @@ export default function SubtitleEditor({
     const driveId = extractId(videoUrl);
 
     const handleReset = useCallback(() => {
-        setLines([...lastSavedLines]); 
+        setLines([...lastSavedLines]);
         showAlert('Successfully reset to last saved state.', 'info');
     }, [lastSavedLines, showAlert]);
 
@@ -105,9 +206,9 @@ export default function SubtitleEditor({
         return result;
     }
 
-    const resizeTextarea = (el: HTMLTextAreaElement | null) => {
+    const resizeTextarea = useCallback((el: HTMLTextAreaElement | null) => {
         if (!el) return; el.style.height = 'auto'; el.style.height = `${el.scrollHeight}px`;
-    };
+    }, []);
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -116,7 +217,7 @@ export default function SubtitleEditor({
             const result = await updateRowAction(translationId, sequencedLines);
             if (result.success) {
                 showAlert('Saved.', 'success');
-                setLastSavedLines(sequencedLines); setLines(sequencedLines); 
+                setLastSavedLines(sequencedLines); setLines(sequencedLines);
             } else showAlert(result.message, 'error');
         } finally { setIsSaving(false); }
     };
@@ -127,7 +228,7 @@ export default function SubtitleEditor({
             const sequencedLines = lines.map((line, index) => ({ ...line, sequence: index + 1 }));
             const result = await updateRowAction(translationId, sequencedLines);
             if (result.success) {
-                setLastSavedLines(sequencedLines); setLines(sequencedLines); 
+                setLastSavedLines(sequencedLines); setLines(sequencedLines);
                 window.open(`/api/translate/${translationId}/download`);
             } else showAlert(result.message, 'error');
         } finally { setIsSaving(false); }
@@ -150,35 +251,33 @@ export default function SubtitleEditor({
         return `${pad(hh, 2)}:${pad(mm, 2)}:${pad(ss, 2)},${pad(ms, 3)}`;
     };
 
-    const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>, index: number, field: 'start' | 'end') => {
+    const handleTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, index: number, field: 'start' | 'end') => {
         const input = e.target;
         let rawValue = input.value;
         const cursor = input.selectionStart || 0;
         const oldValue = lines[index][field];
-        
+
         const digitsBefore = rawValue.slice(0, cursor).replace(/\D/g, '').length;
         const diff = rawValue.length - oldValue.length;
-        
+
         if (diff < 0) {
-            // Jika dihapus, ganti dengan 0
             rawValue = rawValue.slice(0, cursor) + '0'.repeat(Math.abs(diff)) + rawValue.slice(cursor);
         } else if (diff > 0) {
-            // Jika diketik angka baru, hapus angka lama yang tergeser
             let charsToRemove = diff;
             let scanIndex = cursor;
             while (charsToRemove > 0 && scanIndex < rawValue.length) {
                 if (rawValue[scanIndex] === ':' || rawValue[scanIndex] === ',') {
-                    scanIndex++; 
+                    scanIndex++;
                 } else {
                     rawValue = rawValue.slice(0, scanIndex) + rawValue.slice(scanIndex + 1);
                     charsToRemove--;
                 }
             }
         }
-        
+
         const formatted = formatSrtTime(rawValue);
         handleUpdateLine(index, field, formatted);
-        
+
         window.requestAnimationFrame(() => {
             let newPos = 0;
             let digits = 0;
@@ -189,14 +288,13 @@ export default function SubtitleEditor({
             }
             input.setSelectionRange(newPos, newPos);
         });
-    };
+    }, [lines, handleUpdateLine]);
 
-    const handleTimeBlur = (index: number, field: 'start' | 'end') => {
+    const handleTimeBlur = useCallback((index: number, field: 'start' | 'end') => {
         setLines((prev) => {
             const newLines = [...prev];
             const line = { ...newLines[index] };
 
-            // Rapikan format jika user memasukkan angka aneh (misal detik ke 80 menjadi 1 menit 20 detik)
             const currentSec = srtTimeToSeconds(line[field]);
             line[field] = secondsToSrtTime(currentSec);
 
@@ -210,7 +308,7 @@ export default function SubtitleEditor({
             newLines[index] = line;
             return newLines;
         });
-    };
+    }, []);
 
     const handleTimeUpdate = () => {
         if (!videoRef.current || lines.length === 0) return;
@@ -221,11 +319,11 @@ export default function SubtitleEditor({
         setActiveLineIndex(currentIndex !== -1 ? currentIndex : null);
     };
 
-    const seekToTimestamp = (timestamp: string) => {
+    const seekToTimestamp = useCallback((timestamp: string) => {
         if (!videoRef.current || !showPreview) return;
         videoRef.current.currentTime = srtTimeToSeconds(timestamp);
         videoRef.current.play().catch(() => { });
-    };
+    }, [showPreview]);
 
     const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const speed = parseFloat(e.target.value);
@@ -256,7 +354,6 @@ export default function SubtitleEditor({
         const handleMouseMove = (e: MouseEvent | TouchEvent) => {
             if (dragging) {
                 if (e.cancelable) e.preventDefault();
-
                 const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
                 const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
                 setVideoPos({
@@ -265,7 +362,6 @@ export default function SubtitleEditor({
                 });
             } else if (resizing) {
                 if (e.cancelable) e.preventDefault();
-
                 const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
                 let newWidth = resizeStart.current.startWidth + (clientX - resizeStart.current.x);
                 if (newWidth < 250) newWidth = 250;
@@ -301,16 +397,27 @@ export default function SubtitleEditor({
     };
 
     const [subtitleTrackUrl, setSubtitleTrackUrl] = useState('');
+
+    // ======== EFEK VTT DENGAN DEBOUNCE ========
     useEffect(() => {
         if (!lines || lines.length === 0) return;
-        let vttContent = "WEBVTT\n\n";
-        lines.forEach((line, index) => {
-            vttContent += `${index + 1}\n${line.start.replace(',', '.')} --> ${line.end.replace(',', '.')} line:90%\n${line.translated}\n\n`;
-        });
-        const blob = new Blob([vttContent], { type: 'text/vtt' });
-        const url = URL.createObjectURL(blob);
-        setSubtitleTrackUrl(url);
-        return () => URL.revokeObjectURL(url);
+
+        // Debounce: tunggu 500ms setelah user berhenti mengetik
+        const timeoutId = setTimeout(() => {
+            let vttContent = "WEBVTT\n\n";
+            lines.forEach((line, index) => {
+                vttContent += `${index + 1}\n${line.start.replace(',', '.')} --> ${line.end.replace(',', '.')} line:90%\n${line.translated}\n\n`;
+            });
+            const blob = new Blob([vttContent], { type: 'text/vtt' });
+            const url = URL.createObjectURL(blob);
+            
+            setSubtitleTrackUrl((prevUrl) => {
+                if (prevUrl) URL.revokeObjectURL(prevUrl);
+                return url;
+            });
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
     }, [lines]);
 
     return (
@@ -343,85 +450,24 @@ export default function SubtitleEditor({
                 </div>
             </div>
 
+            {/* ======== RENDER BARIS YANG SUDAH DIOPTIMASI ======== */}
             <div id="subtitleContainer">
                 {lines.map((line, index) => (
-                    <div 
-                        className={`subtitle-line ${activeLineIndex === index ? 'active-line' : ''}`} 
+                    <SubtitleRow
                         key={line.id}
-                        // 1. Tambahkan relative dan padding bawah agar teks tidak tertimpa tombol
-                        style={{ position: 'relative', paddingBottom: '36px' }} 
-                        // onClick={() => seekToTimestamp(line.start)}
-                    >
-                        
-                        {/* KOLOM WAKTU (START & END DITUMPUK) */}
-                        <div className="sub-field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <input 
-                                type="text" 
-                                className="sub-start" 
-                                title="Start Time"
-                                value={line.start} 
-                                onChange={(e) => handleTimeChange(e, index, 'start')} 
-                                onBlur={() => handleTimeBlur(index, 'start')}
-                                style={{ textAlign: 'center' }}
-                            />
-                            <input 
-                                type="text" 
-                                className="sub-end" 
-                                title="End Time"
-                                value={line.end} 
-                                onChange={(e) => handleTimeChange(e, index, 'end')} 
-                                onBlur={() => handleTimeBlur(index, 'end')}
-                                style={{ textAlign: 'center' }}
-                            />
-                        </div>
-
-                        {/* KOLOM SOURCE */}
-                        <div className="sub-field" style={{ flex: 1, borderBottom: '1px solid var(--border-color)' }}>
-                            <label>Source</label>
-                            <textarea 
-                                ref={resizeTextarea} 
-                                readOnly 
-                                className="sub-source" 
-                                rows={1} 
-                                value={line.source} 
-                                onChange={(e) => handleUpdateLine(index, 'source', e.target.value)} 
-                            />
-                        </div>
-
-                        {/* KOLOM TRANSLATION */}
-                        <div className="sub-field" style={{ flex: 1, borderBottom: '1px solid var(--border-color)' }}>
-                            <label>Translation</label>
-                            <textarea 
-                                ref={resizeTextarea} 
-                                className="sub-translated" 
-                                rows={1} 
-                                value={line.translated} 
-                                onChange={(e) => handleUpdateLine(index, 'translated', e.target.value)} 
-                            />
-                        </div>
-
-                        {/* KOLOM AKSI (KELUAR DARI GRID, MENGAMBANG DI KANAN BAWAH) */}
-                        <div className="sub-actions">
-                            {driveId && (
-                                <button 
-                                    className="btn-play-line" 
-                                    title={showPreview ? "Seek video to this timestamp" : "Buka Preview terlebih dahulu"} 
-                                    onClick={() => seekToTimestamp(line.start)} 
-                                    disabled={!showPreview} 
-                                    style={{ opacity: showPreview ? 1 : 0.5, cursor: showPreview ? 'pointer' : 'not-allowed' }}
-                                >
-                                    <i className="fas fa-play" />
-                                </button>
-                            )}
-                            <button className="btn-add-line" title="Add Line" onClick={() => handleAddLine(index)}>
-                                <i className="fas fa-plus-circle" />
-                            </button>
-                            <button className="btn-del-line" title="Delete Line" onClick={() => handleDeleteLine(index)}>
-                                <i className="fas fa-trash-alt" />
-                            </button>
-                        </div>
-
-                    </div>
+                        line={line}
+                        index={index}
+                        isActive={activeLineIndex === index}
+                        showPreview={showPreview}
+                        driveId={driveId}
+                        handleTimeChange={handleTimeChange}
+                        handleTimeBlur={handleTimeBlur}
+                        handleUpdateLine={handleUpdateLine}
+                        seekToTimestamp={seekToTimestamp}
+                        handleAddLine={handleAddLine}
+                        handleDeleteLine={handleDeleteLine}
+                        resizeTextarea={resizeTextarea}
+                    />
                 ))}
             </div>
 
@@ -441,7 +487,6 @@ export default function SubtitleEditor({
                         top: videoPos.y,
                         zIndex: 5000,
                         width: videoWidth,
-                        // aspectRatio: '16 / 9', <--- DIHAPUS dari sini agar Header tidak memakan rasio video
                         background: '#000',
                         borderRadius: 8,
                         overflow: 'hidden',
@@ -451,7 +496,7 @@ export default function SubtitleEditor({
                         touchAction: 'none',
                     }}
                 >
-                    <div 
+                    <div
                         className="floating-video-header"
                         style={{ cursor: dragging ? 'grabbing' : 'grab' }}
                         onMouseDown={onDragStart}
@@ -459,10 +504,10 @@ export default function SubtitleEditor({
                     >
                         <span>🎥 Preview (drag me)</span>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <select 
+                            <select
                                 value={playbackSpeed}
                                 onChange={handleSpeedChange}
-                                onMouseDown={(e) => e.stopPropagation()} 
+                                onMouseDown={(e) => e.stopPropagation()}
                                 onTouchStart={(e) => e.stopPropagation()}
                                 style={{
                                     background: 'rgba(255, 255, 255, 0.2)', color: '#fff', border: 'none',
@@ -488,28 +533,25 @@ export default function SubtitleEditor({
                         </div>
                     </div>
 
-                    {/* DIPINDAHKAN KE SINI: width 100% dan aspectRatio 16/9 hanya untuk area video */}
                     <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', display: 'flex', backgroundColor: '#000' }}>
-                        {/* Loading Spinner */}
                         {isVideoLoading && (
                             <div style={{ position: 'absolute', inset: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.6)', zIndex: 10, color: 'white' }}>
                                 <i className="fas fa-spinner fa-spin fa-2x"></i>
                             </div>
                         )}
 
-                        {/* ===== IKON PAUSE OVERLAY ===== */}
                         {isPaused && !isVideoLoading && (
-                            <div style={{ 
-                                position: 'absolute', inset: 0, 
-                                display: 'flex', justifyContent: 'center', alignItems: 'center', 
+                            <div style={{
+                                position: 'absolute', inset: 0,
+                                display: 'flex', justifyContent: 'center', alignItems: 'center',
                                 backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                                zIndex: 5, 
-                                pointerEvents: 'none' 
+                                zIndex: 5,
+                                pointerEvents: 'none'
                             }}>
                                 <div style={{
-                                    width: '60px', height: '60px', 
-                                    backgroundColor: 'rgba(255, 255, 255, 0.8)', 
-                                    borderRadius: '50%', 
+                                    width: '60px', height: '60px',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                    borderRadius: '50%',
                                     display: 'flex', justifyContent: 'center', alignItems: 'center',
                                     color: '#000',
                                     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
@@ -531,9 +573,9 @@ export default function SubtitleEditor({
                             onPlaying={() => setIsVideoLoading(false)}
                             onPlay={() => setIsPaused(false)}
                             onPause={() => setIsPaused(true)}
-                            onError={() => { 
+                            onError={() => {
                                 setIsVideoLoading(false);
-                                showAlert("Failed to load video preview. Check the URL or Google Drive sharing settings.", "error"); 
+                                showAlert("Failed to load video preview. Check the URL or Google Drive sharing settings.", "error");
                             }}
                             style={{ width: '100%', height: '100%', objectFit: 'contain', cursor: 'pointer', display: 'block' }}
                         >
@@ -541,7 +583,6 @@ export default function SubtitleEditor({
                         </video>
                     </div>
 
-                    {/* Grip Ikon Resize */}
                     <div
                         onMouseDown={onResizeStart}
                         onTouchStart={onResizeStart}
