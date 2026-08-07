@@ -1,6 +1,7 @@
 import { api } from "@/app/lib/api";
 import Link from "next/dist/client/link";
 import EllipsisDropdown from "../client/ElipsisDropdown";
+import { generateGlossaryAction } from "@/app/actions/translate/generateGlosaryAction";
 
 export interface Translation {
   id: number;
@@ -13,7 +14,7 @@ export interface Translation {
   batchSize: number;
 
   totalCost: number;
-  totalTokens: number;
+  totalToken: number;
 
   videoSource: string | null;
 
@@ -24,6 +25,7 @@ export interface Translation {
 }
 
 const statusClass = {
+  TRANSCRIBING: "info",
   PROCESSING: "warning",
   COMPLETED: "success",
   ERROR: "danger",
@@ -76,6 +78,8 @@ export default async function TableData() {
               <th>Job Name</th>
               <th>Source</th>
               <th>Target</th>
+              <th>Total Tokens</th>
+              <th>Total Cost</th>
               <th>Status</th>
               <th>Date</th>
               <th style={{ textAlign: "right" }}>Actions</th>
@@ -104,21 +108,23 @@ export default async function TableData() {
                   <td>{job.fileName}</td>
                   <td>{job.sourceLang}</td>
                   <td>{job.targetLang}</td>
+                  <td>{job.totalToken}</td>
+                  <td>{job.totalCost.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</td>
                   <td><span className={`status-badge ${statusClass[job.status]}`}>{job.status}</span></td>
                   <td>{new Date(job.createdAt).toLocaleString()}</td>
                   <td style={{  textAlign: "right" }}>
                     {job.status === "COMPLETED" && <a href={`/api/translate/${job.id}/download`} className="btn btn-outline btn-xs" style={{ marginRight: "5px" }}><i className="fas fa-download"></i></a>}
                     <EllipsisDropdown>
-                      <Link href={`/translate/${job.id}`} className="dropdown-item">
+                      <Link href={`/translate/${job.id}`} className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
                         <i className="fas fa-eye"></i> View
                       </Link>
-                      <Link href={`/translate/${job.id}/edit`} className="dropdown-item">
+                      {/* <Link href={`/translate/${job.id}/edit`} className="dropdown-item">
                         <i className="fas fa-edit"></i> Edit
-                      </Link>
-                      <form method="POST">
+                      </Link> */}
+                      <form action={generateGlossaryAction}>
                         <input type="hidden" name="id" value={job.id} />
-                        <button type="submit" className="dropdown-item delete">
-                          <i className="fas fa-trash"></i> Delete
+                        <button type="submit" className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
+                          <i className="fas fa-file-alt"></i> Generate Glosary
                         </button>
                       </form>
                     </EllipsisDropdown>

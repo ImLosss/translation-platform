@@ -16,7 +16,7 @@ export interface SubtitleLine {
 interface SubtitleEditorProps {
     lines: SubtitleLine[];
     translationId: number;
-    videoUrl?: string;
+    videoUrl?: string | null;
 }
 
 // ======== KOMPONEN SUBTITLE ROW YANG DI-MEMOISASI ========
@@ -131,7 +131,7 @@ export default function SubtitleEditor({
     const [lines, setLines] = useState<SubtitleLine[]>(initialSortedLines);
     const [lastSavedLines, setLastSavedLines] = useState<SubtitleLine[]>(initialSortedLines);
     const [isSaving, setIsSaving] = useState(false);
-    const [videoUrl, setVideoUrl] = useState(initialVideoUrl);
+    const [videoUrl, setVideoUrl] = useState(initialVideoUrl ?? '');
     const videoRef = useRef<HTMLVideoElement>(null);
     const [activeLineIndex, setActiveLineIndex] = useState<number | null>(null);
 
@@ -160,7 +160,7 @@ export default function SubtitleEditor({
         return null;
     }
 
-    const driveId = extractId(videoUrl);
+    const driveId = videoUrl ? extractId(videoUrl) : null;
 
     const handleReset = useCallback(() => {
         setLines([...lastSavedLines]);

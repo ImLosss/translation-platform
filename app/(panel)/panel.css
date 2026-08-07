@@ -768,6 +768,11 @@ table .status-badge {
     color: var(--red);
 }
 
+.status-badge.info {
+    background: rgba(74, 158, 255, 0.2);
+    color: var(--blue);
+}
+
 /* ---------- SUBTITLE PREVIEW (SRT EDITOR) ---------- */
 .subtitle-line {
     display: grid;
@@ -1229,6 +1234,12 @@ table .status-badge {
 
 .dropdown-item.delete:hover {
   background: var(--red-glow);
+}
+
+.dropdown-item.disabled {
+  pointer-events: none;
+  opacity: .5;
+  cursor: not-allowed;
 }
 
 @keyframes slideInAlert {

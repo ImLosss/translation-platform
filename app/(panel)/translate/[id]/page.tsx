@@ -7,6 +7,7 @@ interface Translation {
   fileName: string;
   sourceLang: string;
   targetLang: string;
+  videoSource: string | null;
   rows: {
     id: number;
     sequence: number;
@@ -31,5 +32,5 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     translated: row.targetText ?? "",
   }));
 
-  return <SubtitleEditor lines={lines} translationId={translation.id} />;
+  return <SubtitleEditor lines={lines} translationId={translation.id} videoUrl={translation.videoSource} />;
 }

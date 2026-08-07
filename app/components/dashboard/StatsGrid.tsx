@@ -22,6 +22,8 @@ const stats: StatCardProps[] = [
 export default async function StatsGrid() {
   const data = await api<any>("/user/profile-stats");
 
+  console.log("StatsGrid data:", data);
+
   return (
     <section className="stats-grid">
       <div className="stat-card">
@@ -31,7 +33,7 @@ export default async function StatsGrid() {
         <div className="stat-label">Balance</div>
         <div className="stat-value">
           <span className="currency">IDR</span>
-          12000
+          {data.profile.balance.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
         {/* <div className={`stat-change ${stat.direction}`}>
           <i className={`fas fa-arrow-${stat.direction}`}></i> {stat.change}
