@@ -112,22 +112,29 @@ export default async function TableData() {
                   <td>{job.totalCost.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</td>
                   <td><span className={`status-badge ${statusClass[job.status]}`}>{job.status}</span></td>
                   <td>{new Date(job.createdAt).toLocaleString()}</td>
-                  <td style={{  textAlign: "right" }}>
-                    {job.status === "COMPLETED" && <a href={`/api/translate/${job.id}/download`} className="btn btn-outline btn-xs" style={{ marginRight: "5px" }}><i className="fas fa-download"></i></a>}
-                    <EllipsisDropdown>
-                      <Link href={`/translate/${job.id}`} className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
-                        <i className="fas fa-eye"></i> View
-                      </Link>
-                      {/* <Link href={`/translate/${job.id}/edit`} className="dropdown-item">
-                        <i className="fas fa-edit"></i> Edit
-                      </Link> */}
-                      <form action={generateGlossaryAction}>
-                        <input type="hidden" name="id" value={job.id} />
-                        <button type="submit" className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
-                          <i className="fas fa-file-alt"></i> Generate Glosary
-                        </button>
-                      </form>
-                    </EllipsisDropdown>
+                  <td style={{ textAlign: "right" }}>
+                    {/* Tambahkan div container flex di sini */}
+                    <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "4px", flexWrap: "nowrap" }}>
+
+                      {job.status === "COMPLETED" && (
+                        <a href={`/api/translate/${job.id}/download`} className="btn btn-outline btn-xs">
+                          <i className="fas fa-download"></i>
+                        </a>
+                      )}
+
+                      <EllipsisDropdown>
+                        <Link href={`/translate/${job.id}`} className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
+                          <i className="fas fa-eye"></i> View
+                        </Link>
+                        <form action={generateGlossaryAction}>
+                          <input type="hidden" name="id" value={job.id} />
+                          <button type="submit" className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
+                            <i className="fas fa-file-alt"></i> Generate Glosary
+                          </button>
+                        </form>
+                      </EllipsisDropdown>
+
+                    </div>
                   </td>
                 </tr>
               ))
