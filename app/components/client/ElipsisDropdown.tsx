@@ -42,6 +42,7 @@ export default function EllipsisDropdown({
         <div
           ref={menuRef}
           className="dropdown-menu-fixed"
+          onClick={() => setOpen(false)}
           style={{
             position: 'fixed',
             top: triggerRef.current

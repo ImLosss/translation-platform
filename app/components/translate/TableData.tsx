@@ -1,7 +1,7 @@
 import { api } from "@/app/lib/api";
 import Link from "next/dist/client/link";
 import EllipsisDropdown from "../client/ElipsisDropdown";
-import { generateGlossaryAction } from "@/app/actions/translate/generateGlosaryAction";
+import ButtonGenerateGlosary from "./ButtonGenerateGlosary";
 
 export interface Translation {
   id: number;
@@ -12,6 +12,12 @@ export interface Translation {
   status: "PROCESSING" | "COMPLETED" | "ERROR";
 
   batchSize: number;
+
+  glossaryId: number | null;
+  glossary: {
+    id: number;
+    name: string;
+  } | null;
 
   totalCost: number;
   totalToken: number;
@@ -78,6 +84,7 @@ export default async function TableData() {
               <th>Job Name</th>
               <th>Source</th>
               <th>Target</th>
+              <th>Glossary</th>
               <th>Total Tokens</th>
               <th>Total Cost</th>
               <th>Status</th>
@@ -108,6 +115,7 @@ export default async function TableData() {
                   <td>{job.fileName}</td>
                   <td>{job.sourceLang}</td>
                   <td>{job.targetLang}</td>
+                  <td>{job.glossary ? job.glossary.name : "No"}</td>
                   <td>{job.totalToken}</td>
                   <td>{job.totalCost.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</td>
                   <td><span className={`status-badge ${statusClass[job.status]}`}>{job.status}</span></td>
@@ -123,17 +131,15 @@ export default async function TableData() {
                       )}
 
                       <EllipsisDropdown>
-                        <Link href={`/translate/${job.id}`} className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
+                        <Link
+                          href={`/translate/${job.id}`}
+                          className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}
+                        >
                           <i className="fas fa-eye"></i> View
                         </Link>
-                        <form action={generateGlossaryAction}>
-                          <input type="hidden" name="id" value={job.id} />
-                          <button type="submit" className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
-                            <i className="fas fa-file-alt"></i> Generate Glosary
-                          </button>
-                        </form>
-                      </EllipsisDropdown>
 
+                        <ButtonGenerateGlosary jobId={job.id} jobStatus={job.status} />
+                      </EllipsisDropdown>
                     </div>
                   </td>
                 </tr>

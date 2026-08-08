@@ -309,7 +309,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
               <input
                 type="file"
                 id="fileInput"
-                accept=".srt,.ass,.txt"
+                accept=".srt"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) handleFile(file);
