@@ -8,6 +8,7 @@ import { TranslateDto } from './dto/translate.dto';
 import { UpdateTranslationDto } from './dto/update-subtitle-row.dto';
 import { TranslateFromDriveDto } from './dto/translate-from-drive.dto';
 import { LlmService } from 'src/llm/llm.service';
+import { CurrencyService } from 'src/currency/currency.service';
 
 export interface SrtBlock {
   line: number;
@@ -30,6 +31,7 @@ export class TranslateService {
     private readonly prisma: PrismaService,
     private eventEmitter: EventEmitter2,
     private readonly llmService: LlmService,
+    private readonly currencyService: CurrencyService,
   ) { }
 
   async processTranslationInBackground(dto: TranslateDto, userId: number) {
@@ -144,6 +146,7 @@ export class TranslateService {
     const translation = await this.prisma.translation.findUnique({
       where: { id: translationId, userId: userId },
       include: {
+        user: true,
         provider: true,
         glossary: {
           include: {
@@ -268,6 +271,41 @@ ${translatedCorpus}`;
         const filteredRecommendations = (recommendationsList as GlosaryEntry[]).filter(
           (item) => !existingGlossarySources.has(item.source.toLowerCase().trim()),
         );
+
+        // ==========================================
+        // HITUNG BIAYA DAN KURANGI BALANCE USER
+        // ==========================================
+        let inputTokens = response.inputTokens || 0;
+        let inputCacheTokens = response.inputCacheTokens || 0;
+        let outputTokens = response.outputTokens || 0;
+
+        const ONE_MILLION = 1_000_000;
+
+        const inputCost = (inputTokens / ONE_MILLION) * translation.provider.inputPricing;
+        const cacheCost = (inputCacheTokens / ONE_MILLION) * translation.provider.inputCachePricing;
+        const outputCost = (outputTokens / ONE_MILLION) * translation.provider.outputPricing;
+
+        let totalCost = inputCost + cacheCost + outputCost;
+
+        // Tambahkan fee 5%
+        totalCost = totalCost * 1.05;
+
+        // Konversi USD ke IDR
+        const cv = await this.currencyService.convert(totalCost, 'USD', 'IDR');
+
+        // Kurangi balance user di database
+        await this.prisma.user.update({
+          where: { id: userId },
+          data: { balance: { decrement: cv.result } },
+        });
+
+        await this.prisma.translation.update({
+          where: { id: translationId },
+          data: {
+            totalToken: { increment: response.totalTokens || 0 },
+            totalCost: { increment: cv.result }
+          }
+        });
 
         this.logger.log(`Sukses mendapatkan rekomendasi glosarium pada percobaan ke-${attempt}.`);
         return {
