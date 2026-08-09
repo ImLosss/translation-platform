@@ -161,7 +161,7 @@ export class TranslateService {
     }
 
     if(translation.user.balance < 2000) {
-      throw new Error('Required balance is at least 2000. Please top up your balance.');
+      throw new ConflictException('Required balance is at least 2000. Please top up your balance.');
     }
 
     // 2. Ambil seluruh hasil terjemahan dari TranslationRow
