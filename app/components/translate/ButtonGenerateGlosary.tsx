@@ -47,7 +47,7 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus }: ButtonGenera
               };
               sessionStorage.setItem('tempGlossary', JSON.stringify(dataToPass));
 
-              router.push('/generate-glossary');
+              router.push('translate/generate-glossary');
             } catch (error: any) {
               showAlert(`Failed to generate glossary: ${error.message}`, 'warning');
             } finally {

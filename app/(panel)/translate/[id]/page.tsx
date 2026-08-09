@@ -1,6 +1,7 @@
 import SubtitleEditor, { SubtitleLine } from "@/app/components/translate/SubtitleEditor";
 import { api } from "@/app/lib/api";
 import "./video-preview.css";
+import { notFound } from "next/navigation";
 
 interface Translation {
   id: number;
@@ -20,6 +21,8 @@ interface Translation {
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
+  if(isNaN(Number(id))) return notFound();
 
   const translation = await api<Translation>(`/translate/${id}`);
 
