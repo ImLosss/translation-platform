@@ -160,6 +160,10 @@ export class TranslateService {
       throw new Error(`Translation dengan ID ${translationId} tidak ditemukan.`);
     }
 
+    if(translation.user.balance < 2000) {
+      throw new Error('Required balance is at least 2000. Please top up your balance.');
+    }
+
     // 2. Ambil seluruh hasil terjemahan dari TranslationRow
     const translationRows = await this.prisma.translationRow.findMany({
       where: { translationId: translationId },
