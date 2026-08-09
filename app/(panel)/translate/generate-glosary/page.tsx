@@ -38,6 +38,11 @@ export default function GenerateGlossaryPage() {
                 const existingEntries = parsedData.glosary?.entries || [];
                 const recommendations = parsedData.recommendations || [];
 
+                if (recommendations.length === 0) {
+                    showAlert('No recommendation data available.', 'error');
+                    return router.push('/translate');;
+                }
+
                 setGlossaryData({
                     translationId: tId,
                     glossary: existingGlossary,
@@ -50,12 +55,12 @@ export default function GenerateGlossaryPage() {
                 
                 // --- PERBAIKAN DI SINI ---
                 showAlert('Format data rekomendasi tidak valid.', 'error');
-                router.push('/translate');
+                return router.push('/translate');
             }
         } else {
             // --- PERBAIKAN DI SINI ---
             showAlert('No recommendation data available.', 'error');
-            router.push('/translate');
+            return router.push('/translate');
         }
         
         // Hapus dependensi kosong jika linter Next.js meminta showAlert & router dimasukkan, 
