@@ -7,11 +7,18 @@ import SrtParser from 'srt-parser-2';
 import { TranslateDto } from './dto/translate.dto';
 import { UpdateTranslationDto } from './dto/update-subtitle-row.dto';
 import { TranslateFromDriveDto } from './dto/translate-from-drive.dto';
+import { LlmService } from 'src/llm/llm.service';
 
 export interface SrtBlock {
   line: number;
   timestamp: string;
   content: string;
+}
+
+export interface GlosaryEntry {
+    source: string;
+    target: string;
+    detail: string;
 }
 
 @Injectable()
@@ -22,6 +29,7 @@ export class TranslateService {
   constructor(
     private readonly prisma: PrismaService,
     private eventEmitter: EventEmitter2,
+    private readonly llmService: LlmService,
   ) { }
 
   async processTranslationInBackground(dto: TranslateDto, userId: number) {
@@ -124,6 +132,164 @@ export class TranslateService {
       message: 'Translation started in background.',
       translationId: translationRecord.id
     }
+  }
+
+  async generateGlossaryRecommendations(
+    translationId: number,
+    userId: number,
+  ) {
+    this.logger.log(`Memproses rekomendasi glosarium untuk Translation ID: ${translationId}...`);
+
+    // 1. Ambil data translation beserta relasi glossary-nya
+    const translation = await this.prisma.translation.findUnique({
+      where: { id: translationId, userId: userId },
+      include: {
+        provider: true,
+        glossary: {
+          include: {
+            entries: { select: { id: true,source: true, target: true, detail: true } },
+          },
+        },
+      },
+    });
+
+    if (!translation) {
+      throw new Error(`Translation dengan ID ${translationId} tidak ditemukan.`);
+    }
+
+    // 2. Ambil seluruh hasil terjemahan dari TranslationRow
+    const translationRows = await this.prisma.translationRow.findMany({
+      where: { translationId: translationId },
+      orderBy: { sequence: 'asc' },
+      select: { sourceText: true, targetText: true },
+    });
+
+    if (translationRows.length === 0) {
+      return [];
+    }
+
+    // 3. Kumpulkan daftar istilah (source) yang SUDAH ADA di glossary agar tidak direkomendasikan ulang
+    const existingGlossarySources = new Set<string>();
+    if (translation.glossary && translation.glossary.entries) {
+      translation.glossary.entries.forEach((entry) => {
+        existingGlossarySources.add(entry.source.toLowerCase().trim());
+      });
+    }
+
+    // 4. Siapkan teks hasil terjemahan untuk dianalisis oleh LLM
+    const translatedCorpus = translationRows
+      .map((row, idx) => `[Line ${idx + 1}] Sumber: ${row.sourceText} | Terjemahan: ${row.targetText || '-'}`)
+      .join('\n');
+
+    // 5. Susun Prompt untuk LLM
+    const exclusionListText =
+      existingGlossarySources.size > 0
+        ? `PENTING: Jangan masukkan istilah-istilah berikut karena sudah terdaftar di glosarium utama:\n${JSON.stringify(Array.from(existingGlossarySources))}`
+        : '';
+
+    const systemPrompt = `Kamu adalah seorang Asisten AI Analis Terminologi Profesional. Tugasmu adalah menganalisis teks terjemahan subtitle dan mengekstrak istilah-istilah penting (seperti nama entitas, istilah khusus, klan, lokasi, atau istilah teknis/unik) yang sering muncul atau sangat krusial untuk konsistensi terjemahan.`;
+
+    const userPrompt = `Analisis teks terjemahan subtitle berikut dari bahasa ${translation.sourceLang} ke bahasa ${translation.targetLang}.
+    
+${exclusionListText}
+
+Aturan Ekstraksi:
+- Cari istilah unik, nama karakter, organisasi, atau istilah penting yang sering muncul atau berulang.
+- Kategorikan setiap istilah ke dalam salah satu tipe (Enum) berikut pada kolom 'detail':
+  1. "CHARACTER" (Nama orang, julukan, entitas hidup)
+  2. "LOCATION" (Nama tempat, negara, planet, bangunan)
+  3. "ORGANIZATION" (Nama kelompok, faksi, sekte, perusahaan)
+  4. "ITEM" (Nama benda, senjata, artefak, ramuan)
+  5. "SKILL" (Nama jurus, sihir, teknik, kemampuan)
+  6. "CULTURE" (Istilah budaya, hari raya, tradisi, konsep spesifik)
+  7. "OTHER" (Jika tidak masuk ke kategori di atas)
+  8. "CULTIVATION" (Tingkatan kekuatan dalam donghua)
+
+Output HARUS berupa JSON Object dengan skema berikut tanpa teks markdown tambahan:
+{"recommendations": [{"source": "istilah dalam bahasa sumber","target": "padanan istilah dalam bahasa target","detail": "PILIH_SALAH_SATU_ENUM_DI_ATAS"}]}
+
+Pastikan JSON dapat diparse langsung menggunakan JSON.parse() tanpa modifikasi apa pun.
+
+Teks Terjemahan:
+${translatedCorpus}`;
+
+    const chatHistory = [
+      { role: 'system' as const, content: systemPrompt },
+      { role: 'user' as const, content: userPrompt },
+    ];
+
+    // ==========================================
+    // 6. EKSEKUSI LLM DENGAN RETRY (MAKSIMAL 3x)
+    // ==========================================
+    const maxRetries = 3;
+    let attempt = 0;
+
+    while (attempt < maxRetries) {
+      attempt++;
+      this.logger.debug(`Mengambil rekomendasi glosarium dari LLM (Percobaan ${attempt}/${maxRetries})...`);
+
+      try {
+        const response = await this.llmService.processTranslation(
+          translation.provider.name,
+          chatHistory,
+        );
+
+        if (!response.status || !response.message) {
+          throw new Error('Gagal mendapatkan respons valid dari LLM.');
+        }
+
+        let rawContent = response.message.trim();
+        rawContent = rawContent.replace(/```(?:json)?/gi, '').trim();
+
+        // Parse JSON
+        const parsedData: any = JSON.parse(rawContent);
+
+        if (!parsedData || typeof parsedData !== 'object' || !Array.isArray(parsedData.recommendations)) {
+          throw new Error('Format balasan tidak valid. Harus berupa JSON Object yang memiliki array "recommendations".');
+        }
+
+        const recommendationsList = parsedData.recommendations;
+
+        // Validasi isi array
+        const isValidStructure = recommendationsList.every(
+          (item) =>
+            item &&
+            typeof item === 'object' &&
+            'source' in item &&
+            'target' in item &&
+            'detail' in item
+        );
+
+        if (!isValidStructure) {
+          throw new Error('Struktur di dalam array "recommendations" tidak sesuai dengan GlosaryEntry (source, target, detail).');
+        }
+
+        // 7. Jika lolos validasi, Lakukan Filtering & Slicing
+        const filteredRecommendations = (recommendationsList as GlosaryEntry[]).filter(
+          (item) => !existingGlossarySources.has(item.source.toLowerCase().trim()),
+        );
+
+        this.logger.log(`Sukses mendapatkan rekomendasi glosarium pada percobaan ke-${attempt}.`);
+        return {
+          translationId: translationId,
+          glosary: translation.glossary,
+          recommendations: filteredRecommendations
+        };
+
+      } catch (error) {
+        this.logger.warn(`Percobaan ke-${attempt} gagal: ${error.message}`);
+        
+        if (attempt >= maxRetries) {
+          this.logger.error(`Gagal mendapatkan rekomendasi glosarium setelah ${maxRetries} kali percobaan.`);
+          throw new Error(`Gagal memproses rekomendasi glosarium karena format tidak valid setelah ${maxRetries}x percobaan.`);
+        }
+
+        // Jeda 2 detik sebelum mencoba lagi
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+
+    return [];
   }
 
   async getTranslationDetails(translationId: number, userId: number) {

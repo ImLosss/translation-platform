@@ -380,7 +380,10 @@ Detail yang perlu diperhatikan dalam penerjemahan dari ${sourceLang} ke ${target
     );
 
     try {
-      await this.prisma.$transaction(updatePromises);
+      await this.prisma.$transaction(updatePromises, {
+        maxWait: 5000, 
+        timeout: 15000 
+      });
       this.logger.log(`Berhasil menyimpan batch ke database!`);
       return true;
     } catch (dbError) {

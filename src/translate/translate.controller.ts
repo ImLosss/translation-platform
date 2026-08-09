@@ -31,6 +31,13 @@ export class TranslateController {
         return this.translateService.processTranslationFromDriveInBackground(translateFromDriveDto, userId); 
     }
 
+    @Post('generate-glossary')
+    @LogActivity('Generate Glossary Recommendations')
+    async generateGlossaryRecommendations(@Body('translationId') translationId: number, @Req() req: any) {
+        const userId = req.user.sub;
+        return this.translateService.generateGlossaryRecommendations(translationId, userId);
+    }
+
     @Get()
     @LogActivity('Get User Translations')
     async getUserTranslations(@Req() req: any) {
