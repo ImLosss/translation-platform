@@ -41,9 +41,15 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus }: ButtonGenera
             try {
               // pemanngilan action untuk generate glossary
               const response = await generateGlossaryAction(jobId);
+
+              if(!response.success) {
+                showAlert(`Failed to generate glossary: ${response.message}`, 'info');
+                return;
+              }
+
               const dataToPass = {
                 jobId: jobId,
-                recommendations: response.recommendations
+                recommendations: response.data.recommendations
               };
               sessionStorage.setItem('tempGlossary', JSON.stringify(dataToPass));
 
