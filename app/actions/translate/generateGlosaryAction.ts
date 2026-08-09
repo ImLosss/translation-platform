@@ -1,11 +1,19 @@
 "use server";
 
-export async function generateGlossaryAction(formData: FormData) {
-  const id = Number(formData.get("id"));
+import { api } from "@/app/lib/api";
 
-  // Panggil API atau langsung akses database
-  console.log("Generate glossary:", id);
-
-  // contoh:
-  // await api(`/translate/${id}/generate-glossary`, { method: "POST" });
+export async function generateGlossaryAction(jobId: number) {
+  try {
+    return await api<any>(`/translate/generate-glossary`, {
+      method: "POST",
+      body: JSON.stringify({
+        translationId: jobId,
+      }),
+    });
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
 }

@@ -5,6 +5,8 @@ import EllipsisDropdown from "../client/ElipsisDropdown";
 import { generateGlossaryAction } from "@/app/actions/translate/generateGlosaryAction";
 import { useModal } from "../ui/ModalProvider";
 import { useLoading } from "../ui/LoadingProvider";
+import { useAlert } from "../ui/Alert";
+import { useRouter } from "next/navigation";
 
 interface ButtonGenerateGlosaryProps {
   jobId: number;
@@ -14,6 +16,8 @@ interface ButtonGenerateGlosaryProps {
 export default function ButtonGenerateGlosary({ jobId, jobStatus }: ButtonGenerateGlosaryProps) {
   const { showModal } = useModal();
   const { showLoading, updateMessage, hideLoading } = useLoading();
+  const { showAlert } = useAlert();
+  const router = useRouter();
 
   const handleGenerateGlossary = () => {
     showModal({
@@ -35,12 +39,20 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus }: ButtonGenera
             }, 15000);
 
             try {
+              // pemanngilan action untuk generate glossary
+              const response = await generateGlossaryAction(jobId);
+              const dataToPass = {
+                jobId: jobId,
+                recommendations: response.recommendations
+              };
+              sessionStorage.setItem('tempGlossary', JSON.stringify(dataToPass));
 
-            } catch (error) {
-
+              router.push('/generate-glossary');
+            } catch (error: any) {
+              showAlert(`Failed to generate glossary: ${error.message}`, 'warning');
             } finally {
-              // clearTimeout(timer);
-              // hideLoading();
+              clearTimeout(timer);
+              hideLoading();
             }
           },
         }
@@ -55,7 +67,7 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus }: ButtonGenera
           disabled={jobStatus !== "COMPLETED"}
           onClick={handleGenerateGlossary}
         >
-          <i className="fas fa-file-alt"></i> Generate Glosary
+          <i className="fas fa-book"></i> Generate Glosary
         </button>
   );
 }
