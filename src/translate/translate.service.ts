@@ -491,6 +491,9 @@ ${translatedCorpus}`;
   async saveGlossaryRecommendation(payload: SaveGlossaryRecommendationDto, userId: number) {
     const { glosaryId, translationId, name, sourceLanguage, targetLanguage, entries } = payload;
 
+    const entriesToCreate = entries.filter((e) => !e.id || e.id < 0);
+    const entriesToUpdate = entries.filter((e) => e.id && e.id > 0);
+
     if (!entries || entries.length === 0) {
       throw new BadRequestException('Glosary entries tidak boleh kosong.');
     }
@@ -508,22 +511,34 @@ ${translatedCorpus}`;
         throw new ForbiddenException(`Glossary with ID ${glosaryId} not found or access denied.`);
       }
 
-      // 2. Insert entri baru menggunakan createMany (lebih cepat & efisien)
-      const createdEntries = await this.prisma.glossaryEntry.createMany({
-        data: entries.map((entry) => ({
-          glossaryId: glosaryId,
-          source: entry.source,
-          target: entry.target,
-          detail: entry.detail || null,
-        })),
-        skipDuplicates: true, // Opsional: mengabaikan error jika ada unique constraint yang bentrok
+      await this.prisma.$transaction(async (tx) => {
+        if (entriesToCreate.length > 0) {
+          await tx.glossaryEntry.createMany({
+            data: entriesToCreate.map((entry) => ({
+              glossaryId: glosaryId,
+              source: entry.source,
+              target: entry.target,
+              detail: entry.detail || null,
+            })),
+            skipDuplicates: true,
+          });
+        }
+
+        if (entriesToUpdate.length > 0) {
+          for (const entry of entriesToUpdate) {
+            await tx.glossaryEntry.update({
+              where: { id: entry.id },
+              data: {
+                source: entry.source,
+                target: entry.target,
+                detail: entry.detail || null,
+              },
+            });
+          }
+        }
       });
 
-      return {
-        message: 'Successfully added entries to existing glossary.',
-        glossaryId: glosaryId,
-        addedEntries: createdEntries.count,
-      };
+      return { message: 'Successfully updated glossary.' };
     }
 
     // ==========================================
@@ -541,7 +556,7 @@ ${translatedCorpus}`;
             targetLanguage: targetLanguage,
             userId: userId,
             entries: {
-              create: entries.map((entry) => ({
+              create: entriesToCreate.map((entry) => ({
                 source: entry.source,
                 target: entry.target,
                 detail: entry.detail || null,

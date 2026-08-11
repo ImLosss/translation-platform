@@ -52,13 +52,17 @@ export class GlosaryService {
     });
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
+  async remove(id: number, userId: number) {
+    const glosary = await this.prisma.glossary.findUnique({
+      where: { id, userId},
+    });
 
-    // Karena menggunakan onDelete: Cascade, menghapus Glossary 
-    // akan otomatis menghapus semua GlossaryEntry yang terkait.
+    if (!glosary) {
+      throw new NotFoundException(`Glossary not found or you do not have access.`);
+    }
+
     return this.prisma.glossary.delete({
-      where: { id },
+      where: { id, userId },
     });
   }
 

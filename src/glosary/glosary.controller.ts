@@ -44,8 +44,9 @@ export class GlosaryController {
 
   @Delete(':id')
   @LogActivity('Delete Glosary')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.glosaryService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    const userId = req.user.sub;
+    return this.glosaryService.remove(id, userId);
   }
 
   @Put(':id/entries')
