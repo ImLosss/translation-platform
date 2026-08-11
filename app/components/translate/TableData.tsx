@@ -139,6 +139,13 @@ export default async function TableData() {
                           <i className="fas fa-eye"></i> View
                         </Link>
 
+                        <Link
+                          href={`api/translate/${job.id}/downloadsource`}
+                          className={`dropdown-item ${!["COMPLETED", "PROCESSING"].includes(job.status) ? "disabled" : ""}`}
+                        >
+                          <i className="fas fa-download"></i> Download Source
+                        </Link>
+
                         <ButtonGenerateGlosary jobId={job.id} jobStatus={job.status} />
                       </EllipsisDropdown>
                     </div>
