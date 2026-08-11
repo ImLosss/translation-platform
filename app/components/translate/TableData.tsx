@@ -41,6 +41,7 @@ export default async function TableData() {
   let jobs = [];
   try {
     jobs = await api<Translation[]>("/translate")
+    console.log("Fetched translation jobs:", jobs);
   } catch (error) {
     return (
       <section className="card">

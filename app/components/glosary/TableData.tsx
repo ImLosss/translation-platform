@@ -1,8 +1,9 @@
 import { api } from "@/app/lib/api";
 import Link from "next/dist/client/link";
 import EllipsisDropdown from "../client/ElipsisDropdown";
+import DeleteGlossaryButton from "./DeleteGlossaryButton";
 
-export interface Translation {
+export interface GlosaryData {
   id: number;
   name: string;
   sourceLanguage: string;
@@ -13,17 +14,11 @@ export interface Translation {
   updatedAt: string;
 }
 
-const statusClass = {
-  PROCESSING: "warning",
-  COMPLETED: "success",
-  ERROR: "danger",
-};
-
 export default async function TableData() {
-  let jobs = [];
+  let glosary = [];
   try {
-    jobs = await api<Translation[]>("/glosary")
-    console.log("jobs", jobs)
+    glosary = await api<GlosaryData[]>("/glosary")
+    console.log("glosary", glosary)
   } catch (error) {
     return (
       <section className="card">
@@ -73,7 +68,7 @@ export default async function TableData() {
           </thead>
 
           <tbody>
-            {jobs.length === 0 ? (
+            {glosary.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ textAlign: "center", padding: "40px" }}>
                   <i
@@ -89,26 +84,21 @@ export default async function TableData() {
                 </td>
               </tr>
             ) : (
-              jobs.map((job) => (
-                <tr key={job.id}>
-                  <td>{job.name}</td>
-                  <td>{job.sourceLanguage}</td>
-                  <td>{job.targetLanguage}</td>
-                  <td>{new Date(job.createdAt).toLocaleString()}</td>
+              glosary.map((g) => (
+                <tr key={g.id}>
+                  <td>{g.name}</td>
+                  <td>{g.sourceLanguage}</td>
+                  <td>{g.targetLanguage}</td>
+                  <td>{new Date(g.createdAt).toLocaleString()}</td>
                   <td style={{  textAlign: "right" }}>
                     <EllipsisDropdown>
-                      <Link href={`/glosary/${job.id}`} className="dropdown-item">
+                      <Link href={`/glosary/${g.id}`} className="dropdown-item">
                         <i className="fas fa-eye"></i> View
                       </Link>
-                      <Link href={`/glosary/${job.id}/edit`} className="dropdown-item">
+                      <Link href={`/glosary/${g.id}/edit`} className="dropdown-item">
                         <i className="fas fa-edit"></i> Edit
                       </Link>
-                      <form method="POST">
-                        <input type="hidden" name="id" value={job.id} />
-                        <button type="submit" className="dropdown-item delete">
-                          <i className="fas fa-trash"></i> Delete
-                        </button>
-                      </form>
+                      <DeleteGlossaryButton glossaryId={g.id} />
                     </EllipsisDropdown>
                   </td>
                 </tr>

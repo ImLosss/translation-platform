@@ -48,7 +48,10 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus }: ButtonGenera
               }
 
               const dataToPass = {
-                jobId: jobId,
+                translationId: response.data.translationId, // Atau variabel id translation Anda
+                glosary: response.data.glosary, // Object glosary dari backend NestJS
+                sourceLang: response.data.sourceLang,
+                targetLang: response.data.targetLang,
                 recommendations: response.data.recommendations
               };
               sessionStorage.setItem('tempGlossary', JSON.stringify(dataToPass));

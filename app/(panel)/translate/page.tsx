@@ -1,6 +1,6 @@
 import TableData from "@/app/components/translate/TableData";
 
-export default function AdminPage() {
+export default function TranslatePage() {
   return (
     <TableData />
   );
