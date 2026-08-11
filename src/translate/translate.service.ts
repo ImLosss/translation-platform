@@ -1,5 +1,5 @@
 // src/translate/translate.service.ts
-import { Injectable, BadRequestException, NotFoundException, Logger, NotImplementedException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger, NotImplementedException, ConflictException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { TranslationProcessEvent } from './events/translate.event';
@@ -9,6 +9,7 @@ import { UpdateTranslationDto } from './dto/update-subtitle-row.dto';
 import { TranslateFromDriveDto } from './dto/translate-from-drive.dto';
 import { LlmService } from 'src/llm/llm.service';
 import { CurrencyService } from 'src/currency/currency.service';
+import { SaveGlossaryRecommendationDto } from './dto/save-glossary-recommendation.dto';
 
 export interface SrtBlock {
   line: number;
@@ -17,9 +18,9 @@ export interface SrtBlock {
 }
 
 export interface GlosaryEntry {
-    source: string;
-    target: string;
-    detail: string;
+  source: string;
+  target: string;
+  detail: string;
 }
 
 @Injectable()
@@ -43,7 +44,7 @@ export class TranslateService {
       throw new UnauthorizedException();
     }
 
-    if(user.balance < 2000) {
+    if (user.balance < 2000) {
       throw new ConflictException('Required balance is at least 2000. Please top up your balance.');
     }
 
@@ -104,7 +105,7 @@ export class TranslateService {
       throw new UnauthorizedException();
     }
 
-    if(user.balance < 2000) {
+    if (user.balance < 2000) {
       throw new ConflictException('Required balance is at least 2000. Please top up your balance.');
     }
 
@@ -128,7 +129,7 @@ export class TranslateService {
     const translationEvent = new TranslationProcessEvent();
     translationEvent.translation = translationRecord;
     this.eventEmitter.emit('translation.drive.process', translationEvent);
-    
+
     return {
       success: true,
       message: 'Translation started in background.',
@@ -150,7 +151,7 @@ export class TranslateService {
         provider: true,
         glossary: {
           include: {
-            entries: { select: { id: true,source: true, target: true, detail: true } },
+            entries: { select: { id: true, source: true, target: true, detail: true } },
           },
         },
       },
@@ -160,7 +161,7 @@ export class TranslateService {
       throw new Error(`Translation dengan ID ${translationId} tidak ditemukan.`);
     }
 
-    if(translation.user.balance < 2000) {
+    if (translation.user.balance < 2000) {
       throw new ConflictException('Required balance is at least 2000. Please top up your balance.');
     }
 
@@ -315,12 +316,14 @@ ${translatedCorpus}`;
         return {
           translationId: translationId,
           glosary: translation.glossary,
+          sourceLang: translation.sourceLang,
+          targetLang: translation.targetLang,
           recommendations: filteredRecommendations
         };
 
       } catch (error) {
         this.logger.warn(`Percobaan ke-${attempt} gagal: ${error.message}`);
-        
+
         if (attempt >= maxRetries) {
           this.logger.error(`Gagal mendapatkan rekomendasi glosarium setelah ${maxRetries} kali percobaan.`);
           throw new Error(`Gagal memproses rekomendasi glosarium karena format tidak valid setelah ${maxRetries}x percobaan.`);
@@ -383,11 +386,11 @@ ${translatedCorpus}`;
     await this.prisma.$transaction(async (tx) => {
       // Update row lama
       await Promise.all(
-        updateRows.map((row) => 
+        updateRows.map((row) =>
           tx.translationRow.update({
             where: { id: row.id },
             data: {
-              sequence: row.sequence, 
+              sequence: row.sequence,
               startTime: row.start,
               endTime: row.end,
               sourceText: row.source,
@@ -400,9 +403,9 @@ ${translatedCorpus}`;
       // Tambah row baru
       if (createRows.length) {
         await tx.translationRow.createMany({
-          data: createRows.map((row) => ({ 
+          data: createRows.map((row) => ({
             translationId,
-            sequence: row.sequence, 
+            sequence: row.sequence,
             startTime: row.start,
             endTime: row.end,
             sourceText: row.source,
@@ -472,10 +475,103 @@ ${translatedCorpus}`;
   async getUserTranslations(userId: number) {
     const translations = await this.prisma.translation.findMany({
       where: { userId: userId },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: {
+        glossary: {
+          select: {
+            id: true,
+            name: true
+          },
+        }
+      }
     });
     return translations;
   }
 
-  
+  async saveGlossaryRecommendation(payload: SaveGlossaryRecommendationDto, userId: number) {
+    const { glosaryId, translationId, name, sourceLanguage, targetLanguage, entries } = payload;
+
+    if (!entries || entries.length === 0) {
+      throw new BadRequestException('Glosary entries tidak boleh kosong.');
+    }
+
+    // ==========================================
+    // SKENARIO 1: APPEND KE GLOSARIUM YANG SUDAH ADA
+    // ==========================================
+    if (glosaryId) {
+      // 1. Verifikasi apakah glosarium ada dan milik user yang sedang login
+      const existingGlossary = await this.prisma.glossary.findUnique({
+        where: { id: glosaryId, userId: userId },
+      });
+
+      if (!existingGlossary) {
+        throw new ForbiddenException(`Glossary with ID ${glosaryId} not found or access denied.`);
+      }
+
+      // 2. Insert entri baru menggunakan createMany (lebih cepat & efisien)
+      const createdEntries = await this.prisma.glossaryEntry.createMany({
+        data: entries.map((entry) => ({
+          glossaryId: glosaryId,
+          source: entry.source,
+          target: entry.target,
+          detail: entry.detail || null,
+        })),
+        skipDuplicates: true, // Opsional: mengabaikan error jika ada unique constraint yang bentrok
+      });
+
+      return {
+        message: 'Successfully added entries to existing glossary.',
+        glossaryId: glosaryId,
+        addedEntries: createdEntries.count,
+      };
+    }
+
+    // ==========================================
+    // SKENARIO 2: BUAT GLOSARIUM BARU
+    // ==========================================
+    else {
+      // Menggunakan $transaction agar jika salah satu gagal, semuanya di-rollback
+      return await this.prisma.$transaction(async (tx) => {
+
+        // 1. Buat Glosarium baru beserta entri-entrinya (Nested Writes Prisma)
+        const newGlossary = await tx.glossary.create({
+          data: {
+            name: name,
+            sourceLanguage: sourceLanguage,
+            targetLanguage: targetLanguage,
+            userId: userId,
+            entries: {
+              create: entries.map((entry) => ({
+                source: entry.source,
+                target: entry.target,
+                detail: entry.detail || null,
+              })),
+            },
+          },
+        });
+
+        // 2. Jika ada translationId, tautkan glosarium baru ini ke tabel Translation
+        if (translationId) {
+          const translation = await tx.translation.findUnique({
+            where: { id: translationId, userId: userId },
+          });
+
+          if (!translation) {
+            throw new NotFoundException(`Translation dengan ID ${translationId} tidak ditemukan.`);
+          }
+
+          await tx.translation.update({
+            where: { id: translationId },
+            data: { glossaryId: newGlossary.id },
+          });
+        }
+
+        return {
+          message: 'Successfully created new glossary.',
+          glossaryId: newGlossary.id,
+          addedEntries: entries.length,
+        };
+      });
+    }
+  }
 }

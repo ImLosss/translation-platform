@@ -10,6 +10,7 @@ import { TranslateFromDriveDto } from './dto/translate-from-drive.dto';
 import { RolesGuard } from 'src/auth/role.guard';
 import { Role } from 'generated/prisma/enums';
 import { Roles } from 'src/auth/roles.decorator';
+import { SaveGlossaryRecommendationDto } from './dto/save-glossary-recommendation.dto';
 
 @Controller('translate')
 @UseInterceptors(ActivityLogInterceptor)
@@ -36,6 +37,13 @@ export class TranslateController {
     async generateGlossaryRecommendations(@Body('translationId') translationId: number, @Req() req: any) {
         const userId = req.user.sub;
         return this.translateService.generateGlossaryRecommendations(translationId, userId);
+    }
+
+    @Post('save-recommendation')
+    @LogActivity('Save Glossary Recommendations')
+    async saveGlossaryRecommendations(@Body() payload: SaveGlossaryRecommendationDto, @Req() req: any) {
+        const userId = req.user.sub;
+        return this.translateService.saveGlossaryRecommendation(payload, userId);
     }
 
     @Get()
