@@ -98,4 +98,26 @@ export class TranslateController {
             disposition: `attachment; filename="${fileName}"`, // Menggantikan res.setHeader
         });
     }
+
+    @Get('downloadsource/:translationId')
+    @LogActivity('Download Source Translation File')
+    @Header('Content-Type', 'application/x-subrip') // MIME type untuk file SRT
+    async downloadSourceSrt(
+        @Param('translationId') translationId: string,
+        @Req() req: any,
+    ): Promise<StreamableFile> {
+        const userId = req.user.sub;
+        
+        // 1. Dapatkan string SRT dari service
+        const { fileName, srtContent } = await this.translateService.generateSourceSrtFile(Number(translationId), userId);
+
+        // 2. Ubah string menjadi Buffer
+        const buffer = Buffer.from(srtContent, 'utf-8');
+        
+        // 3. Kembalikan file dengan options internal dari StreamableFile
+        return new StreamableFile(buffer, {
+            type: 'application/x-subrip', // Menggantikan @Header
+            disposition: `attachment; filename="${fileName}"`, // Menggantikan res.setHeader
+        });
+    }
 }

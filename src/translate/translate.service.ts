@@ -472,6 +472,35 @@ ${translatedCorpus}`;
     };
   }
 
+  async generateSourceSrtFile(translationId: number, userId: number): Promise<{ fileName: string; srtContent: string }> {
+    const translation = await this.prisma.translation.findUnique({
+      where: { id: translationId, userId: userId },
+      include: {
+        rows: {
+          orderBy: { sequence: 'asc' }
+        }
+      }
+    });
+
+    if (!translation) throw new NotFoundException('Data terjemahan tidak ditemukan.');
+
+    if (translation.status !== 'COMPLETED' && translation.status !== 'PROCESSING') throw new BadRequestException('File terjemahan belum selesai diproses.');
+
+    let srtContent = '';
+
+    for (const row of translation.rows) {
+      srtContent += `${row.sequence}\n`;
+      srtContent += `${row.startTime} --> ${row.endTime}\n`;
+      // Gunakan targetText (hasil LLM) jika ada, jika kosong gunakan sourceText
+      srtContent += `${row.sourceText}\n\n`;
+    }
+
+    return {
+      fileName: `source_${translation.fileName}.srt`,
+      srtContent: srtContent.trim()
+    };
+  }
+
   async getUserTranslations(userId: number) {
     const translations = await this.prisma.translation.findMany({
       where: { userId: userId },
