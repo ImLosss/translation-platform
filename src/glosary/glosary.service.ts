@@ -141,28 +141,54 @@ export class GlosaryService {
     };
   }
 
-  async generateGlosaryFile(glosaryId: number, userId: number): Promise<{ fileName: string; glosaryContent: string }> {
+  async generateGlosaryFile(
+    glosaryId: number,
+    userId: number
+  ): Promise<{ fileName: string; glosaryContent: string }> {
     const glosary = await this.prisma.glossary.findUnique({
-      where: { id: glosaryId, userId: userId },
+      where: {
+        id: glosaryId,
+        userId: userId,
+      },
       include: {
         entries: {
-          orderBy: { id: 'asc' }
-        }
-      }
+          orderBy: {
+            id: 'asc',
+          },
+        },
+      },
     });
 
-    if (!glosary) throw new NotFoundException('Glossary not found.');
-
-    let glosaryContent = '';
-
-    // send format csv
-    for (const row of glosary.entries) {
-      glosaryContent += `${row.source}\t${row.target}\t${row.detail || ''}\n`;
+    if (!glosary) {
+      throw new NotFoundException('Glossary not found.');
     }
+
+    const escapeCsv = (value: string | null | undefined): string => {
+      const str = value ?? '';
+
+      // Escape tanda kutip dengan menggandakannya
+      const escaped = str.replace(/"/g, '""');
+
+      // Field CSV dibungkus dengan tanda kutip
+      return `"${escaped}"`;
+    };
+
+    const rows = [
+      ['source', 'target', 'detail'],
+      ...glosary.entries.map((row) => [
+        row.source,
+        row.target,
+        row.detail ?? '',
+      ]),
+    ];
+
+    const glosaryContent = rows
+      .map((row) => row.map(escapeCsv).join(','))
+      .join('\n');
 
     return {
       fileName: `translated_${glosary.name}.csv`,
-      glosaryContent: glosaryContent.trim()
+      glosaryContent,
     };
   }
 }
