@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateGlosaryDto } from './dto/create-glosary.dto';
 import { UpdateGlosaryDto } from './dto/update-glosary.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -138,6 +138,31 @@ export class GlosaryService {
     return {
       success: true,
       message: 'Glosarium berhasil diperbarui.',
+    };
+  }
+
+  async generateGlosaryFile(glosaryId: number, userId: number): Promise<{ fileName: string; glosaryContent: string }> {
+    const glosary = await this.prisma.glossary.findUnique({
+      where: { id: glosaryId, userId: userId },
+      include: {
+        entries: {
+          orderBy: { id: 'asc' }
+        }
+      }
+    });
+
+    if (!glosary) throw new NotFoundException('Glossary not found.');
+
+    let glosaryContent = '';
+
+    // send format csv
+    for (const row of glosary.entries) {
+      glosaryContent += `${row.source}\t${row.target}\t${row.detail || ''}\n`;
+    }
+
+    return {
+      fileName: `translated_${glosary.name}.csv`,
+      glosaryContent: glosaryContent.trim()
     };
   }
 }

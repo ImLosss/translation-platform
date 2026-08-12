@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Req, Put, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Req, Put, UseInterceptors, StreamableFile, Header } from '@nestjs/common';
 import { GlosaryService } from './glosary.service';
 import { CreateGlosaryDto } from './dto/create-glosary.dto';
 import { UpdateGlosaryDto } from './dto/update-glosary.dto';
@@ -11,12 +11,12 @@ import { LogActivity } from 'src/activity-log/log-activity.decorator';
 @UseInterceptors(ActivityLogInterceptor)
 @UseGuards(JwtAuthGuard)
 export class GlosaryController {
-  constructor(private readonly glosaryService: GlosaryService) {}
+  constructor(private readonly glosaryService: GlosaryService) { }
 
   @Post()
   @LogActivity('Create Glosary')
   create(@Body() createGlosaryDto: CreateGlosaryDto, @Req() req: any) {
-    const userId = req.user.sub; 
+    const userId = req.user.sub;
     return this.glosaryService.create({ ...createGlosaryDto, userId });
   }
 
@@ -36,7 +36,7 @@ export class GlosaryController {
   @Patch(':id')
   @LogActivity('Update Glosary')
   update(
-    @Param('id', ParseIntPipe) id: number, 
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateGlosaryDto: UpdateGlosaryDto
   ) {
     return this.glosaryService.update(id, updateGlosaryDto);
@@ -58,5 +58,27 @@ export class GlosaryController {
   ) {
     const userId = req.user.sub;
     return this.glosaryService.updateGlosary(id, userId, dto);
+  }
+
+  @Get('downloadglosary/:glosaryId')
+  @LogActivity('Download Glosary File')
+  @Header('Content-Type', 'application/csv')
+  async downloadSourceSrt(
+    @Param('glosaryId') glosaryId: string,
+    @Req() req: any,
+  ): Promise<StreamableFile> {
+    const userId = req.user.sub;
+
+    // 1. Dapatkan string CSV dari service
+    const { fileName, glosaryContent } = await this.glosaryService.generateGlosaryFile(Number(glosaryId), userId);
+
+    // 2. Ubah string menjadi Buffer
+    const buffer = Buffer.from(glosaryContent, 'utf-8');
+
+    // 3. Kembalikan file dengan options internal dari StreamableFile
+    return new StreamableFile(buffer, {
+      type: 'application/csv', // Menggantikan @Header
+      disposition: `attachment; filename="${fileName}"`, // Menggantikan res.setHeader
+    });
   }
 }
