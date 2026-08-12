@@ -98,6 +98,9 @@ export default async function TableData() {
                       <Link href={`/glosary/${g.id}/edit`} className="dropdown-item">
                         <i className="fas fa-edit"></i> Edit
                       </Link>
+                      <Link href={`api/glosary/${g.id}/download`} className={`dropdown-item`}>
+                        <i className="fas fa-download"></i> Download CSV
+                      </Link>
                       <DeleteGlossaryButton glossaryId={g.id} />
                     </EllipsisDropdown>
                   </td>
