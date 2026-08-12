@@ -163,6 +163,10 @@ export class GlosaryService {
       throw new NotFoundException('Glossary not found.');
     }
 
+    if(!glosary.entries || glosary.entries.length === 0) {
+      throw new BadRequestException('Glossary has no entries to download.');
+    }
+
     const escapeCsv = (value: string | null | undefined): string => {
       const str = value ?? '';
 
@@ -187,7 +191,7 @@ export class GlosaryService {
       .join('\n');
 
     return {
-      fileName: `translated_${glosary.name}.csv`,
+      fileName: `${glosary.name}.csv`,
       glosaryContent,
     };
   }
