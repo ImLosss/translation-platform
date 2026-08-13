@@ -102,7 +102,9 @@ export class DriveService {
 
     // Hindari nama file bentrok dengan ID random tambahan
     const uniqueId = Math.random().toString(36).substring(2, 8);
-    const destPath = path.join(downloadDir, `${uniqueId}_${originalName}`);
+    const baseName = path.basename(originalName, path.extname(originalName));
+    const fileName = `${uniqueId}_${baseName}${ext}`;
+    const destPath = path.join(downloadDir, fileName);
     const dest = fs.createWriteStream(destPath);
 
     // 5. Eksekusi Download Stream
