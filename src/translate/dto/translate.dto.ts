@@ -8,17 +8,17 @@ export class TranslateDto {
   @IsNotEmpty()
   fileName!: string;
 
-  @IsInt()
-  @IsNotEmpty()
+  @IsInt({ message: 'LLM Model must be a valid integer' })
+  @IsNotEmpty({ message: 'LLM Model is required' })
   providerId!: number;
 
   @IsString()
-  @IsNotEmpty()
-  @IsDifferentFrom('targetLang')
+  @IsNotEmpty({ message: 'Source Language is required' })
+  @IsDifferentFrom('targetLang', { message: 'Source Language cannot be the same as Target Language' })
   sourceLang!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Target Language is required' })
   targetLang!: string;
 
   @IsString()
@@ -26,7 +26,7 @@ export class TranslateDto {
   videoSource?: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'SRT Content is required' })
   @IsValidSrt()
   srtContent!: string;
 
