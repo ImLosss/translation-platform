@@ -25,7 +25,7 @@ export class IsSrtConstraint implements ValidatorConstraintInterface {
       // Kita jalankan fungsi parse Anda untuk menguji formatnya
       this.parseSrt(content);
       return true; // Jika tembus tanpa error, berarti valid
-    } catch (error) {
+    } catch (error: any) {
       // Tangkap pesan error spesifik dari fungsi parseSrt (misal: "Terdapat kesalahan format urutan...")
       this.customErrorMessage = error.message;
       return false; 
@@ -68,11 +68,11 @@ export class IsSrtConstraint implements ValidatorConstraintInterface {
           srtJson.line = Number(item);
           lastState = 'line';
         } else {
-          throw new BadRequestException(`Terdapat kesalahan format urutan pada SRT di baris ke-${currentLine}`);
+          throw new BadRequestException(`Invalid sequence format on line ${currentLine}`);
         }
       } else if (lastState === 'line') {
         if (!this.isSrtTimestamp(item)) {
-          throw new BadRequestException(`Terdapat kesalahan pada format timestamp SRT di baris ke-${currentLine}`);
+          throw new BadRequestException(`The timestamp format is invalid on line ${currentLine}`);
         }
         srtJson.timestamp = item;
         lastState = 'timestamp';

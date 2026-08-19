@@ -8,7 +8,7 @@ export class TranslateDto {
   @IsNotEmpty()
   fileName!: string;
 
-  @IsInt({ message: 'LLM Model must be a valid integer' })
+  @IsInt({ message: 'LLM Model is required' })
   @IsNotEmpty({ message: 'LLM Model is required' })
   providerId!: number;
 
