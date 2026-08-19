@@ -69,11 +69,6 @@ export class DeepseekService implements LlmProvider {
       const promptCacheHitTokens = usage.prompt_cache_hit_tokens || 0;
       const completionTokens = usage.completion_tokens || 0;
 
-      // Asumsi perhitungan dalam CNY
-      const costInputMissCny = (promptCacheMissTokens / 1_000_000) * 2;
-      const costInputHitCny = (promptCacheHitTokens / 1_000_000) * 0.5;
-      const costOutputCny = (completionTokens / 1_000_000) * 8;
-
       // 6. Kembalikan data sesuai kontrak interface LlmResponse
       return {
         status: true,
@@ -82,10 +77,9 @@ export class DeepseekService implements LlmProvider {
         inputCacheTokens: promptCacheHitTokens,
         outputTokens: completionTokens,
         totalTokens: usage.total_tokens || 0,
-        cost: costInputHitCny + costInputMissCny + costOutputCny,
       };
 
-    } catch (error) {
+    } catch (error: any) {
       // 7. Tangani Error dengan rapi
       this.logger.error(`Request DeepSeek gagal: ${error.message}`, error.stack);
 
@@ -120,7 +114,7 @@ export class DeepseekService implements LlmProvider {
 
       
       return responseData.is_available;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to check DeepSeek availability: ${error.message}`, error.stack);
       return false;
     }

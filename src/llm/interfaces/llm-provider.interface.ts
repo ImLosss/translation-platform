@@ -5,7 +5,6 @@ export interface LlmResponse {
   inputCacheTokens?: number;
   outputTokens?: number;
   totalTokens?: number;
-  cost?: number;
 }
 
 export interface LlmProvider {

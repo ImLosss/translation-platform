@@ -22,6 +22,10 @@ export class TranslateDto {
   targetLang!: string;
 
   @IsString()
+  @IsOptional()
+  videoSource?: string;
+
+  @IsString()
   @IsNotEmpty()
   @IsValidSrt()
   srtContent!: string;

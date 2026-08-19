@@ -54,6 +54,7 @@ export class TranslateService {
         fileName: dto.fileName || 'Untitled',
         sourceLang: dto.sourceLang,
         targetLang: dto.targetLang,
+        videoSource: dto.videoSource || null,
         providerId: dto.providerId,
         userId: userId,
         batchSize: dto.batchSize || 50,
