@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Inter } from "next/font/google";
 import "./globals.css";
-import { AlertProvider } from "./components/ui/Alert";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,10 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
       </head>
       <body>
-        <AlertProvider>
-          {/* Hanya render children, TIDAK ADA Sidebar di sini */}
           {children}
-        </AlertProvider>
       </body>
     </html>
   );
