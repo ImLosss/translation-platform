@@ -100,6 +100,9 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
           <Link href="/translate" className={isActive('/translate') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-film"></i> Translations
           </Link>
+          <Link href="/translate-doc" className={isActive('/translate-doc') ? 'active' : ''} onClick={closeSidebar}>
+            <i className="fas fa-file"></i> Translation Doc
+          </Link>
           <Link href="/glosary" className={isActive('/glosary') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-file-alt"></i> Glosary
           </Link>
@@ -107,10 +110,10 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
           <div className="nav-label" style={{ marginTop: 12 }}>
             Management
           </div>
-          <Link href="/billing" className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
+          {/* <Link href="/billing" className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-credit-card"></i> Billing
             <span className="badge">Pro</span>
-          </Link>
+          </Link> */}
           <Link href="/profile" className={isActive('/profile') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-user"></i> Profile
           </Link>
@@ -125,9 +128,9 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
               <Link href="/logs" className={isActive('/logs') ? 'active' : ''} onClick={closeSidebar}>
                 <i className="fas fa-history"></i> Logs
               </Link>
-              <Link href="/settings" className={isActive('/settings') ? 'active' : ''} onClick={closeSidebar}>
+              {/* <Link href="/settings" className={isActive('/settings') ? 'active' : ''} onClick={closeSidebar}>
                 <i className="fas fa-cog"></i> Settings
-              </Link>
+              </Link> */}
             </>
           )}
         </nav>

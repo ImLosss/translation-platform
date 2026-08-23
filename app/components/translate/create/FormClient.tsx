@@ -65,12 +65,12 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
   const handleFile = useCallback(
     (file: File) => {
       const ext = file.name.split('.').pop()?.toLowerCase();
-      if (!['srt', 'ass', 'txt'].includes(ext || '')) {
-        showAlert('Format file tidak didukung. Gunakan .srt, .ass, atau .txt', 'error');
+      if (!['srt'].includes(ext || '')) {
+        showAlert('Unsupported file format. Please upload an .srt file.', 'error');
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        showAlert('Ukuran file terlalu besar. Maksimal 10MB.', 'error');
+        showAlert('File size too large. Maximum 10MB.', 'error');
         return;
       }
 
@@ -309,7 +309,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
               <input
                 type="file"
                 id="fileInput"
-                accept=".srt"
+                // accept=".srt"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) handleFile(file);
