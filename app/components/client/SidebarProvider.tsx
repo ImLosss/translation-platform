@@ -100,9 +100,9 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
           <Link href="/translate" className={isActive('/translate') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-film"></i> Translations
           </Link>
-          <Link href="/translate-doc" className={isActive('/translate-doc') ? 'active' : ''} onClick={closeSidebar}>
+          {/* <Link href="/translate-doc" className={isActive('/translate-doc') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-file"></i> Translation Doc
-          </Link>
+          </Link> */}
           <Link href="/glosary" className={isActive('/glosary') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-file-alt"></i> Glosary
           </Link>
