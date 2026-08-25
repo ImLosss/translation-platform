@@ -110,10 +110,13 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
           <div className="nav-label" style={{ marginTop: 12 }}>
             Management
           </div>
-          {/* <Link href="/billing" className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-credit-card"></i> Billing
-            <span className="badge">Pro</span>
-          </Link> */}
+          <Link href="/topup" className={isActive('/topup') ? 'active' : ''} onClick={closeSidebar}>
+            <i className="fas fa-wallet"></i> Top Up
+          </Link>
+          <Link href="/billing" className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
+            <i className="fas fa-file-invoice-dollar"></i> Billing
+            {/* <span className="badge">Pro</span> */}
+          </Link>
           <Link href="/profile" className={isActive('/profile') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-user"></i> Profile
           </Link>
