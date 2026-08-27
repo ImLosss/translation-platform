@@ -59,7 +59,7 @@ export class UserController {
   }
 
   @Get('me')
-  @LogActivity('Create Translation Request')
+  @LogActivity('Get user profile')
   async getMe(@Req() req: any) {
     const userId = Number(req.user.sub);
     return await this.userService.findOne(userId);

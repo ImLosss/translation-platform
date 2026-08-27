@@ -11,6 +11,7 @@ import { UserModule } from './user/user.module';
 import { DriveModule } from './drive/drive.module';
 import { ProviderModule } from './provider/provider.module';
 import { CurrencyModule } from './currency/currency.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CurrencyModule } from './currency/currency.module';
     DriveModule,
     ProviderModule,
     CurrencyModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

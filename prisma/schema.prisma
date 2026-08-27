@@ -36,6 +36,7 @@ model User {
   glossaries    Glossary[]
   translations Translation[]
   activityLogs  ActivityLog[]
+  transactions Transaction[]
 }
 
 model ActivityLog {
@@ -162,6 +163,21 @@ model Provider {
   status            ProviderStatus @default(ACTIVE)
 
   translations      Translation[]
+}
+
+model Transaction {
+  id          String   @id // Kita gunakan string untuk orderId kustom (misal: TRX-12345)
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  
+  amount      Float
+  status      String   @default("PENDING") // PENDING, SETTLEMENT, EXPIRE
+  paymentUrl  String?  // Untuk menyimpan URL QRIS
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
 }
 
 enum ProviderStatus {

@@ -164,7 +164,7 @@ export class TranslateListener {
 
       this.logger.log(`Translasi ID ${payload.translation.id} selesai! Total Request: ${totReq}`);
 
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Translasi ID ${payload.translation.id} gagal:`, error.stack);
       await this.prisma.translation.update({
         where: { id: payload.translation.id },
@@ -263,7 +263,7 @@ export class TranslateListener {
       this.logger.log('Memicu event translation.process (LLM)...');
       this.eventEmitter.emit('translation.process', payload);
 
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Gagal melakukan ekstraksi audio/srt: ${error.message}`, error.stack);
       await this.prisma.translation.update({
         where: { id: payload.translation.id },
@@ -354,7 +354,7 @@ Detail yang perlu diperhatikan dalam penerjemahan dari ${sourceLang} ke ${target
     if (typeof llmResult === 'string') {
       try {
         parsedResult = JSON.parse(llmResult);
-      } catch (error) {
+      } catch (error: any) {
         this.logger.error('Gagal melakukan JSON.parse pada respons LLM:', llmResult);
         return false; // <-- PERBAIKAN: Berikan return false secara eksplisit
       }
@@ -386,7 +386,7 @@ Detail yang perlu diperhatikan dalam penerjemahan dari ${sourceLang} ke ${target
       });
       this.logger.log(`Berhasil menyimpan batch ke database!`);
       return true;
-    } catch (dbError) {
+    } catch (dbError: any) {
       this.logger.error('Gagal mengeksekusi transaksi database:', dbError);
       return false; // Mengembalikan false agar batch ini di-retry oleh loop utama
     }
@@ -412,18 +412,18 @@ Detail yang perlu diperhatikan dalam penerjemahan dari ${sourceLang} ke ${target
             fs.unlinkSync(videoPath);
             this.logger.log(`Video asli berhasil dihapus: ${videoPath}`);
             resolve(audioPath); // Kembalikan lokasi file audio
-          } catch (err) {
+          } catch (err: any) {
             this.logger.error(`Gagal menghapus video asli: ${err.message}`);
             resolve(audioPath); // Tetap kembalikan path audio meski video gagal dihapus
           }
         })
-        .on('error', async (err) => {
+        .on('error', async (err: any) => {
           this.logger.error(`Error saat mengekstrak audio: ${err.message}`);
 
           // Jika gagal ekstrak, usahakan tetap hapus videonya agar tidak menjadi sampah
           try {
             fs.unlinkSync(videoPath);
-          } catch (e) { }
+          } catch (e: any) { }
 
           reject(err);
         })

@@ -322,7 +322,7 @@ ${translatedCorpus}`;
           recommendations: filteredRecommendations
         };
 
-      } catch (error) {
+      } catch (error: any) {
         this.logger.warn(`Percobaan ke-${attempt} gagal: ${error.message}`);
 
         if (attempt >= maxRetries) {
