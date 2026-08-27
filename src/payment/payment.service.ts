@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { CreateQrisDto } from './dto/create-qris.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class PaymentService {
@@ -119,8 +120,40 @@ export class PaymentService {
     }
 
     async handlePaymentNotification(notificationData: any) {
-        const { order_id, transaction_status } = notificationData;
+        // 1. Ekstrak semua data yang dibutuhkan dari payload
+        const { 
+            order_id, 
+            transaction_status, 
+            status_code, 
+            gross_amount, 
+            signature_key 
+        } = notificationData;
 
         this.logger.log(`Payload notifikasi diterima: ${JSON.stringify(notificationData)}`);
+
+        // 3. Gabungkan string sesuai rumus Midtrans
+        const inputString = `${order_id}${status_code}${gross_amount}${this.serverKey}`;
+
+        // 4. Lakukan Hashing menggunakan SHA512
+        const mySignature = crypto.createHash('sha512').update(inputString).digest('hex');
+
+        // 5. Validasi Keamanan
+        if (mySignature !== signature_key) {
+            this.logger.error(`🚨 ALERT: Invalid Signature Key untuk Order ID: ${order_id}! Potensi manipulasi data.`);
+            throw new Error('Invalid Midtrans Signature Key'); 
+        }
+
+        this.logger.log(`✅ Signature Valid! Memproses status: ${transaction_status} untuk Order ID: ${order_id}`);
+
+        if (transaction_status === 'settlement' || transaction_status === 'capture') {
+            // TODO: Update status pesanan menjadi LUNAS di database
+            
+        } else if (transaction_status === 'cancel' || transaction_status === 'deny' || transaction_status === 'expire') {
+            // TODO: Update status pesanan menjadi GAGAL/BATAL di database
+            
+        } else if (transaction_status === 'pending') {
+            // TODO: Update status pesanan menjadi MENUNGGU PEMBAYARAN
+            
+        }
     }
 }
