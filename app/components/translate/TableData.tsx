@@ -117,11 +117,11 @@ export default async function TableData() {
                   <td>{job.sourceLang}</td>
                   <td>{job.targetLang}</td>
                   <td>{job.glossary ? job.glossary.name : "No"}</td>
-                  <td>{job.totalToken}</td>
-                  <td>{job.totalCost.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>{job.totalToken}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>{job.totalCost.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</td>
                   <td><span className={`status-badge ${statusClass[job.status]}`}>{job.status}</span></td>
-                  <td>{new Date(job.createdAt).toLocaleString()}</td>
-                  <td style={{ textAlign: "right" }}>
+                  <td style={{ whiteSpace: "nowrap" }}>{new Date(job.createdAt).toLocaleString()}</td>
+                  <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                     {/* Tambahkan div container flex di sini */}
                     <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "4px", flexWrap: "nowrap" }}>
 

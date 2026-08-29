@@ -167,7 +167,7 @@ export default async function UsersPage({
                         </td>
 
                         {/* Actions */}
-                        <td style={{ padding: '12px 8px' }}><UserActions userId={user.id} userName={user.username} /></td>
+                        <td style={{ padding: '12px 8px', whiteSpace: 'nowrap' }}><UserActions userId={user.id} userName={user.username} /></td>
 
                       </tr>
                     ))

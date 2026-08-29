@@ -172,7 +172,7 @@ export default function ProviderManager() {
                                             {p.status}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '8px', textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                    <td style={{ padding: '8px', textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end', whiteSpace: 'nowrap' }}>
                                         <button className="btn btn-outline btn-sm" onClick={() => handleEdit(p)}><i className="fas fa-edit" /></button>
                                         <button className="btn btn-outline btn-sm" onClick={() => handleDelete(p.id)} style={{ color: 'var(--accent-red)', borderColor: 'transparent' }}><i className="fas fa-trash-alt" /></button>
                                     </td>

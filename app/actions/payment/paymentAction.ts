@@ -2,17 +2,16 @@
 
 import { api } from "@/app/lib/api";
 
-export async function createQrisAction(payload: { amount: number; method: string }) {
+export async function createPaymentAction(payload: { amount: number; method: string }) {
     try {
-        // Asumsi endpoint NestJS Anda adalah POST /payment/qris
-        const data = await api<any>('/payment/qris', {
+        const data = await api<any>('/payment/charge', {
             method: 'POST',
             body: JSON.stringify(payload),
         });
 
         return { success: true, data };
     } catch (error: any) {
-        console.error("Gagal membuat QRIS:", error);
+        console.error("Gagal membuat transaksi:", error);
         return { success: false, message: error.message || 'Gagal memproses pembayaran' };
     }
 }

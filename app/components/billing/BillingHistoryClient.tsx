@@ -83,8 +83,6 @@ export default function BillingHistoryClient({ initialTransactions }: Props) {
                             <tr>
                                 <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>Transaction ID</th>
                                 <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>Date</th>
-                                <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>Description</th>
-                                <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>Method</th>
                                 <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>Amount</th>
                                 <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px', textAlign: 'center' }}>Status</th>
                             </tr>
@@ -92,11 +90,9 @@ export default function BillingHistoryClient({ initialTransactions }: Props) {
                         <tbody>
                             {transactions.length > 0 ? (
                                 transactions.map((trx) => (
-                                    <tr key={trx.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <tr key={trx.id} style={{ borderBottom: '1px solid var(--border-color)', whiteSpace: 'nowrap' }}>
                                         <td style={{ padding: '15px', fontWeight: '500' }}>{trx.id}</td>
                                         <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{formatDate(trx.createdAt)}</td>
-                                        <td style={{ padding: '15px' }}>Top Up Balance</td>
-                                        <td style={{ padding: '15px', color: 'var(--text-muted)' }}>QRIS</td>
                                         <td style={{ padding: '15px', fontWeight: 'bold' }}>IDR {formatCurrency(trx.amount)}</td>
                                         <td style={{ padding: '15px', textAlign: 'center' }}>
                                             {getStatusBadge(trx.status)}

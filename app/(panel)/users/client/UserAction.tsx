@@ -28,7 +28,7 @@ export default function UserActions({ userId, userName }: { userId: number, user
     };
 
     return (
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Link href={`/users/${userId}`} className="btn btn-outline btn-sm" title="Edit User" style={{ padding: '4px 8px' }}>
                 <i className="fas fa-edit"></i>
             </Link>
@@ -36,7 +36,7 @@ export default function UserActions({ userId, userName }: { userId: number, user
                 onClick={handleDelete}
                 className="btn btn-outline btn-sm"
                 title="Delete User"
-                style={{ padding: '4px 8px', color: 'var(--accent-red)', borderColor: 'var(--accent-red)' }}
+                style={{ color: 'var(--accent-red)', borderColor: 'transparent' }}
             >
                 <i className="fas fa-trash"></i>
             </button>
