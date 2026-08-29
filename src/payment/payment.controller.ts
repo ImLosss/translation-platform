@@ -19,15 +19,16 @@ export class PaymentController {
         return this.paymentService.getPaymentHistory(userId);
     }
 
-    @Post('qris')
+    @Post('charge')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @LogActivity('Create QRIS Transaction')
+    @LogActivity('Create Transaction')
     async createQrisTransaction(@Body() createQrisDto: CreateQrisDto, @Req() req: any) {
         // Ambil userId dari token JWT yang memanggil endpoint ini
         const userId = req.user.sub;
         const method = createQrisDto.method;
         
         if (method == 'qris') return this.paymentService.generateQrisTransaction(userId, createQrisDto);
+        if (method == 'cc') return this.paymentService.generateSnapToken(userId, createQrisDto);
     }
 
     @Get('status/:orderId')
