@@ -5,6 +5,7 @@ import axios from 'axios';
 import { CreateQrisDto } from './dto/create-qris.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as crypto from 'crypto';
+import { ActivityLogService } from 'src/activity-log/activity-log.service';
 
 @Injectable()
 export class PaymentService {
@@ -15,6 +16,7 @@ export class PaymentService {
     constructor(
         private configService: ConfigService,
         private prisma: PrismaService,
+        private activityLogService: ActivityLogService
     ) {
         const key = this.configService.get<string>('MIDTRANS_SERVER_KEY');
         if (!key) throw new Error('MIDTRANS_SERVER_KEY tidak ditemukan!');
@@ -311,12 +313,36 @@ export class PaymentService {
                 });
                 this.logger.log(`✅ Transaksi Sukses & Saldo ditambahkan untuk Order ID: ${order_id}`);
 
+                this.activityLogService.logAction({
+                    userId: transaction.userId, 
+                    action: `Top-Up ${gross_amount} successful`,
+                    method: 'POST',
+                    url: '/payment/webhook',
+                    details: { 
+                        orderId: order_id, 
+                        status: transaction_status
+                    },
+                    statusCode: 200,
+                });
+
             } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
                 await this.prisma.transaction.update({
                     where: { id: order_id },
                     data: { status: 'FAILED' },
                 });
                 this.logger.log(`❌ Transaksi Gagal/Expired untuk Order ID: ${order_id}`);
+
+                this.activityLogService.logAction({
+                    userId: transaction.userId, 
+                    action: `Top-Up ${gross_amount} expired`,
+                    method: 'POST',
+                    url: '/payment/webhook',
+                    details: { 
+                        orderId: order_id, 
+                        status: transaction_status
+                    },
+                    statusCode: 200,
+                });
             }
 
             return { status: 'success' };
