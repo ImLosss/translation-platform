@@ -8,6 +8,7 @@ export interface TransactionDB {
     id: string;
     userId: number;
     amount: number;
+    fee: number;
     status: string; // PENDING, SETTLEMENT, EXPIRE, dll
     paymentUrl: string | null;
     createdAt: string; 
@@ -93,7 +94,7 @@ export default function BillingHistoryClient({ initialTransactions }: Props) {
                                     <tr key={trx.id} style={{ borderBottom: '1px solid var(--border-color)', whiteSpace: 'nowrap' }}>
                                         <td style={{ padding: '15px', fontWeight: '500' }}>{trx.id}</td>
                                         <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{formatDate(trx.createdAt)}</td>
-                                        <td style={{ padding: '15px', fontWeight: 'bold' }}>IDR {formatCurrency(trx.amount)}</td>
+                                        <td style={{ padding: '15px', fontWeight: 'bold' }}>IDR {formatCurrency(trx.amount + trx.fee)}</td>
                                         <td style={{ padding: '15px', textAlign: 'center' }}>
                                             {getStatusBadge(trx.status)}
                                         </td>
