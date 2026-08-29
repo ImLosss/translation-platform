@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAlert } from '@/app/components/ui/Alert'; // Sesuaikan path jika berbeda
+import { useAlert } from '@/app/components/ui/Alert'; 
 import { checkPaymentStatusAction, createQrisAction } from '@/app/actions/payment/paymentAction';
 
 export default function TopupClient() {
@@ -13,11 +13,13 @@ export default function TopupClient() {
     const [paymentMethod, setPaymentMethod] = useState<'qris' | 'credit_card' | ''>('qris');
     const [isProcessing, setIsProcessing] = useState(false);
     
-    // State penampung QRIS dari NestJS
     const [qrisData, setQrisData] = useState<{ qrImageUrl: string; orderId: string; expiryTime?: string } | null>(null);
+    
+    // State baru untuk Timer (15 Menit = 900 Detik)
+    const [countdown, setCountdown] = useState<number>(900);
 
     // =========================================================================
-    // AUTO-POLLING (Cek Status Otomatis setiap 5 detik)
+    // EFEK 1: AUTO-POLLING (Cek Status Otomatis setiap 5 detik)
     // =========================================================================
     useEffect(() => {
         if (!qrisData?.orderId) return;
@@ -35,7 +37,7 @@ export default function TopupClient() {
                 } 
                 else if (status === 'FAILED' || status === 'EXPIRE' || status === 'CANCEL') {
                     clearInterval(intervalId);
-                    showAlert('Waktu pembayaran habis atau transaksi dibatalkan.', 'error');
+                    showAlert('Transaksi dibatalkan atau kedaluwarsa dari server.', 'error');
                     setQrisData(null); 
                 }
             }
@@ -45,18 +47,49 @@ export default function TopupClient() {
     }, [qrisData, router, showAlert]);
 
     // =========================================================================
-    // KALKULASI FEE
+    // EFEK 2: COUNTDOWN TIMER (Hitung mundur 15 menit visual)
+    // =========================================================================
+    useEffect(() => {
+        if (!qrisData) {
+            setCountdown(900); // Reset timer jika tidak ada QR aktif
+            return;
+        }
+
+        const timerId = setInterval(() => {
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timerId);
+                    setQrisData(null); // Otomatis batalkan jika waktu habis
+                    showAlert('Waktu pembayaran QRIS telah habis. Silakan buat transaksi baru.', 'error');
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timerId);
+    }, [qrisData, showAlert]);
+
+    // =========================================================================
+    // KALKULASI & HELPER
     // =========================================================================
     const quickAmounts = [50000, 100000, 250000, 500000];
     const subtotal = Number(amount) || 0;
     let serviceFee = 0;
 
     if (subtotal > 0 && paymentMethod === 'qris') {
-        serviceFee = Math.round(subtotal * 0.007); // Asumsi MDR QRIS 0.7%
+        serviceFee = Math.round(subtotal * 0.007);
     }
     const totalPayment = subtotal + serviceFee;
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID').format(val);
+    
+    // Helper format detik ke menit:detik (contoh: 14:59)
+    const formatCountdown = (seconds: number) => {
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    };
 
     // =========================================================================
     // HANDLER CHECKOUT
@@ -75,11 +108,11 @@ export default function TopupClient() {
 
         setIsProcessing(true);
         try {
-            // Kirim subtotal (nilai bersih) ke backend, NestJS yang akan kalkulasi dan hit ke Midtrans
             const result = await createQrisAction({ amount: subtotal, method: paymentMethod });
             
             if (result.success && result.data.qrImageUrl) {
                 showAlert('QRIS berhasil dibuat! Silakan scan.', 'success');
+                setCountdown(900); // Pastikan timer mulai dari awal saat berhasil
                 setQrisData({
                     qrImageUrl: result.data.qrImageUrl,
                     orderId: result.data.orderId,
@@ -96,7 +129,7 @@ export default function TopupClient() {
     };
 
     // =========================================================================
-    // TAMPILAN 1: QR CODE (Jika berhasil generate)
+    // TAMPILAN 1: QR CODE
     // =========================================================================
     if (qrisData) {
         return (
@@ -105,14 +138,17 @@ export default function TopupClient() {
                     <i className="fas fa-qrcode" style={{ color: 'var(--accent)', marginRight: '10px' }}></i>
                     Scan QRIS untuk Membayar
                 </h2>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '25px' }}>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
                     Order ID: <strong>{qrisData.orderId}</strong>
                 </p>
+
+                {/* Indikator Hitung Mundur */}
+                <div style={{ marginBottom: '25px', padding: '8px 20px', backgroundColor: 'rgba(220, 53, 69, 0.1)', color: 'var(--accent-red, #dc3545)', borderRadius: '30px', display: 'inline-block', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                    <i className="fas fa-clock" style={{ marginRight: '8px' }}></i>
+                    Kadaluarsa dalam: {formatCountdown(countdown)}
+                </div>
                 
-                {/* Wrapper Flexbox untuk memaksa elemen bertumpuk vertikal dan rata tengah */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '25px', marginBottom: '30px' }}>
-                    
-                    {/* Kotak Detail Total Pembayaran */}
                     <div style={{ backgroundColor: 'var(--bg-input)', padding: '20px 40px', borderRadius: '12px', border: '2px dashed var(--border-color)', width: '100%', maxWidth: '350px' }}>
                         <p style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: 'var(--text-muted)' }}>Total Pembayaran</p>
                         <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '2rem' }}>
@@ -120,11 +156,9 @@ export default function TopupClient() {
                         </h3>
                     </div>
                     
-                    {/* Kotak Gambar QR Code */}
                     <div style={{ background: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
                         <img src={qrisData.qrImageUrl} alt="QR Code QRIS" style={{ width: '250px', height: '250px', display: 'block' }} />
                     </div>
-
                 </div>
                 
                 <p style={{ color: 'var(--text-primary)', marginBottom: '20px', lineHeight: '1.6' }}>
