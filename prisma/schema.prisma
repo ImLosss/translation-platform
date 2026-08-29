@@ -166,13 +166,15 @@ model Provider {
 }
 
 model Transaction {
-  id          String   @id // Kita gunakan string untuk orderId kustom (misal: TRX-12345)
+  id          String   @id 
   userId      Int
   user        User     @relation(fields: [userId], references: [id])
   
-  amount      Float
-  status      String   @default("PENDING") // PENDING, SETTLEMENT, EXPIRE
-  paymentUrl  String?  // Untuk menyimpan URL QRIS
+  amount      Float    // Saldo bersih yang akan masuk (misal: 50000)
+  fee         Float    @default(0) // Biaya layanan/platform (misal: 350)
+  
+  status      String   @default("PENDING") 
+  paymentUrl  String?  
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
