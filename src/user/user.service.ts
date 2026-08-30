@@ -104,7 +104,7 @@ export class UserService {
     const today = fromZonedTime(startOfDay, timeZone);
     const tomorrow = fromZonedTime(endOfDay, timeZone);
 
-    const [user, todayStats] = await this.prisma.$transaction([
+    const [user, todayStats, processingCount] = await this.prisma.$transaction([
       this.prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -135,6 +135,13 @@ export class UserService {
           id: true,
         },
       }),
+
+      this.prisma.translation.count({
+        where: {
+          userId,
+          status: 'PROCESSING',
+        },
+      }),
     ]);
 
     if (!user) {
@@ -160,7 +167,7 @@ export class UserService {
       statistics: {
         totalTranslations: user._count.translations || 0,
         totalCostToday: todayStats._sum.totalCost || 0,
-        processing: user._count.translations || 0,
+        processing: processingCount || 0,
       },
     };
   }
