@@ -247,7 +247,7 @@ export default function HomePage() {
           <div className="footer-links">
             <a href="#features">Features</a>
             <a href="#how-it-works">How It Works</a>
-            <a href="#preview">Preview</a>
+            <a href="#glossary">Glossary</a>
             <a href="https://app.subnova.xyz">Login</a>
           </div>
           <div className="footer-copy">
