@@ -44,7 +44,7 @@ export default function HomePage() {
           <p>
             Upload your .srt file or drop a public Google Drive video link.
             SubNova extracts the audio, transcribes it, and delivers accurate,
-            context‑aware translations in 30+ languages.
+            context‑aware translations in multiple languages.
           </p>
           <div className="hero-actions">
             <a
@@ -73,7 +73,7 @@ export default function HomePage() {
           </div>
           <div className="hero-card floating delay-2">
             <i className="fas fa-globe"></i>
-            <span>30+ Languages</span>
+            <span>Multiple Languages</span>
           </div>
           <div className="hero-card floating delay-3">
             <i className="fas fa-file-audio"></i>
@@ -140,8 +140,8 @@ export default function HomePage() {
             </div>
             <h3>Multiple Languages</h3>
             <p>
-              Translate between 30+ languages including English, Indonesian,
-              Japanese, Korean, French, Spanish, and more.
+              Translate between languages including English, Indonesian,
+              Japanese, Chinese, and more.
             </p>
           </div>
 
