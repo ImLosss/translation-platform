@@ -61,7 +61,7 @@ export default function Header() {
       </div>
 
       <div className="header-right">
-        <NotifButtonAndModal />
+        {/* <NotifButtonAndModal /> */}
         <div className="profile-mini">
           <div className="avatar">
             {user.avatar ? (
