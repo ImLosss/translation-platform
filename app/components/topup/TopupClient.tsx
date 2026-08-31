@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Script from 'next/script'; // Import Script bawaan Next.js
+import Script from 'next/script';
 import { useAlert } from '@/app/components/ui/Alert'; 
 import { checkPaymentStatusAction, createPaymentAction } from '@/app/actions/payment/paymentAction';
 
@@ -14,7 +14,6 @@ export default function TopupClient() {
     const [paymentMethod, setPaymentMethod] = useState<'qris' | 'credit_card' | ''>('qris');
     const [isProcessing, setIsProcessing] = useState(false);
     
-    // State penampung QRIS dari NestJS (Hanya untuk metode QRIS)
     const [qrisData, setQrisData] = useState<{ qrImageUrl: string; orderId: string; expiryTime?: string } | null>(null);
     const [countdown, setCountdown] = useState<number>(900);
 
@@ -76,9 +75,9 @@ export default function TopupClient() {
 
     if (subtotal > 0) {
         if (paymentMethod === 'qris') {
-            serviceFee = Math.round(subtotal * 0.007); // MDR QRIS 0.7%
+            serviceFee = Math.round(subtotal * 0.007);
         } else if (paymentMethod === 'credit_card') {
-            serviceFee = 2000 + Math.round(subtotal * 0.027); // CC Fee Rp2000 + 2.7%
+            serviceFee = 2000 + Math.round(subtotal * 0.027);
         }
     }
     const totalPayment = subtotal + serviceFee;
@@ -91,7 +90,7 @@ export default function TopupClient() {
     };
 
     // =========================================================================
-    // HANDLER CHECKOUT (SNAP & QRIS)
+    // HANDLER CHECKOUT
     // =========================================================================
     const handleCheckout = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -103,24 +102,16 @@ export default function TopupClient() {
 
         setIsProcessing(true);
         try {
-            // Gunakan mapped method agar cocok dengan backend DTO Anda
             const backendMethod = paymentMethod === 'credit_card' ? 'cc' : 'qris';
-            
-            // Panggil backend
             const result = await createPaymentAction({ amount: subtotal, method: backendMethod });
             
             if (result.success && result.data) {
-                
-                // SKENARIO 1: PEMBAYARAN KARTU KREDIT (MENGGUNAKAN SNAP)
                 if (backendMethod === 'cc' && result.data.snapToken) {
                     const snap = (window as any).snap;
-                    
                     if (!snap) {
                         showAlert('Sistem pembayaran belum siap. Silakan muat ulang halaman.', 'error');
                         return;
                     }
-
-                    // Tampilkan Popup Snap
                     snap.pay(result.data.snapToken, {
                         onSuccess: function(snapResult: any) {
                             console.log('Success:', snapResult);
@@ -137,12 +128,10 @@ export default function TopupClient() {
                             showAlert('Pembayaran gagal diproses oleh Bank.', 'error');
                         },
                         onClose: function() {
-                            showAlert('Anda menutup halaman pembayaran sebelum selesai.', 'warning');
+                            showAlert('Anda menutup popup sebelum pembayaran selesai.', 'warning');
                         }
                     });
                 } 
-                
-                // SKENARIO 2: PEMBAYARAN QRIS
                 else if (backendMethod === 'qris' && result.data.qrImageUrl) {
                     showAlert('QRIS berhasil dibuat! Silakan scan.', 'success');
                     setCountdown(900);
@@ -152,7 +141,6 @@ export default function TopupClient() {
                         expiryTime: result.data.expiryTime,
                     });
                 }
-
             } else {
                 showAlert(result.message, 'error');
             }
@@ -204,13 +192,26 @@ export default function TopupClient() {
                     <span>Menunggu pembayaran Anda terkonfirmasi...</span>
                 </div>
 
-                <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '30px' }}>
                     <button className="btn btn-outline" onClick={() => setQrisData(null)} style={{ padding: '10px 25px' }}>
                         Batalkan
                     </button>
                     <button className="btn btn-primary" onClick={() => router.push('/billing')} style={{ padding: '10px 25px' }}>
                         Ke Halaman Riwayat
                     </button>
+                </div>
+
+                {/* SYARAT MIDTRANS: KONTAK CS DI HALAMAN QRIS */}
+                <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px dashed var(--border-color)', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
+                    <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
+                        Butuh Bantuan? Hubungi Kami:
+                    </p>
+                    <p style={{ margin: '3px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        <i className="fas fa-envelope" style={{ width: '20px' }}></i> dongworldid@gmail.com
+                    </p>
+                    <p style={{ margin: '3px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        <i className="fab fa-whatsapp" style={{ width: '20px' }}></i> +62 821-9259-8451 (Chat Only)
+                    </p>
                 </div>
             </section>
         );
@@ -221,7 +222,6 @@ export default function TopupClient() {
     // =========================================================================
     return (
         <>
-            {/* Muat Midtrans Snap.js secara asinkron agar tidak memblokir render halaman */}
             <Script
                 src="https://app.sandbox.midtrans.com/snap/snap.js"
                 data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
@@ -293,7 +293,6 @@ export default function TopupClient() {
                                 <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Gopay, OVO, Dana, ShopeePay</p>
                             </div>
                             
-                            {/* Tombol Credit Card Sekarang Diaktifkan */}
                             <div 
                                 onClick={() => setPaymentMethod('credit_card')}
                                 style={{
@@ -323,6 +322,17 @@ export default function TopupClient() {
                                 <li>Credit Card payments are secured with 3D Secure (OTP).</li>
                                 <li>Once the payment is successful, the balance is non-refundable.</li>
                             </ul>
+
+                            {/* SYARAT MIDTRANS: KONTAK CS DI HALAMAN CHECKOUT */}
+                            <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px dashed var(--border-color)' }}>
+                                <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
+                                    Butuh Bantuan? Hubungi Kami:
+                                </p>
+                                <ul style={{ margin: 0, paddingLeft: '0', listStyleType: 'none', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                    <li style={{ marginBottom: '4px' }}><i className="fas fa-envelope" style={{ width: '20px' }}></i> support@domainanda.com</li>
+                                    <li><i className="fab fa-whatsapp" style={{ width: '20px' }}></i> +62 812-3456-7890</li>
+                                </ul>
+                            </div>
                         </div>
 
                         <div style={{ flex: '1 1 300px', backgroundColor: 'var(--bg-input)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
