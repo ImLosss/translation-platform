@@ -45,14 +45,14 @@ export default function ProfileContainer({
           ></i>
           Profile
         </h2>
-        <div className="card-actions">
+        {/* <div className="card-actions">
           <button
             className="btn btn-outline btn-sm"
             onClick={() => setIsEditing(true)}
           >
             <i className="fas fa-edit"></i> Edit
           </button>
-        </div>
+        </div> */}
       </div>
       {children}
     </section>
