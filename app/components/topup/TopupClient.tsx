@@ -329,8 +329,8 @@ export default function TopupClient() {
                                     Butuh Bantuan? Hubungi Kami:
                                 </p>
                                 <ul style={{ margin: 0, paddingLeft: '0', listStyleType: 'none', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                    <li style={{ marginBottom: '4px' }}><i className="fas fa-envelope" style={{ width: '20px' }}></i> support@domainanda.com</li>
-                                    <li><i className="fab fa-whatsapp" style={{ width: '20px' }}></i> +62 812-3456-7890</li>
+                                    <li style={{ marginBottom: '4px' }}><i className="fas fa-envelope" style={{ width: '20px' }}></i> dongworldid@gmail.com</li>
+                                    <li><i className="fab fa-whatsapp" style={{ width: '20px' }}></i> +62 821-9259-8451 (Chat Only)</li>
                                 </ul>
                             </div>
                         </div>
