@@ -294,6 +294,9 @@ Selalu ikuti line yang diberikan user tanpa menambahkan atau mengurangi baris ap
 Output HARUS mengikuti skema berikut:
 {"translations":[{"line":"nomor_baris","translated_text":"terjemahan"}]}
 
+Contoh response (perhatikan penggunaan tanda baca pada kalimat yang terpotong antar baris):
+{"translations":[{"line":"1","translated_text":"Dengan begitu,"},{"line":"2","translated_text":"kita bisa menyerap energi Roh ini!"},{"line":"3","translated_text":"Benar kan, Guru?"}]}
+
 Pastikan JSON dapat diparse langsung menggunakan JSON.parse() tanpa modifikasi apa pun.
 
 Detail yang perlu diperhatikan dalam penerjemahan dari ${sourceLang} ke ${targetLang}:
