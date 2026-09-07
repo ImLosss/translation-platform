@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { LlmService } from './llm.service';
 import { DeepseekService } from './providers/deepseek.service';
 import { GptLunaService } from './providers/gpt-luna.service';
+import { NineInferenceService } from './providers/nine-inference.service';
 // import { GeminiService } from './providers/gemini.service';
 
 @Module({
@@ -14,6 +15,7 @@ import { GptLunaService } from './providers/gpt-luna.service';
     LlmService,
     DeepseekService,
     GptLunaService,
+    NineInferenceService,
   ],
   exports: [
     LlmService, 
