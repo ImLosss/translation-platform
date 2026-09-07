@@ -66,7 +66,6 @@ const SubtitleRow = memo(({
                 <label>Source</label>
                 <textarea
                     ref={resizeTextarea}
-                    readOnly
                     className="sub-source"
                     rows={1}
                     value={line.source}
@@ -131,6 +130,11 @@ export default function SubtitleEditor({
     const [lines, setLines] = useState<SubtitleLine[]>(initialSortedLines);
     const [lastSavedLines, setLastSavedLines] = useState<SubtitleLine[]>(initialSortedLines);
     const [isSaving, setIsSaving] = useState(false);
+    
+    // State untuk Floating Button Save
+    const saveContainerRef = useRef<HTMLDivElement>(null);
+    const [isSaveVisible, setIsSaveVisible] = useState(true);
+
     const [videoUrl, setVideoUrl] = useState(initialVideoUrl ?? '');
     const videoRef = useRef<HTMLVideoElement>(null);
     const [activeLineIndex, setActiveLineIndex] = useState<number | null>(null);
@@ -161,6 +165,22 @@ export default function SubtitleEditor({
     }
 
     const driveId = videoUrl ? extractId(videoUrl) : null;
+
+    // Intersection Observer untuk mendeteksi visibilitas tombol save asli
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsSaveVisible(entry.isIntersecting);
+            },
+            { threshold: 0 } // Memicu setiap kali elemen mulai terlihat/hilang dari viewport
+        );
+
+        if (saveContainerRef.current) {
+            observer.observe(saveContainerRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
 
     const handleReset = useCallback(() => {
         setLines([...lastSavedLines]);
@@ -214,23 +234,83 @@ export default function SubtitleEditor({
         setIsSaving(true);
         try {
             const sequencedLines = lines.map((line, index) => ({ ...line, sequence: index + 1 }));
-            const result = await updateRowAction(translationId, sequencedLines);
+            
+            // 1. Data yang baru (id negatif)
+            const creates = sequencedLines.filter(l => l.id < 0);
+            
+            // 2. Data yang berubah (id positif, dibandingkan dengan lastSavedLines)
+            const updates = sequencedLines.filter(l => {
+                if (l.id < 0) return false;
+                const original = lastSavedLines.find(old => old.id === l.id);
+                if (!original) return false;
+                return (
+                    l.start !== original.start ||
+                    l.end !== original.end ||
+                    l.source !== original.source ||
+                    l.translated !== original.translated ||
+                    l.sequence !== original.sequence
+                );
+            });
+
+            // 3. Data yang dihapus
+            const deletes = lastSavedLines
+                .filter(old => !sequencedLines.some(l => l.id === old.id))
+                .map(old => old.id);
+
+            // Validasi: jika tidak ada perubahan sama sekali, jangan hit API
+            if (creates.length === 0 && updates.length === 0 && deletes.length === 0) {
+                showAlert('Tidak ada perubahan untuk disimpan.', 'info');
+                return;
+            }
+
+            const result = await updateRowAction(translationId, { creates, updates, deletes });
+            
             if (result.success) {
                 showAlert('Saved.', 'success');
-                setLastSavedLines(sequencedLines); setLines(sequencedLines);
-            } else showAlert(result.message, 'error');
-        } finally { setIsSaving(false); }
+                setLastSavedLines(sequencedLines); 
+                setLines(sequencedLines);
+            } else {
+                showAlert(result.message, 'error');
+            }
+        } finally { 
+            setIsSaving(false); 
+        }
     };
 
     const handleExport = async () => {
         setIsSaving(true);
         try {
             const sequencedLines = lines.map((line, index) => ({ ...line, sequence: index + 1 }));
-            const result = await updateRowAction(translationId, sequencedLines);
-            if (result.success) {
-                setLastSavedLines(sequencedLines); setLines(sequencedLines);
+            
+            const creates = sequencedLines.filter(l => l.id < 0);
+            const updates = sequencedLines.filter(l => {
+                if (l.id < 0) return false;
+                const original = lastSavedLines.find(old => old.id === l.id);
+                if (!original) return false;
+                return (
+                    l.start !== original.start ||
+                    l.end !== original.end ||
+                    l.source !== original.source ||
+                    l.translated !== original.translated ||
+                    l.sequence !== original.sequence
+                );
+            });
+            const deletes = lastSavedLines
+                .filter(old => !sequencedLines.some(l => l.id === old.id))
+                .map(old => old.id);
+
+            if (creates.length > 0 || updates.length > 0 || deletes.length > 0) {
+                const result = await updateRowAction(translationId, { creates, updates, deletes });
+                if (result.success) {
+                    setLastSavedLines(sequencedLines); setLines(sequencedLines);
+                    window.open(`/api/translate/${translationId}/download`);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } else {
+                // Langsung download jika tidak ada perubahan
                 window.open(`/api/translate/${translationId}/download`);
-            } else showAlert(result.message, 'error');
+            }
         } finally { setIsSaving(false); }
     };
 
@@ -402,7 +482,6 @@ export default function SubtitleEditor({
     useEffect(() => {
         if (!lines || lines.length === 0) return;
 
-        // Debounce: tunggu 500ms setelah user berhenti mengetik
         const timeoutId = setTimeout(() => {
             let vttContent = "WEBVTT\n\n";
             lines.forEach((line, index) => {
@@ -471,11 +550,39 @@ export default function SubtitleEditor({
                 ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 12, justifyContent: 'end' }}>
+            {/* CONTAINER SAVE (Digunakan sbg referensi observer) */}
+            <div 
+                ref={saveContainerRef}
+                style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 12, justifyContent: 'end' }}
+            >
                 <button className="btn btn-outline btn-sm" onClick={handleSave} disabled={isSaving}>
                     <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} /> {isSaving ? 'Saving...' : 'Save Changes'}
                 </button>
             </div>
+
+            {/* ===== FLOATING SAVE BUTTON ===== */}
+            {!isSaveVisible && (
+                <button 
+                    className="btn btn-primary" 
+                    onClick={handleSave} 
+                    disabled={isSaving}
+                    style={{
+                        position: 'fixed',
+                        bottom: '24px',
+                        right: '24px',
+                        zIndex: 4999, // Sedikit di bawah video floating (5000)
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                        borderRadius: '50px',
+                        padding: '12px 24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} /> 
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+            )}
 
             {/* ===== FLOATING VIDEO PLAYER ===== */}
             {driveId && showPreview && (
