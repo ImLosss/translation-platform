@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional, IsInt, isString, Max, Min, ValidateNested, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsInt, ValidateNested, IsArray } from 'class-validator';
 import { IsDifferentFrom } from './is-different.decorator';
 import { Type } from 'class-transformer';
 
@@ -42,8 +42,21 @@ export class SaveGlossaryRecommendationDto {
     @IsNotEmpty()
     targetLanguage!: string;
 
+    // Pisahkan menjadi Creates, Updates, dan Deletes
     @IsArray()
     @ValidateNested({ each: true })
-    @Type(() => GlossaryEntryDto) // Penting agar NestJS bisa memvalidasi objek di dalam array
-    entries!: GlossaryEntryDto[];
+    @Type(() => GlossaryEntryDto)
+    @IsOptional()
+    creates!: GlossaryEntryDto[];
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => GlossaryEntryDto)
+    @IsOptional()
+    updates!: GlossaryEntryDto[];
+
+    @IsArray()
+    @IsInt({ each: true })
+    @IsOptional()
+    deletes!: number[];
 }

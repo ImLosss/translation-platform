@@ -507,20 +507,15 @@ ${translatedCorpus}`;
   }
 
   async saveGlossaryRecommendation(payload: SaveGlossaryRecommendationDto, userId: number) {
-    const { glosaryId, translationId, name, sourceLanguage, targetLanguage, entries } = payload;
-
-    const entriesToCreate = entries.filter((e) => !e.id || e.id < 0);
-    const entriesToUpdate = entries.filter((e) => e.id && e.id > 0);
-
-    if (!entries || entries.length === 0) {
-      throw new BadRequestException('Glosary entries tidak boleh kosong.');
-    }
+    const {
+      glosaryId, translationId, name, sourceLanguage, targetLanguage,
+      creates = [], updates = [], deletes = []
+    } = payload;
 
     // ==========================================
     // SKENARIO 1: APPEND KE GLOSARIUM YANG SUDAH ADA
     // ==========================================
     if (glosaryId) {
-      // 1. Verifikasi apakah glosarium ada dan milik user yang sedang login
       const existingGlossary = await this.prisma.glossary.findUnique({
         where: { id: glosaryId, userId: userId },
       });
@@ -530,9 +525,10 @@ ${translatedCorpus}`;
       }
 
       await this.prisma.$transaction(async (tx) => {
-        if (entriesToCreate.length > 0) {
+        // A. Create data baru (termasuk rekomendasi AI)
+        if (creates.length > 0) {
           await tx.glossaryEntry.createMany({
-            data: entriesToCreate.map((entry) => ({
+            data: creates.map((entry) => ({
               glossaryId: glosaryId,
               source: entry.source,
               target: entry.target,
@@ -542,17 +538,29 @@ ${translatedCorpus}`;
           });
         }
 
-        if (entriesToUpdate.length > 0) {
-          for (const entry of entriesToUpdate) {
-            await tx.glossaryEntry.update({
-              where: { id: entry.id },
-              data: {
-                source: entry.source,
-                target: entry.target,
-                detail: entry.detail || null,
-              },
-            });
-          }
+        // B. Update data lama
+        if (updates.length > 0) {
+          await Promise.all(
+            updates.map((entry) =>
+              tx.glossaryEntry.update({
+                where: { id: entry.id },
+                data: {
+                  source: entry.source,
+                  target: entry.target,
+                  detail: entry.detail || null,
+                },
+              })
+            )
+          );
+        }
+
+        // C. Hapus data yang dihapus user di UI
+        if (deletes.length > 0) {
+          await tx.glossaryEntry.deleteMany({
+            where: {
+              id: { in: deletes }
+            }
+          });
         }
       });
 
@@ -563,10 +571,13 @@ ${translatedCorpus}`;
     // SKENARIO 2: BUAT GLOSARIUM BARU
     // ==========================================
     else {
-      // Menggunakan $transaction agar jika salah satu gagal, semuanya di-rollback
       return await this.prisma.$transaction(async (tx) => {
 
-        // 1. Buat Glosarium baru beserta entri-entrinya (Nested Writes Prisma)
+        if (!creates || creates.length === 0) {
+          throw new BadRequestException('Glosary entries tidak boleh kosong saat membuat glossary baru.');
+        }
+
+        // 1. Buat Glosarium baru beserta entri-entrinya (semua jadi 'creates')
         const newGlossary = await tx.glossary.create({
           data: {
             name: name,
@@ -574,7 +585,7 @@ ${translatedCorpus}`;
             targetLanguage: targetLanguage,
             userId: userId,
             entries: {
-              create: entriesToCreate.map((entry) => ({
+              create: creates.map((entry) => ({
                 source: entry.source,
                 target: entry.target,
                 detail: entry.detail || null,
@@ -583,7 +594,7 @@ ${translatedCorpus}`;
           },
         });
 
-        // 2. Jika ada translationId, tautkan glosarium baru ini ke tabel Translation
+        // 2. Tautkan glosarium baru ini ke tabel Translation
         if (translationId) {
           const translation = await tx.translation.findUnique({
             where: { id: translationId, userId: userId },
@@ -602,7 +613,7 @@ ${translatedCorpus}`;
         return {
           message: 'Successfully created new glossary.',
           glossaryId: newGlossary.id,
-          addedEntries: entries.length,
+          addedEntries: creates.length,
         };
       });
     }
