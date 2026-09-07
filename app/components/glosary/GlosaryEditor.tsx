@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { useAlert } from '../ui/Alert';
 import { updateGlosaryEntriesAction } from '@/app/actions/glosary/updateGlosaryEntriesAction';
 import { GlosaryData } from '@/app/(panel)/glosary/[id]/page';
@@ -17,6 +17,91 @@ interface GlosaryEditorProps {
     glosary: GlosaryData;
 }
 
+// ======== KOMPONEN GLOSARY ROW YANG DI-MEMOISASI ========
+// Ini akan mencegah re-render pada semua baris saat user mengetik di salah satu baris
+const GlosaryRow = memo(({
+    entry,
+    index,
+    isDuplicate,
+    handleUpdateEntry,
+    handleAddEntry,
+    handleDeleteEntry,
+    resizeTextarea
+}: any) => {
+    return (
+        <div className={`glosary-line ${isDuplicate ? 'duplicated-line' : ''}`}>
+            <div className="sub-field">
+                <label>
+                    Source Term <span style={{ color: 'red' }}>*</span>
+                    {isDuplicate && (
+                        <span style={{ color: '#dc3545', marginLeft: '6px', textTransform: 'none', fontWeight: 'bold' }}>
+                            <i className="fas fa-exclamation-triangle"></i> Duplicate
+                        </span>
+                    )}
+                </label>
+                <textarea
+                    ref={resizeTextarea}
+                    className="sub-source"
+                    rows={1}
+                    placeholder="Kata/Frasa Asli"
+                    value={entry.source}
+                    onChange={(e) => handleUpdateEntry(index, 'source', e.target.value)}
+                />
+            </div>
+            
+            <div className="sub-field">
+                <label>Target Translation <span style={{ color: 'red' }}>*</span></label>
+                <textarea
+                    ref={resizeTextarea}
+                    className="sub-translated"
+                    rows={1}
+                    placeholder="Terjemahan"
+                    value={entry.target}
+                    onChange={(e) => handleUpdateEntry(index, 'target', e.target.value)}
+                />
+            </div>
+
+            <div className="sub-field">
+                <label>Detail / Context (Opsional)</label>
+                <textarea
+                    ref={resizeTextarea}
+                    className="sub-detail"
+                    rows={1}
+                    placeholder="Catatan tambahan..."
+                    value={entry.detail || ''}
+                    onChange={(e) => handleUpdateEntry(index, 'detail', e.target.value)}
+                />
+            </div>
+
+            <div className="sub-actions">
+                <button
+                    className="btn-add-line"
+                    title="Tambahkan entri di bawah ini"
+                    onClick={() => handleAddEntry(index)}
+                >
+                    <i className="fas fa-plus-circle" />
+                </button>
+                <button
+                    className="btn-del-line"
+                    title="Hapus entri ini"
+                    onClick={() => handleDeleteEntry(index)}
+                >
+                    <i className="fas fa-trash-alt" />
+                </button>
+            </div>
+        </div>
+    );
+}, (prevProps, nextProps) => {
+    // Hanya render ulang jika data entry ini berubah, index berubah, atau status duplikatnya berubah
+    return (
+        prevProps.entry === nextProps.entry &&
+        prevProps.isDuplicate === nextProps.isDuplicate &&
+        prevProps.index === nextProps.index
+    );
+});
+
+
+// ======== KOMPONEN UTAMA ========
 export default function GlosaryEditor({
     entries: initialEntries,
     glosary,
@@ -28,9 +113,9 @@ export default function GlosaryEditor({
     const [lastSavedEntries, setLastSavedEntries] = useState<GlosaryEntry[]>(initialEntries);
     const [isSaving, setIsSaving] = useState(false);
     
-    // State & Ref untuk Floating Button
-    const saveContainerRef = useRef<HTMLDivElement>(null);
+    // State & Ref untuk Floating Button (Diperbaiki)
     const [isSaveVisible, setIsSaveVisible] = useState(true);
+    const observer = useRef<IntersectionObserver | null>(null);
 
     const nextTempId = useRef(
         Math.min(0, ...initialEntries.map(e => e.id)) - 1
@@ -53,20 +138,19 @@ export default function GlosaryEditor({
         }
     }, [lastSavedEntries, showAlert]);
 
-    // Intersection Observer untuk Floating Save Button
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsSaveVisible(entry.isIntersecting);
-            },
-            { threshold: 0 }
-        );
-
-        if (saveContainerRef.current) {
-            observer.observe(saveContainerRef.current);
+    // ===================== OBSERVER FLOATING BUTTON =====================
+    const saveContainerRef = useCallback((node: HTMLDivElement | null) => {
+        if (observer.current) observer.current.disconnect();
+        
+        if (node) {
+            observer.current = new IntersectionObserver(
+                ([entry]) => {
+                    setIsSaveVisible(entry.isIntersecting);
+                },
+                { threshold: 0, rootMargin: '0px 0px 50px 0px' } 
+            );
+            observer.current.observe(node);
         }
-
-        return () => observer.disconnect();
     }, []);
 
     // ===================== HANDLER GLOSARIUM =====================
@@ -112,14 +196,16 @@ export default function GlosaryEditor({
         []
     );
 
-    const resizeTextarea = (el: HTMLTextAreaElement | null) => {
+    const resizeTextarea = useCallback((el: HTMLTextAreaElement | null) => {
         if (!el) return;
         el.style.height = 'auto';
         el.style.height = `${el.scrollHeight}px`;
-    };
+    }, []);
 
     // ===================== SIMPAN DATA =====================
-    const handleSave = async () => {
+    const handleSave = async (e?: React.FormEvent) => {
+        if (e && e.preventDefault) e.preventDefault();
+
         const hasEmptyRequired = entries.some(e => !e.source.trim() || !e.target.trim());
         if (hasEmptyRequired) {
             showAlert('Source and Target cannot be empty!', 'warning');
@@ -137,7 +223,7 @@ export default function GlosaryEditor({
             // 1. Data yang baru (id < 0)
             const creates = entries.filter(l => l.id < 0);
             
-            // 2. Data yang diupdate (id > 0 dan ada perubahan nilai dibandingkan lastSavedEntries)
+            // 2. Data yang diupdate
             const updates = entries.filter(l => {
                 if (l.id < 0) return false;
                 const original = lastSavedEntries.find(old => old.id === l.id);
@@ -163,9 +249,6 @@ export default function GlosaryEditor({
             
             if (result.success) {
                 showAlert('Glosary entries saved successfully.', 'success');
-                // Sinkronisasi id hasil create sebaiknya didapatkan dari response backend, 
-                // tapi jika tidak ada, cukup simpan state saat ini (hati-hati jika disave berulang tanpa refresh).
-                // Cara ideal: backend me-return data terbaru, lalu setEntries(result.data).
                 setLastSavedEntries([...entries]); 
             } else {
                 showAlert(result.message, 'error');
@@ -198,70 +281,16 @@ export default function GlosaryEditor({
                     const isDuplicate = sourceVal !== '' && sourceCounts[sourceVal] > 1;
 
                     return (
-                        <div 
-                            className={`glosary-line ${isDuplicate ? 'duplicated-line' : ''}`} 
+                        <GlosaryRow
                             key={entry.id}
-                        >
-                            <div className="sub-field">
-                                <label>
-                                    Source Term <span style={{ color: 'red' }}>*</span>
-                                    {isDuplicate && (
-                                        <span style={{ color: '#dc3545', marginLeft: '6px', textTransform: 'none', fontWeight: 'bold' }}>
-                                            <i className="fas fa-exclamation-triangle"></i> Duplicate
-                                        </span>
-                                    )}
-                                </label>
-                                <textarea
-                                    ref={resizeTextarea}
-                                    className="sub-source"
-                                    rows={1}
-                                    placeholder="Kata/Frasa Asli"
-                                    value={entry.source}
-                                    onChange={(e) => handleUpdateEntry(index, 'source', e.target.value)}
-                                />
-                            </div>
-                            
-                            <div className="sub-field">
-                                <label>Target Translation <span style={{ color: 'red' }}>*</span></label>
-                                <textarea
-                                    ref={resizeTextarea}
-                                    className="sub-translated"
-                                    rows={1}
-                                    placeholder="Terjemahan"
-                                    value={entry.target}
-                                    onChange={(e) => handleUpdateEntry(index, 'target', e.target.value)}
-                                />
-                            </div>
-
-                            <div className="sub-field">
-                                <label>Detail / Context (Opsional)</label>
-                                <textarea
-                                    ref={resizeTextarea}
-                                    className="sub-detail"
-                                    rows={1}
-                                    placeholder="Catatan tambahan..."
-                                    value={entry.detail || ''}
-                                    onChange={(e) => handleUpdateEntry(index, 'detail', e.target.value)}
-                                />
-                            </div>
-
-                            <div className="sub-actions">
-                                <button
-                                    className="btn-add-line"
-                                    title="Tambahkan entri di bawah ini"
-                                    onClick={() => handleAddEntry(index)}
-                                >
-                                    <i className="fas fa-plus-circle" />
-                                </button>
-                                <button
-                                    className="btn-del-line"
-                                    title="Hapus entri ini"
-                                    onClick={() => handleDeleteEntry(index)}
-                                >
-                                    <i className="fas fa-trash-alt" />
-                                </button>
-                            </div>
-                        </div>
+                            entry={entry}
+                            index={index}
+                            isDuplicate={isDuplicate}
+                            handleUpdateEntry={handleUpdateEntry}
+                            handleAddEntry={handleAddEntry}
+                            handleDeleteEntry={handleDeleteEntry}
+                            resizeTextarea={resizeTextarea}
+                        />
                     );
                 })}
             </div>
