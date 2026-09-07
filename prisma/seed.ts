@@ -191,21 +191,21 @@ async function main() {
     });
   }
 
-  // 3. Buat atau cek Glossary "Guan"
+  // 3. Buat atau cek Glossary "Global"
   let glossary = await prisma.glossary.findFirst({
-    where: { name: 'Guan' },
+    where: { name: 'Global' },
   });
 
   if (!glossary) {
     glossary = await prisma.glossary.create({
       data: {
-        name: 'Guan',
+        name: 'Global',
         sourceLanguage: 'zh',
         targetLanguage: 'id',
         userId: adminUser.id,
       },
     });
-    console.log('Glossary "Guan" dibuat.');
+    console.log('Glossary "Global" dibuat.');
   } else {
     // Opsional: Hapus entry lama supaya tidak dobel jika di-seed ulang
     await prisma.glossaryEntry.deleteMany({
@@ -224,7 +224,7 @@ async function main() {
     })),
   });
 
-  console.log(`Berhasil menyisipkan ${entriesToInsert.length} istilah ke dalam glossary "Guan".`);
+  console.log(`Berhasil menyisipkan ${entriesToInsert.length} istilah ke dalam glossary "Global".`);
   console.log('Seeder selesai');
 }
 
