@@ -3,6 +3,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -28,7 +29,7 @@ export class UpdateSubtitleRowDto {
   source!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty() // Hapus @IsNotEmpty jika translasi boleh dikosongkan
   translated!: string;
 }
 
@@ -36,5 +37,17 @@ export class UpdateTranslationDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => UpdateSubtitleRowDto)
-  lines!: UpdateSubtitleRowDto[];
+  @IsOptional()
+  creates!: UpdateSubtitleRowDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateSubtitleRowDto)
+  @IsOptional()
+  updates!: UpdateSubtitleRowDto[];
+
+  @IsArray()
+  @IsInt({ each: true })
+  @IsOptional()
+  deletes!: number[];
 }

@@ -377,7 +377,7 @@ Detail yang perlu diperhatikan dalam penerjemahan dari ${sourceLang} ke ${target
           sequence: Number(t.line)
         },
         data: {
-          targetText: t.translated_text || t.content || "MISSING TRANSLATION"
+          targetText: t.translated_text || t.content || t.text || "MISSING TRANSLATION"
         }
       })
     );

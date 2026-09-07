@@ -358,14 +358,11 @@ ${translatedCorpus}`;
   }
 
   async updateTranslation(translationId: number, userId: number, dto: UpdateTranslationDto) {
-    // Pastikan translation milik user
+    // Validasi kepemilikan translation
     const translation = await this.prisma.translation.findFirst({
       where: {
         id: translationId,
         userId,
-      },
-      include: {
-        rows: true,
       },
     });
 
@@ -373,38 +370,29 @@ ${translatedCorpus}`;
       throw new NotFoundException('Translation not found.');
     }
 
-    const oldRows = translation.rows;
-
-    const updateRows = dto.lines.filter((x) => x.id > 0);
-    const createRows = dto.lines.filter((x) => x.id < 0);
-
-    const updateIds = updateRows.map((x) => x.id);
-
-    const deleteIds = oldRows
-      .filter((x) => !updateIds.includes(x.id))
-      .map((x) => x.id);
-
     await this.prisma.$transaction(async (tx) => {
-      // Update row lama
-      await Promise.all(
-        updateRows.map((row) =>
-          tx.translationRow.update({
-            where: { id: row.id },
-            data: {
-              sequence: row.sequence,
-              startTime: row.start,
-              endTime: row.end,
-              sourceText: row.source,
-              targetText: row.translated,
-            },
-          }),
-        ),
-      );
+      // 1. Update row yang berubah saja
+      if (dto.updates && dto.updates.length > 0) {
+        await Promise.all(
+          dto.updates.map((row) =>
+            tx.translationRow.update({
+              where: { id: row.id },
+              data: {
+                sequence: row.sequence,
+                startTime: row.start,
+                endTime: row.end,
+                sourceText: row.source,
+                targetText: row.translated,
+              },
+            }),
+          ),
+        );
+      }
 
-      // Tambah row baru
-      if (createRows.length) {
+      // 2. Tambah row baru
+      if (dto.creates && dto.creates.length > 0) {
         await tx.translationRow.createMany({
-          data: createRows.map((row) => ({
+          data: dto.creates.map((row) => ({
             translationId,
             sequence: row.sequence,
             startTime: row.start,
@@ -415,12 +403,12 @@ ${translatedCorpus}`;
         });
       }
 
-      // Hapus row
-      if (deleteIds.length) {
+      // 3. Hapus row yang di-delete
+      if (dto.deletes && dto.deletes.length > 0) {
         await tx.translationRow.deleteMany({
           where: {
             id: {
-              in: deleteIds,
+              in: dto.deletes,
             },
           },
         });
