@@ -1,4 +1,4 @@
-import { IsArray, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class GlosaryEntryDto {
@@ -20,5 +20,17 @@ export class UpdateGlosaryEntryDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => GlosaryEntryDto)
-  entries!: GlosaryEntryDto[];
+  @IsOptional()
+  creates!: GlosaryEntryDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => GlosaryEntryDto)
+  @IsOptional()
+  updates!: GlosaryEntryDto[];
+
+  @IsArray()
+  @IsInt({ each: true })
+  @IsOptional()
+  deletes!: number[];
 }

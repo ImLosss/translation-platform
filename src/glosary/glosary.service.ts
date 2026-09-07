@@ -6,15 +6,15 @@ import { UpdateGlosaryEntryDto } from './dto/update-glosary-entry.dto';
 
 @Injectable()
 export class GlosaryService {
-  constructor(private readonly prisma: PrismaService) {}
-  
+  constructor(private readonly prisma: PrismaService) { }
+
   async create(data: CreateGlosaryDto & { userId: number }) {
     return this.prisma.glossary.create({
       data: {
         name: data.name,
         sourceLanguage: data.sourceLanguage,
         targetLanguage: data.targetLanguage,
-        userId: data.userId, 
+        userId: data.userId,
       },
     });
   }
@@ -44,7 +44,7 @@ export class GlosaryService {
 
   async update(id: number, updateGlosaryDto: UpdateGlosaryDto) {
     // Pastikan data ada sebelum di-update
-    await this.findOne(id); 
+    await this.findOne(id);
 
     return this.prisma.glossary.update({
       where: { id },
@@ -54,7 +54,7 @@ export class GlosaryService {
 
   async remove(id: number, userId: number) {
     const glosary = await this.prisma.glossary.findUnique({
-      where: { id, userId},
+      where: { id, userId },
     });
 
     if (!glosary) {
@@ -67,14 +67,11 @@ export class GlosaryService {
   }
 
   async updateGlosary(glosaryId: number, userId: number, dto: UpdateGlosaryEntryDto) {
-    // 1. Pastikan glosarium milik user dan temukan data lama
+    // 1. Pastikan glosarium milik user
     const glosary = await this.prisma.glossary.findFirst({
       where: {
         id: glosaryId,
         userId,
-      },
-      include: {
-        entries: true, // Sesuaikan dengan nama relasi tabel di Prisma-mu
       },
     });
 
@@ -82,39 +79,29 @@ export class GlosaryService {
       throw new NotFoundException('Glosarium tidak ditemukan atau Anda tidak memiliki akses.');
     }
 
-    const oldRows = glosary.entries;
-
-    // 2. Pisahkan data berdasarkan ID (Positif = Update, Negatif = Create)
-    const updateRows = dto.entries.filter((x) => x.id > 0);
-    const createRows = dto.entries.filter((x) => x.id < 0);
-
-    const updateIds = updateRows.map((x) => x.id);
-
-    // 3. Cari ID mana yang ada di DB lama tapi TIDAK ADA di payload baru (berarti dihapus)
-    const deleteIds = oldRows
-      .filter((x) => !updateIds.includes(x.id))
-      .map((x) => x.id);
-
-    // 4. Eksekusi Database dalam 1 Transaction
+    // 2. Eksekusi Database dalam 1 Transaction
     await this.prisma.$transaction(async (tx) => {
+
       // A. Update row lama
-      await Promise.all(
-        updateRows.map((row) =>
-          tx.glossaryEntry.update({
-            where: { id: row.id },
-            data: {
-              source: row.source,
-              target: row.target,
-              detail: row.detail || null, // Tangani opsional detail
-            },
-          }),
-        ),
-      );
+      if (dto.updates && dto.updates.length > 0) {
+        await Promise.all(
+          dto.updates.map((row) =>
+            tx.glossaryEntry.update({
+              where: { id: row.id },
+              data: {
+                source: row.source,
+                target: row.target,
+                detail: row.detail || null,
+              },
+            }),
+          ),
+        );
+      }
 
       // B. Tambah row baru
-      if (createRows.length) {
+      if (dto.creates && dto.creates.length > 0) {
         await tx.glossaryEntry.createMany({
-          data: createRows.map((row) => ({
+          data: dto.creates.map((row) => ({
             glossaryId: glosary.id,
             source: row.source,
             target: row.target,
@@ -124,11 +111,11 @@ export class GlosaryService {
       }
 
       // C. Hapus row yang di-delete
-      if (deleteIds.length) {
+      if (dto.deletes && dto.deletes.length > 0) {
         await tx.glossaryEntry.deleteMany({
           where: {
             id: {
-              in: deleteIds,
+              in: dto.deletes,
             },
           },
         });
@@ -163,7 +150,7 @@ export class GlosaryService {
       throw new NotFoundException('Glossary not found.');
     }
 
-    if(!glosary.entries || glosary.entries.length === 0) {
+    if (!glosary.entries || glosary.entries.length === 0) {
       throw new BadRequestException('Glossary has no entries to download.');
     }
 
