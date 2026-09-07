@@ -1,14 +1,18 @@
 "use server";
 
 import { api } from "@/app/lib/api";
-import { GlosaryEntry } from "@/app/components/glosary/GlosaryEditor"; // Sesuaikan path ini
 
-export async function updateGlosaryEntriesAction(glosaryId: number, entries: GlosaryEntry[]) {
+interface UpdatePayload {
+  creates: any[];
+  updates: any[];
+  deletes: number[];
+}
+
+export async function updateGlosaryEntriesAction(glosaryId: number, data: UpdatePayload) {
   try {
-    // Sesuaikan endpoint sesuai dengan yang kamu daftarkan di NestJS Controller
     await api<any>(`/glosary/${glosaryId}/entries`, {
       method: "PUT",
-      body: JSON.stringify({ entries }),
+      body: JSON.stringify(data), 
     });
 
     return { 

@@ -2,16 +2,20 @@
 
 import { api } from "@/app/lib/api";
 
+interface UpdatePayload {
+    creates: any[];
+    updates: any[];
+    deletes: number[];
+}
+
 export async function updateRowAction(
   translationId: number,
-  lines: any[],
+  data: UpdatePayload,
 ) {
   try {
     return await api<any>(`/translate/${translationId}`, {
       method: "PATCH",
-      body: JSON.stringify({
-        lines,
-      }),
+      body: JSON.stringify(data),
     });
   } catch (error: any) {
     return {

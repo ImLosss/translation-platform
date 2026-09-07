@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAlert } from '../ui/Alert';
 import { updateGlosaryEntriesAction } from '@/app/actions/glosary/updateGlosaryEntriesAction';
 import { GlosaryData } from '@/app/(panel)/glosary/[id]/page';
@@ -28,12 +28,15 @@ export default function GlosaryEditor({
     const [lastSavedEntries, setLastSavedEntries] = useState<GlosaryEntry[]>(initialEntries);
     const [isSaving, setIsSaving] = useState(false);
     
+    // State & Ref untuk Floating Button
+    const saveContainerRef = useRef<HTMLDivElement>(null);
+    const [isSaveVisible, setIsSaveVisible] = useState(true);
+
     const nextTempId = useRef(
         Math.min(0, ...initialEntries.map(e => e.id)) - 1
     );
 
     // ===================== DETEKSI DUPLIKAT =====================
-    // Menghitung jumlah kemunculan setiap kata di kolom Source (case-insensitive)
     const sourceCounts = entries.reduce((acc, entry) => {
         const val = entry.source.trim().toLowerCase();
         if (val) {
@@ -49,6 +52,22 @@ export default function GlosaryEditor({
             showAlert('Reverted to last saved state.', 'warning');
         }
     }, [lastSavedEntries, showAlert]);
+
+    // Intersection Observer untuk Floating Save Button
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsSaveVisible(entry.isIntersecting);
+            },
+            { threshold: 0 }
+        );
+
+        if (saveContainerRef.current) {
+            observer.observe(saveContainerRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
 
     // ===================== HANDLER GLOSARIUM =====================
     const handleAddEntry = useCallback(
@@ -107,7 +126,6 @@ export default function GlosaryEditor({
             return;
         }
 
-        // Opsional: Cegah save jika ada duplikat
         const hasDuplicates = Object.values(sourceCounts).some(count => count > 1);
         if (hasDuplicates) {
             showAlert('There are duplicate Source Terms. Please fix them before saving!', 'error');
@@ -116,10 +134,39 @@ export default function GlosaryEditor({
 
         setIsSaving(true);
         try {
-            const result = await updateGlosaryEntriesAction(glosary.id, entries);
+            // 1. Data yang baru (id < 0)
+            const creates = entries.filter(l => l.id < 0);
+            
+            // 2. Data yang diupdate (id > 0 dan ada perubahan nilai dibandingkan lastSavedEntries)
+            const updates = entries.filter(l => {
+                if (l.id < 0) return false;
+                const original = lastSavedEntries.find(old => old.id === l.id);
+                if (!original) return false;
+                return (
+                    l.source !== original.source ||
+                    l.target !== original.target ||
+                    l.detail !== original.detail
+                );
+            });
+
+            // 3. Data yang dihapus
+            const deletes = lastSavedEntries
+                .filter(old => !entries.some(l => l.id === old.id))
+                .map(old => old.id);
+
+            if (creates.length === 0 && updates.length === 0 && deletes.length === 0) {
+                showAlert('Tidak ada perubahan untuk disimpan.', 'info');
+                return;
+            }
+
+            const result = await updateGlosaryEntriesAction(glosary.id, { creates, updates, deletes });
+            
             if (result.success) {
                 showAlert('Glosary entries saved successfully.', 'success');
-                setLastSavedEntries([...entries]);
+                // Sinkronisasi id hasil create sebaiknya didapatkan dari response backend, 
+                // tapi jika tidak ada, cukup simpan state saat ini (hati-hati jika disave berulang tanpa refresh).
+                // Cara ideal: backend me-return data terbaru, lalu setEntries(result.data).
+                setLastSavedEntries([...entries]); 
             } else {
                 showAlert(result.message, 'error');
             }
@@ -147,7 +194,6 @@ export default function GlosaryEditor({
 
             <div id="GlosaryContainer" style={{ marginTop: '16px' }}>
                 {entries.map((entry, index) => {
-                    // Cek apakah entry ini duplikat
                     const sourceVal = entry.source.trim().toLowerCase();
                     const isDuplicate = sourceVal !== '' && sourceCounts[sourceVal] > 1;
 
@@ -220,12 +266,40 @@ export default function GlosaryEditor({
                 })}
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 12, justifyContent: 'end' }}>
+            {/* Container referensi untuk intersection observer */}
+            <div 
+                ref={saveContainerRef}
+                style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 12, justifyContent: 'end' }}
+            >
                 <button className="btn btn-outline btn-sm" onClick={handleSave} disabled={isSaving}>
                     <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} />{' '}
                     {isSaving ? 'Saving...' : 'Save Changes'}
                 </button>
             </div>
+
+            {/* FLOATING SAVE BUTTON */}
+            {!isSaveVisible && (
+                <button 
+                    className="btn btn-primary" 
+                    onClick={handleSave} 
+                    disabled={isSaving}
+                    style={{
+                        position: 'fixed',
+                        bottom: '24px',
+                        right: '24px',
+                        zIndex: 9999,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                        borderRadius: '50px',
+                        padding: '12px 24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} /> 
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+            )}
         </section>
     );
 }
