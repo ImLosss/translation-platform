@@ -64,7 +64,6 @@ const rawGlossaryData = {
         { "mandarin": "传承", "translate_to": "warisan", "detail": "istilah" },
         { "mandarin": "天才", "translate_to": "Jenius", "detail": "istilah" },
         { "mandarin": "碎片", "translate_to": "Pecahan", "detail": "istilah" },
-        { "mandarin": "一两灵渣", "translate_to": "satu tael ampas spiritual", "detail": "istilah" },
         { "mandarin": "副帅", "translate_to": "Wakil Panglima", "detail": "gelar/jabatan" },
         { "mandarin": "帅", "translate_to": "Panglima", "detail": "gelar/jabatan" },
         { "mandarin": "副将", "translate_to": "Wakil Jenderal", "detail": "gelar/jabatan" },
@@ -77,7 +76,6 @@ const rawGlossaryData = {
         { "mandarin": "师尊", "translate_to": "Guru Agung", "detail": "panggilan guru (lebih hormat)" },
         { "mandarin": "魂力", "translate_to": "Energi Roh", "detail": "istilah energi/kultivasi" },
         { "mandarin": "魂技", "translate_to": "Teknik Roh", "detail": "nama teknik/jurus" },
-        { "mandarin": "奔波爪", "translate_to": "Cakar Penerjang", "detail": "nama teknik/jurus" },
         { "mandarin": "灵血", "translate_to": "Darah Spiritual", "detail": "istilah kultivasi/energi" },
         { "mandarin": "灵体", "translate_to": "Tubuh Spiritual", "detail": "istilah kultivasi/jenis tubuh" },
         { "mandarin": "元气", "translate_to": "Vitalitas", "detail": "energi kehidupan/kultivasi" },
@@ -113,31 +111,10 @@ const rawGlossaryData = {
         { "mandarin": "山人", "translate_to": "Petapa", "detail": "istilah" },
         { "mandarin": "不好", "translate_to": "Gawat", "detail": "istilah" },
         { "mandarin": "修罗", "translate_to": "Asura", "detail": "istilah" },
-        { "mandarin": "飘渺宗", "translate_to": "Sekte Piaomiao", "detail": "nama sekte" },
-        { "mandarin": "裂魂教", "translate_to": "Sekte Liehun", "detail": "nama sekte" },
-        { "mandarin": "血赌场", "translate_to": "Kasino Darah", "detail": "istilah" },
-        { "mandarin": "烂账催收", "translate_to": "Penagihan Utang", "detail": "istilah" },
-        { "mandarin": "飞升贷", "translate_to": "Pinjaman", "detail": "istilah" },
-        { "mandarin": "恶字", "translate_to": "Aksara Jahat", "detail": "istilah" },
-        { "mandarin": "凶字", "translate_to": "Aksara Bahaya", "detail": "istilah" },
-        { "mandarin": "雀阴堂", "translate_to": "Aula Queyin", "detail": "istilah" },
-        { "mandarin": "除秽堂", "translate_to": "Aula Chuhui", "detail": "istilah" },
-        { "mandarin": "伏矢堂", "translate_to": "Aula Fushi", "detail": "istilah" },
-        { "mandarin": "突破", "translate_to": "Menerobos", "detail": "istilah kultivasi" },
-        { "mandarin": "神行符", "translate_to": "Jimat Langkah Dewa", "detail": "istilah" },
-        { "mandarin": "六欲魔功", "translate_to": "Teknik Iblis Enam Hasrat", "detail": "nama teknik" },
-        { "mandarin": "开云斩", "translate_to": "Tebasan Pembuka Awan", "detail": "nama teknik" },
-        { "mandarin": "敛灵决", "translate_to": "Teknik Penyembunyi Spiritual", "detail": "nama teknik" },
-        { "mandarin": "云影星宫", "translate_to": "Istana Bintang Yunying", "detail": "nama tempat" },
-        { "mandarin": "混元道果", "translate_to": "Buah Dao Hunyuan", "detail": "nama benda" },
-        { "mandarin": "神识空间", "translate_to": "Ruang Kesadaran Spiritual", "detail": "istilah" },
-        { "mandarin": "安哥", "translate_to": "Adik", "detail": "gelar/panggilan" },
         { "mandarin": "妖神", "translate_to": "Dewa Siluman", "detail": "gelar/panggilan" },
         { "mandarin": "魔神", "translate_to": "Dewa Iblis", "detail": "gelar/panggilan" }
     ]
 }
-
-
 
 async function main() {
   // 1. Buat atau update admin user
