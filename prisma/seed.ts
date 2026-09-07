@@ -214,21 +214,21 @@ async function main() {
     });
   }
 
-  // 3. Buat atau cek Glossary "Shrouding the Heavens"
+  // 3. Buat atau cek Glossary "Guan"
   let glossary = await prisma.glossary.findFirst({
-    where: { name: 'Shrouding the Heavens' },
+    where: { name: 'Guan' },
   });
 
   if (!glossary) {
     glossary = await prisma.glossary.create({
       data: {
-        name: 'Shrouding the Heavens',
+        name: 'Guan',
         sourceLanguage: 'zh',
         targetLanguage: 'id',
         userId: adminUser.id,
       },
     });
-    console.log('Glossary "Shrouding the Heavens" dibuat.');
+    console.log('Glossary "Guan" dibuat.');
   } else {
     // Opsional: Hapus entry lama supaya tidak dobel jika di-seed ulang
     await prisma.glossaryEntry.deleteMany({
@@ -247,7 +247,7 @@ async function main() {
     })),
   });
 
-  console.log(`Berhasil menyisipkan ${entriesToInsert.length} istilah ke dalam glossary "Shrouding the Heavens".`);
+  console.log(`Berhasil menyisipkan ${entriesToInsert.length} istilah ke dalam glossary "Guan".`);
   console.log('Seeder selesai');
 }
 
