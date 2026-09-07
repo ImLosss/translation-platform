@@ -24,25 +24,19 @@ export async function generateGlossaryAction(jobId: number) {
   }
 }
 
-export interface SaveGlossaryPayload {
-  glosaryId?: number;   
-  translationId?: number;  
-  
-  name: string;         
-  sourceLanguage: string;   
-  targetLanguage: string;  
-  
-  entries: {
-    source: string;
-    target: string;
-    detail: string;
-  }[];
+interface SaveGlossaryPayload {
+  translationId: number;
+  glosaryId?: number;
+  name: string;
+  sourceLanguage: string;
+  targetLanguage: string;
+  creates: any[];
+  updates: any[];
+  deletes: number[];
 }
 
 export async function saveGlossaryAction(payload: SaveGlossaryPayload) {
   try {
-    // Kita tembak endpoint NestJS untuk menyimpan glossary
-    // Gunakan POST jika backend Anda menggunakan satu endpoint untuk Create/Update
     const response = await api<any>(`/translate/save-recommendation`, {
       method: "POST", 
       body: JSON.stringify(payload),

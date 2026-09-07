@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAlert } from '@/app/components/ui/Alert';
-import SelectSearch from '@/app/components/client/SelectSearch';
 import { saveGlossaryAction } from '@/app/actions/translate/generateGlosaryAction';
 
 // ================= INTERFACES & CONSTANTS =================
@@ -22,18 +21,7 @@ export interface GlosaryInfo {
     targetLanguage: string;
 }
 
-const languageOptions = [
-    { value: 'en', label: 'English' },
-    { value: 'id', label: 'Indonesian' },
-    { value: 'ja', label: 'Japanese' },
-    { value: 'fr', label: 'French' },
-    { value: 'de', label: 'German' },
-    { value: 'zh', label: 'Chinese' },
-    { value: 'ko', label: 'Korean' },
-    { value: 'ar', label: 'Arabic' },
-];
-
-// ================= KOMPONEN UTAMA (1 FUNGSI) =================
+// ================= KOMPONEN UTAMA =================
 export default function GlossaryRecommendationClient() {
     const router = useRouter();
     const { showAlert } = useAlert(); 
@@ -48,11 +36,32 @@ export default function GlossaryRecommendationClient() {
     // --- State untuk Form Editor ---
     const [glossaryInfo, setGlossaryInfo] = useState<GlosaryInfo>({ name: '', sourceLanguage: 'en', targetLanguage: 'id' });
     const [entries, setEntries] = useState<GlosaryEntry[]>([]);
+    const [lastSavedEntries, setLastSavedEntries] = useState<GlosaryEntry[]>([]);
     const [isSaving, setIsSaving] = useState(false);
+
+    // --- State untuk Floating Button ---
+    const saveContainerRef = useRef<HTMLDivElement>(null);
+    const [isSaveVisible, setIsSaveVisible] = useState(true);
 
     const nextTempId = useRef(-1);
 
-    // 1. Ambil data dari sessionStorage saat komponen dimuat
+    // Observer untuk Floating Save Button
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsSaveVisible(entry.isIntersecting);
+            },
+            { threshold: 0 }
+        );
+
+        if (saveContainerRef.current) {
+            observer.observe(saveContainerRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
+
+    // 1. Ambil data dari sessionStorage
     useEffect(() => {
         const savedData = sessionStorage.getItem('tempGlossary');
         
@@ -70,10 +79,9 @@ export default function GlossaryRecommendationClient() {
                     return;
                 }
 
-                // Set Data Umum
                 setTranslationId(tId);
 
-                // Set Data Glossary (Jika ada)
+                let oldEntries: GlosaryEntry[] = [];
                 if (parsedData.glosary?.id) {
                     setExistingGlossaryId(parsedData.glosary.id);
                     setGlossaryInfo({
@@ -82,14 +90,12 @@ export default function GlossaryRecommendationClient() {
                         sourceLanguage: parsedData.glosary.sourceLanguage,
                         targetLanguage: parsedData.glosary.targetLanguage,
                     });
+                    oldEntries = (parsedData.glosary?.entries || []).map((e: any) => ({ ...e, isRecommended: false }));
                 }
 
-                // Set Source and Target Languages
                 setSourceLang(parsedData.sourceLang || 'en');
                 setTargetLang(parsedData.targetLang || 'id');
 
-                // Gabungkan Entries Lama & Rekomendasi Baru
-                const oldEntries = (parsedData.glosary?.entries || []).map((e: any) => ({ ...e, isRecommended: false }));
                 const newEntries = recommendations.map((e: any) => ({
                     ...e,
                     id: nextTempId.current--,
@@ -97,6 +103,8 @@ export default function GlossaryRecommendationClient() {
                 }));
 
                 setEntries([...newEntries, ...oldEntries]);
+                // Yang dianggap 'terakhir disimpan' hanya data yang sudah ada di DB (oldEntries)
+                setLastSavedEntries(oldEntries);
 
                 setIsLoadingData(false);
 
@@ -111,7 +119,7 @@ export default function GlossaryRecommendationClient() {
         }
     }, [router, showAlert]); 
 
-    // 2. Fungsi Logika Form Editor (Tambah, Hapus, Update)
+    // 2. Fungsi Logika Form Editor
     const sourceCounts = entries.reduce((acc, entry) => {
         const val = entry.source.trim().toLowerCase();
         if (val) acc[val] = (acc[val] || 0) + 1;
@@ -147,7 +155,7 @@ export default function GlossaryRecommendationClient() {
         el.style.height = `${el.scrollHeight}px`;
     };
 
-    // 3. Fungsi Save/Submit Data ke Action
+    // 3. Fungsi Save/Submit
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault(); 
 
@@ -159,15 +167,44 @@ export default function GlossaryRecommendationClient() {
 
         setIsSaving(true);
         try {
-            const cleanEntries = entries.map(({ id, source, target, detail }) => ({ id, source, target, detail }));
+            // Pemisahan data
+            const creates = entries
+                .filter(l => !l.id || l.id < 0)
+                .map(({ id, source, target, detail }) => ({ id, source, target, detail }));
+            
+            const updates = entries
+                .filter(l => {
+                    if (!l.id || l.id < 0) return false;
+                    const original = lastSavedEntries.find(old => old.id === l.id);
+                    if (!original) return false;
+                    return (
+                        l.source !== original.source ||
+                        l.target !== original.target ||
+                        l.detail !== original.detail
+                    );
+                })
+                .map(({ id, source, target, detail }) => ({ id, source, target, detail }));
+
+            const deletes = lastSavedEntries
+                .filter(old => old.id && !entries.some(l => l.id === old.id))
+                .map(old => old.id as number);
+
+            // Jika menambah ke glossary lama (bukan buat baru), cegah submit kosong
+            if (existingGlossaryId && creates.length === 0 && updates.length === 0 && deletes.length === 0) {
+                showAlert('Tidak ada perubahan untuk disimpan.', 'info');
+                setIsSaving(false);
+                return;
+            }
 
             const payload = {
-                translationId: translationId!, // Hanya dipakai saat Create
-                glosaryId: glossaryInfo.id,    // Mengubah id menjadi glosaryId untuk DTO NestJS
+                translationId: translationId!,
+                glosaryId: glossaryInfo.id,
                 name: glossaryInfo.name,
                 sourceLanguage: glossaryInfo.sourceLanguage,
                 targetLanguage: glossaryInfo.targetLanguage,
-                entries: cleanEntries
+                creates,
+                updates,
+                deletes
             };
 
             const response = await saveGlossaryAction(payload);
@@ -237,7 +274,6 @@ export default function GlossaryRecommendationClient() {
                 </div>
 
                 <form onSubmit={handleSave}>
-                    {/* FORM NEW GLOSSARY */}
                     {!existingGlossaryId ? (
                         <div style={{ marginBottom: '20px' }}>
                             <h3 style={{ fontSize: '1.1rem', marginBottom: '15px', color: 'var(--text-primary)' }}>
@@ -258,16 +294,14 @@ export default function GlossaryRecommendationClient() {
                                     <label htmlFor="sourceLang">Source Language <span style={{ color: 'var(--accent-red)' }}>*</span></label>
                                     <input
                                         type="text" className="form-control" id="sourceLang"
-                                        value={sourceLang} required
-                                        disabled
+                                        value={sourceLang} required disabled
                                     />
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="targetLang">Target Language <span style={{ color: 'var(--accent-red)' }}>*</span></label>
                                     <input
                                         type="text" className="form-control" id="targetLang"
-                                        value={targetLang} required
-                                        disabled
+                                        value={targetLang} required disabled
                                     />
                                 </div>
                             </div>
@@ -282,7 +316,6 @@ export default function GlossaryRecommendationClient() {
                         </div>
                     )}
 
-                    {/* ENTRIES LIST */}
                     <div className="form-group" style={{ marginBottom: '20px' }}>
                         <label style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '12px', display: 'block' }}>
                             Glossary Entries
@@ -322,16 +355,11 @@ export default function GlossaryRecommendationClient() {
                                             />
                                         </div>
 
-                                        {/* KEMBALI MENGGUNAKAN TEXTAREA UNTUK DETAIL/CONTEXT */}
                                         <div className="sub-field">
                                             <label>Detail / Context <span style={{ color: 'var(--text-muted)', textTransform: 'none', fontWeight: 'normal' }}>(Optional)</span></label>
                                             <textarea
-                                                ref={resizeTextarea}
-                                                className="sub-detail"
-                                                rows={1}
-                                                placeholder="Additional context..."
-                                                value={entry.detail || ''}
-                                                onChange={(e) => handleUpdateEntry(index, 'detail', e.target.value)}
+                                                ref={resizeTextarea} className="sub-detail" rows={1} placeholder="Additional context..."
+                                                value={entry.detail || ''} onChange={(e) => handleUpdateEntry(index, 'detail', e.target.value)}
                                             />
                                         </div>
 
@@ -345,7 +373,10 @@ export default function GlossaryRecommendationClient() {
                         </div>
                     </div>
 
-                    <div style={{ marginTop: '30px' }}>
+                    <div 
+                        ref={saveContainerRef} 
+                        style={{ marginTop: '30px' }}
+                    >
                         <button type="submit" className="btn btn-primary" disabled={isSaving}>
                             <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`}></i>{' '}
                             {isSaving ? 'Saving Glossary...' : 'Confirm & Save Glossary'}
@@ -353,6 +384,30 @@ export default function GlossaryRecommendationClient() {
                     </div>
                 </form>
             </section>
+
+            {/* FLOATING SAVE BUTTON */}
+            {!isSaveVisible && (
+                <button 
+                    className="btn btn-primary" 
+                    onClick={handleSave} 
+                    disabled={isSaving}
+                    style={{
+                        position: 'fixed',
+                        bottom: '24px',
+                        right: '24px',
+                        zIndex: 9999,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                        borderRadius: '50px',
+                        padding: '12px 24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} /> 
+                    {isSaving ? 'Saving...' : 'Confirm & Save'}
+                </button>
+            )}
         </div>
     );
 }
