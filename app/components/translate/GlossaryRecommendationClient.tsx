@@ -40,25 +40,28 @@ export default function GlossaryRecommendationClient() {
     const [isSaving, setIsSaving] = useState(false);
 
     // --- State untuk Floating Button ---
-    const saveContainerRef = useRef<HTMLDivElement>(null);
     const [isSaveVisible, setIsSaveVisible] = useState(true);
+    
+    // Perbaikan: Gunakan state untuk menyimpan instance observer agar bisa dibersihkan dengan benar
+    const observer = useRef<IntersectionObserver | null>(null);
 
     const nextTempId = useRef(-1);
 
-    // Observer untuk Floating Save Button
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsSaveVisible(entry.isIntersecting);
-            },
-            { threshold: 0 }
-        );
-
-        if (saveContainerRef.current) {
-            observer.observe(saveContainerRef.current);
+    const saveContainerRef = useCallback((node: HTMLDivElement | null) => {
+        if (observer.current) observer.current.disconnect(); // Bersihkan observer lama
+        
+        if (node) {
+            observer.current = new IntersectionObserver(
+                ([entry]) => {
+                    // Jika isIntersecting true, tombol asli terlihat, maka sembunyikan tombol floating.
+                    // Jika false, tombol asli tersembunyi, munculkan tombol floating.
+                    setIsSaveVisible(entry.isIntersecting);
+                },
+                // rootMargin membantu memicu observer sesaat sebelum/sesudah elemen benar-benar terlihat/menghilang
+                { threshold: 0, rootMargin: '0px 0px 50px 0px' } 
+            );
+            observer.current.observe(node);
         }
-
-        return () => observer.disconnect();
     }, []);
 
     // 1. Ambil data dari sessionStorage
@@ -157,7 +160,7 @@ export default function GlossaryRecommendationClient() {
 
     // 3. Fungsi Save/Submit
     const handleSave = async (e: React.FormEvent) => {
-        e.preventDefault(); 
+        if (e && e.preventDefault) e.preventDefault(); 
 
         const hasDuplicates = Object.values(sourceCounts).some(count => count > 1);
         if (hasDuplicates) {
@@ -374,6 +377,7 @@ export default function GlossaryRecommendationClient() {
                     </div>
 
                     <div 
+                        // Perbaikan ref: Menghubungkan div ini ke Observer
                         ref={saveContainerRef} 
                         style={{ marginTop: '30px' }}
                     >
@@ -388,8 +392,9 @@ export default function GlossaryRecommendationClient() {
             {/* FLOATING SAVE BUTTON */}
             {!isSaveVisible && (
                 <button 
+                    // Mengubah onClick agar memanggil handleSave (karena tipe event di fungsi handleSave butuh any/FormEvent)
                     className="btn btn-primary" 
-                    onClick={handleSave} 
+                    onClick={(e) => handleSave(e as any)} 
                     disabled={isSaving}
                     style={{
                         position: 'fixed',
