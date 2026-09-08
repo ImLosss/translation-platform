@@ -83,6 +83,7 @@ export class PaymentService {
                     message: 'QRIS berhasil di-generate via Pakasir',
                     orderId: transaction.id,
                     qrImageUrl: transaction.paymentUrl,
+                    total: transaction.amount + transaction.fee,
                     expiryTime: paymentData.expired_at || null,
                 };
             }
@@ -137,6 +138,7 @@ export class PaymentService {
                     message: 'QRIS berhasil di-generate via Midtrans',
                     orderId: transaction.id,
                     qrImageUrl: transaction.paymentUrl,
+                    total: transaction.amount + transaction.fee,
                     expiryTime: data.expiry_time || null,
                 };
             }
