@@ -27,7 +27,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
   const [model, setModel] = useState<string>('');
   const [sourceLang, setSourceLang] = useState<string>('en');
   const [targetLang, setTargetLang] = useState<string>('id');
-  const [batchSize, setBatchSize] = useState<number>(25);
+  const [batchSize, setBatchSize] = useState<number | string>(25);
   const [glossaryId, setGlossaryId] = useState<string>(''); 
   
   // State untuk Opsi Input
@@ -216,10 +216,8 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
               type="number"
               className="form-control"
               id="batchSize"
-              min={1}
-              max={100}
               value={batchSize}
-              onChange={(e) => setBatchSize(parseInt(e.target.value) || 10)}
+              onChange={(e) => setBatchSize(e.target.value === '' ? '' : parseInt(e.target.value))}
             />
           </div>
           <div className="form-group">
