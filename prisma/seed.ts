@@ -17,34 +17,37 @@ const prisma = new PrismaClient({
 // Data mentah glossary
 const rawGlossaryData = {
     "LIST_CULTIVATION": [
-        { "mandarin": "凝气", "replace": "Qi Condensation" },
-        { "mandarin": "筑基", "replace": "Foundation Establishment" },
-        { "mandarin": "结丹", "replace": "Core Formation" },
-        { "mandarin": "元婴", "replace": "Nascent Soul" },
-        { "mandarin": "化神", "replace": "Soul Formation" },
-        { "mandarin": "婴变", "replace": "Soul Transformation" },
-        { "mandarin": "问鼎", "replace": "Ascendant" },
-        { "mandarin": "阴虚", "replace": "Illusory Yin" },
-        { "mandarin": "阳实", "replace": "Corporeal Yang" },
-        { "mandarin": "窥涅", "replace": "Nirvana Scryer" },
-        { "mandarin": "净涅", "replace": "Nirvana Cleanser" },
-        { "mandarin": "碎涅", "replace": "Nirvana Shatterer" },
-        { "mandarin": "天人五衰", "replace": "Heaven's Blight" },
-        { "mandarin": "空涅", "replace": "Nirvana Void" },
-        { "mandarin": "空灵", "replace": "Spirit Void" },
-        { "mandarin": "空玄", "replace": "Arcane Void" },
-        { "mandarin": "空劫", "replace": "Void Tribulation" },
-        { "mandarin": "半步踏天境", "replace": "Half-step Heaven Trampling" },
-        { "mandarin": "第四步", "replace": "Heaven Trampling" },
-        { "mandarin": "练气", "replace": "Qi Refining" },
-        { "mandarin": "金丹", "replace": "Golden Core" },
-        { "mandarin": "乾元", "replace": "Origin Essence" },
-        { "mandarin": "无相", "replace": "Transcendent" },
-        { "mandarin": "太清", "replace": "Supreme Purity" }
+        { "mandarin": "轮海秘境,", "replace": "Ranah Wheel and Sea", "details": [
+            { "mandarin": "苦海", "replace": "Bitter Sea" },
+            { "mandarin": "命泉", "replace": "Life Spring" },
+            { "mandarin": "神桥", "replace": "Divine Bridge" },
+            { "mandarin": "彼岸", "replace": "Paramita" }
+        ] },
+        { "mandarin": "道宫秘境", "replace": "Ranah Dao Palace", "details": "terdiri dari 5 tahap yang masing-masing menguatkan lima organ (hati, jantung, limpa, paru-paru, ginjal)" },
+        { "mandarin": "四极秘境", "replace": "Ranah Four Pole", "details": "terdiri dari 4 tahap" },
+        { "mandarin": "化龙秘境", "replace": "Ranah Dragon Transformation", "details": "terdiri dari 9 tahap" },
+        { "mandarin": "化龙秘境", "replace": "Ranah Immortal Platform", "details": [
+            { "mandarin": "半步大能", "replace": "Semi-Supreme" },
+            { "mandarin": "大能", "replace": "Supreme Being" },
+            { "mandarin": "王者", "replace": "Sovereign", "gelar": "God King" },
+            { "mandarin": "圣人", "replace": "Saint" },
+            { "mandarin": "圣人王", "replace": "Saint King" },
+            { "mandarin": "大圣", "replace": "Great Saint" }
+        ] },
+        { "mandarin": "准帝", "replace": "Quasi Emperor", "details": "terdiri dari 9 tahap untuk mencapai Pseudo-Great Emperor" },
+        { "mandarin": "大帝", "replace": "Great Emperor", "gelar": "Heavenly Emperor" },
+        { "mandarin": "仙道领域", "replace": "Ranah Immortal Dao", "details": [
+            { "mandarin": "真仙", "replace": "True Immortal" },
+            { "mandarin": "红尘仙", "replace": "Red Dust Immortal" },
+            { "mandarin": "仙王", "replace": "Immortal King" },
+            { "mandarin": "准仙帝", "replace": "Quasi Immortal Emperor" },
+            { "mandarin": "仙帝", "replace": "Immortal Emperor" }
+        ] }
     ],
     "REPLACE_AND_LEARN": [
         { "mandarin": "大长老", "translate_to": "Tetua Agung", "detail": "jabatan" },
         { "mandarin": "长老", "translate_to": "Tetua", "detail": "jabatan" },
+        { "mandarin": "伊轻舞", "translate_to": "Yi Qingwu", "detail": "nama karakter" },
         { "mandarin": "混沌蚊", "translate_to": "Nyamuk Kekacauan", "detail": "nama makhluk" },
         { "mandarin": "虚空", "translate_to": "Kehampaan", "detail": "istilah/tempat" },
         { "mandarin": "仙气", "translate_to": "Energi Abadi", "detail": "istilah" },
@@ -52,7 +55,6 @@ const rawGlossaryData = {
         { "mandarin": "雷劫", "translate_to": "Petaka Petir", "detail": "istilah" },
         { "mandarin": "天谴", "translate_to": "Hukuman Langit", "detail": "istilah" },
         { "mandarin": "元神", "translate_to": "Roh Primordial", "detail": "istilah" },
-        { "mandarin": "灵根", "translate_to": "Akar Spiritual", "detail": "istilah" },
         { "mandarin": "隐患", "translate_to": "Bahaya Tersembunyi", "detail": "istilah" },
         { "mandarin": "修士", "translate_to": "Kultivator", "detail": "praktisi kultivasi" },
         { "mandarin": "凡人", "translate_to": "orang biasa", "detail": "manusia biasa, bukan kultivator" },
@@ -60,18 +62,14 @@ const rawGlossaryData = {
         { "mandarin": "法宝", "translate_to": "harta pusaka", "detail": "senjata/item tingkat tinggi" },
         { "mandarin": "灵兽", "translate_to": "Binatang Roh", "detail": "hewan spiritual" },
         { "mandarin": "修炼", "translate_to": "pelatihan", "detail": "istilah" },
-        { "mandarin": "修行", "translate_to": "Kultivasi", "detail": "istilah" },
         { "mandarin": "传承", "translate_to": "warisan", "detail": "istilah" },
         { "mandarin": "天才", "translate_to": "Jenius", "detail": "istilah" },
-        { "mandarin": "碎片", "translate_to": "Pecahan", "detail": "istilah" },
-        { "mandarin": "副帅", "translate_to": "Wakil Panglima", "detail": "gelar/jabatan" },
-        { "mandarin": "帅", "translate_to": "Panglima", "detail": "gelar/jabatan" },
-        { "mandarin": "副将", "translate_to": "Wakil Jenderal", "detail": "gelar/jabatan" },
-        { "mandarin": "将", "translate_to": "Jenderal", "detail": "gelar/jabatan" },
-        { "mandarin": "副统领", "translate_to": "Wakil Komandan", "detail": "gelar/jabatan" },
-        { "mandarin": "统领", "translate_to": "Komandan", "detail": "gelar/jabatan" },
-        { "mandarin": "统队", "translate_to": "Kapten Pasukan", "detail": "gelar/jabatan" },
         { "mandarin": "强者", "translate_to": "Ahli Kuat", "detail": "istilah" },
+        { "mandarin": "圣体", "translate_to": "Tubuh Suci", "detail": "istilah" },
+        { "mandarin": "七禁领域", "translate_to": "Domain Tujuh Larangan", "detail": "istilah" },
+        { "mandarin": "广寒阙", "translate_to": "Istana Guanghan", "detail": "istilah" },
+        { "mandarin": "圣兵", "translate_to": "Senjata Suci", "detail": "istilah" },
+        { "mandarin": "人欲道", "translate_to": "Jalan Hasrat Manusia", "detail": "istilah kultivasi" },
         { "mandarin": "师父", "translate_to": "Guru", "detail": "panggilan guru" },
         { "mandarin": "师尊", "translate_to": "Guru Agung", "detail": "panggilan guru (lebih hormat)" },
         { "mandarin": "魂力", "translate_to": "Energi Roh", "detail": "istilah energi/kultivasi" },
@@ -84,9 +82,7 @@ const rawGlossaryData = {
         { "mandarin": "修魔", "translate_to": "Kultivasi Iblis", "detail": "jenis kultivasi terlarang" },
         { "mandarin": "阵法", "translate_to": "Formasi", "detail": "array atau sihir pertahanan" },
         { "mandarin": "师兄", "translate_to": "Senior", "detail": "istilah" },
-        { "mandarin": "道德经", "translate_to": "Kitab Dao dan Kebajikan", "detail": "istilah" },
         { "mandarin": "前辈", "translate_to": "Senior", "detail": "panggilan" },
-        { "mandarin": "道人", "translate_to": "Petapa", "detail": "gelar" },
         { "mandarin": "晚辈", "translate_to": "Junior", "detail": "istilah" },
         { "mandarin": "师姐", "translate_to": "Kakak Seperguruan", "detail": "panggilan senior perempuan" },
         { "mandarin": "师弟", "translate_to": "Adik Seperguruan", "detail": "panggilan junior" },
@@ -112,9 +108,42 @@ const rawGlossaryData = {
         { "mandarin": "不好", "translate_to": "Gawat", "detail": "istilah" },
         { "mandarin": "修罗", "translate_to": "Asura", "detail": "istilah" },
         { "mandarin": "妖神", "translate_to": "Dewa Siluman", "detail": "gelar/panggilan" },
-        { "mandarin": "魔神", "translate_to": "Dewa Iblis", "detail": "gelar/panggilan" }
+        { "mandarin": "魔神", "translate_to": "Dewa Iblis", "detail": "gelar/panggilan" },
+        { "mandarin": "神蚕道人", "translate_to": "Petapa Shencan", "detail": "gelar/panggilan" },
+        { "mandarin": "太阳圣皇", "translate_to": "Kaisar Suci Taiyang", "detail": "gelar/panggilan" },
+        { "mandarin": "正德道人", "translate_to": "Petapa Zhengde", "detail": "gelar/panggilan" },
+        { "mandarin": "太古一族", "translate_to": "Ras Kuno", "detail": "nama ras" },
+        { "mandarin": "金乌一族", "translate_to": "Klan Jinwu", "detail": "nama klan" },
+        { "mandarin": "星域", "translate_to": "Domain Bintang", "detail": "istilah" },
+        { "mandarin": "星", "translate_to": "Planet", "detail": "istilah" },
+        { "mandarin": "帝文", "translate_to": "Aksara Kaisar", "detail": "istilah" },
+        { "mandarin": "人王殿", "translate_to": "Istana Raja Manusia", "detail": "istilah" },
+        { "mandarin": "羽化仙崖", "translate_to": "Tebing Abadi Yuhua", "detail": "nama tempat" },
+        { "mandarin": "长生观", "translate_to": "Kuil Changsheng", "detail": "istilah" },
+        { "mandarin": "蛮族", "translate_to": "Suku Barbar", "detail": "nama suku/klan" },
+        { "mandarin": "圣主", "translate_to": "Penguasa Suci", "detail": "istilah" },
+        { "mandarin": "五域", "translate_to": "Lima Wilayah", "detail": "istilah" },
+        { "mandarin": "北原", "translate_to": "Wilayah Utara", "detail": "nama tempat" },
+        { "mandarin": "南岭", "translate_to": "Wilayah Selatan", "detail": "nama tempat" },
+        { "mandarin": "天机阁", "translate_to": "Paviliun Tianji", "detail": "nama tempat" },
+        { "mandarin": "神灵谷", "translate_to": "Lembah Shenling", "detail": "nama tempat" },
+        { "mandarin": "落霞山", "translate_to": "Gunung Luoxia", "detail": "nama tempat" },
+        { "mandarin": "太阴神子", "translate_to": "Putra Suci Taiyin", "detail": "gelar/panggilan" },
+        { "mandarin": "宫主", "translate_to": "Pemimpin Istana", "detail": "gelar/panggilan" },
+        { "mandarin": "老祖", "translate_to": "Leluhur", "detail": "gelar/panggilan" },
+        { "mandarin": "不死天皇", "translate_to": "Kaisar Langit Abadi", "detail": "gelar/panggilan" },
+        { "mandarin": "蛮王", "translate_to": "Raja Barbar", "detail": "gelar/panggilan" },
+        { "mandarin": "是天皇子", "translate_to": "Putra Kaisar Langit", "detail": "gelar/panggilan" },
+        { "mandarin": "圣皇子", "translate_to": "Putra Kaisar Suci", "detail": "gelar/panggilan" },
+        { "mandarin": "神女炉", "translate_to": "Tungku Dewi", "detail": "nama benda" },
+        { "mandarin": "皆字秘", "translate_to": "Aksara Rahasia 'semua'", "detail": "istilah" },
+        { "mandarin": "行字秘", "translate_to": "Aksara Rahasia 'bergerak'", "detail": "istilah" },
+        { "mandarin": "斗字秘", "translate_to": "Aksara Rahasia 'bertarung'", "detail": "istilah" },
+        { "mandarin": "道德经", "translate_to": "Kitab Dao dan Kebajikan", "detail": "istilah" },
+        { "mandarin": "六道轮回拳", "translate_to": "Tinju Enam Jalan Reinkarnasi", "detail": "nama teknik" }
     ]
 }
+
 
 async function main() {
   // 1. Buat atau update admin user
@@ -191,21 +220,21 @@ async function main() {
     });
   }
 
-  // 3. Buat atau cek Glossary "Global"
+  // 3. Buat atau cek Glossary "Shrouding the Heavens"
   let glossary = await prisma.glossary.findFirst({
-    where: { name: 'Global' },
+    where: { name: 'Shrouding the Heavens' },
   });
 
   if (!glossary) {
     glossary = await prisma.glossary.create({
       data: {
-        name: 'Global',
+        name: 'Shrouding the Heavens',
         sourceLanguage: 'zh',
         targetLanguage: 'id',
         userId: adminUser.id,
       },
     });
-    console.log('Glossary "Global" dibuat.');
+    console.log('Glossary "Shrouding the Heavens" dibuat.');
   } else {
     // Opsional: Hapus entry lama supaya tidak dobel jika di-seed ulang
     await prisma.glossaryEntry.deleteMany({
@@ -224,7 +253,7 @@ async function main() {
     })),
   });
 
-  console.log(`Berhasil menyisipkan ${entriesToInsert.length} istilah ke dalam glossary "Global".`);
+  console.log(`Berhasil menyisipkan ${entriesToInsert.length} istilah ke dalam glossary "Shrouding the Heavens".`);
   console.log('Seeder selesai');
 }
 
