@@ -33,7 +33,7 @@ export class TranslateDto {
   @IsInt()
   @Min(5)
   @Max(50)
-  batchSize?: number; 
+  batchSize!: number; 
 
   @IsInt()
   @IsOptional()

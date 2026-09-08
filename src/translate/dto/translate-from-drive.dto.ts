@@ -24,10 +24,9 @@ export class TranslateFromDriveDto {
   videoSource!: string;
 
   @IsInt()
-  @IsOptional()
   @Min(5)
   @Max(50)
-  batchSize?: number; 
+  batchSize!: number; 
 
   @IsInt()
   @IsOptional()
