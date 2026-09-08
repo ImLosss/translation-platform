@@ -321,7 +321,7 @@ export default function TopupClient() {
                                 </p>
                                 <ul style={{ margin: 0, paddingLeft: '0', listStyleType: 'none', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                     <li style={{ marginBottom: '4px' }}><i className="fas fa-envelope" style={{ width: '20px' }}></i> dongworldid@gmail.com</li>
-                                    <li><i className="fab fa-whatsapp" style={{ width: '20px' }}></i> +62 821-9259-8451 (Chat Only)</li>
+                                    <li style={{ marginBottom: '4px' }}><i className="fab fa-whatsapp" style={{ width: '20px' }}></i> +62 821-9259-8451 (Chat Only)</li>
                                     <li><i className="fab fa-telegram" style={{ width: '20px' }}></i> @Losss11</li>
                                 </ul>
                             </div>
