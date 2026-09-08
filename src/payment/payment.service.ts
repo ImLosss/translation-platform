@@ -151,74 +151,74 @@ export class PaymentService {
         // return saat ini tidak mendukung metode cc dalam bahasa inggris
         throw new NotImplementedException('This payment method is currently unavailable. Contact support for a manual top-up process.');
 
-        // 1. Ambil data user dari database internal
-        const user = await this.prisma.user.findUnique({
-            where: { id: userId },
-        });
+        // // 1. Ambil data user dari database internal
+        // const user = await this.prisma.user.findUnique({
+        //     where: { id: userId },
+        // });
 
-        if (!user) throw new NotFoundException('User tidak ditemukan');
+        // if (!user) throw new NotFoundException('User tidak ditemukan');
 
-        // 2. Buat Order ID unik (menggunakan prefix CC)
-        const orderId = `CC-${userId}-${Date.now()}`;
+        // // 2. Buat Order ID unik (menggunakan prefix CC)
+        // const orderId = `CC-${userId}-${Date.now()}`;
 
-        // 3. Kalkulasi Fee di Backend untuk keamanan (Misal: CC Fee = 2.7% + Rp 2.000)
-        const serviceFee = 2000 + Math.round(dto.amount * 0.027);
-        const grossAmount = dto.amount + serviceFee;
+        // // 3. Kalkulasi Fee di Backend untuk keamanan (Misal: CC Fee = 2.7% + Rp 2.000)
+        // const serviceFee = 2000 + Math.round(dto.amount * 0.027);
+        // const grossAmount = dto.amount + serviceFee;
 
-        // 4. Susun Payload Snap sesuai standar Midtrans
-        const payload = {
-            transaction_details: {
-                order_id: orderId,
-                gross_amount: grossAmount,
-            },
-            customer_details: {
-                first_name: user.username || 'User',
-                email: user.email,
-            },
-            enabled_payments: ["credit_card"],
-            credit_card: {
-                secure: true,
-            }
-        };
+        // // 4. Susun Payload Snap sesuai standar Midtrans
+        // const payload = {
+        //     transaction_details: {
+        //         order_id: orderId,
+        //         gross_amount: grossAmount,
+        //     },
+        //     customer_details: {
+        //         first_name: user.username || 'User',
+        //         email: user.email,
+        //     },
+        //     enabled_payments: ["credit_card"],
+        //     credit_card: {
+        //         secure: true,
+        //     }
+        // };
 
-        try {
-            // 5. Hit Endpoint SNAP API
-            // URL Snap menggunakan subdomain 'app', bukan 'api'
-            const snapUrl = 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+        // try {
+        //     // 5. Hit Endpoint SNAP API
+        //     // URL Snap menggunakan subdomain 'app', bukan 'api'
+        //     const snapUrl = 'https://app.sandbox.midtrans.com/snap/v1/transactions';
 
-            const { data } = await axios.post(snapUrl, payload, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    ...this.getBasicAuthHeader(), // Menggunakan helper header auth yang sudah ada
-                },
-            });
+        //     const { data } = await axios.post(snapUrl, payload, {
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'Accept': 'application/json',
+        //             ...this.getBasicAuthHeader(), // Menggunakan helper header auth yang sudah ada
+        //         },
+        //     });
 
-            // 6. Simpan transaksi ke database (menyimpan redirect_url sebagai paymentUrl)
-            const transaction = await this.prisma.transaction.create({
-                data: {
-                    id: orderId,
-                    userId: userId,
-                    amount: dto.amount,
-                    fee: serviceFee,
-                    status: 'PENDING',
-                    paymentUrl: data.redirect_url,
-                },
-            });
+        //     // 6. Simpan transaksi ke database (menyimpan redirect_url sebagai paymentUrl)
+        //     const transaction = await this.prisma.transaction.create({
+        //         data: {
+        //             id: orderId,
+        //             userId: userId,
+        //             amount: dto.amount,
+        //             fee: serviceFee,
+        //             status: 'PENDING',
+        //             paymentUrl: data.redirect_url,
+        //         },
+        //     });
 
-            // 7. Kembalikan token dan redirect_url ke Frontend
-            return {
-                message: 'Snap Token berhasil di-generate',
-                orderId: transaction.id,
-                snapToken: data.token,
-                redirectUrl: data.redirect_url,
-            };
+        //     // 7. Kembalikan token dan redirect_url ke Frontend
+        //     return {
+        //         message: 'Snap Token berhasil di-generate',
+        //         orderId: transaction.id,
+        //         snapToken: data.token,
+        //         redirectUrl: data.redirect_url,
+        //     };
 
-        } catch (error: any) {
-            throw new InternalServerErrorException(
-                error.response?.data?.message || error.response?.data?.error_messages || error.message || 'Gagal memproses Snap Token Midtrans'
-            );
-        }
+        // } catch (error: any) {
+        //     throw new InternalServerErrorException(
+        //         error.response?.data?.message || error.response?.data?.error_messages || error.message || 'Gagal memproses Snap Token Midtrans'
+        //     );
+        // }
     }
 
     async getPaymentStatus(transactionId: string) {
