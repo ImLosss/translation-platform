@@ -14,7 +14,7 @@ export default function TopupClient() {
     const [paymentMethod, setPaymentMethod] = useState<'qris' | 'credit_card' | ''>('qris');
     const [isProcessing, setIsProcessing] = useState(false);
     
-    const [qrisData, setQrisData] = useState<{ qrImageUrl: string; orderId: string; expiryTime?: string } | null>(null);
+    const [qrisData, setQrisData] = useState<{ qrImageUrl: string; orderId: string; expiryTime?: string; total: number } | null>(null);
     const [countdown, setCountdown] = useState<number>(900);
 
     // =========================================================================
@@ -66,21 +66,8 @@ export default function TopupClient() {
         return () => clearInterval(timerId);
     }, [qrisData, showAlert]);
 
-    // =========================================================================
-    // KALKULASI FEE
-    // =========================================================================
     const quickAmounts = [50000, 100000, 250000, 500000];
     const subtotal = Number(amount) || 0;
-    let serviceFee = 0;
-
-    if (subtotal > 0) {
-        if (paymentMethod === 'qris') {
-            serviceFee = Math.round(subtotal * 0.007);
-        } else if (paymentMethod === 'credit_card') {
-            serviceFee = 2000 + Math.round(subtotal * 0.027);
-        }
-    }
-    const totalPayment = subtotal + serviceFee;
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID').format(val);
     const formatCountdown = (seconds: number) => {
@@ -139,6 +126,7 @@ export default function TopupClient() {
                         qrImageUrl: result.data.qrImageUrl,
                         orderId: result.data.orderId,
                         expiryTime: result.data.expiryTime,
+                        total: result.data.total, 
                     });
                 }
             } else {
@@ -174,7 +162,7 @@ export default function TopupClient() {
                     <div style={{ backgroundColor: 'var(--bg-input)', padding: '20px 40px', borderRadius: '12px', border: '2px dashed var(--border-color)', width: '100%', maxWidth: '350px' }}>
                         <p style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: 'var(--text-muted)' }}>Total Pembayaran</p>
                         <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '2rem' }}>
-                            IDR {formatCurrency(totalPayment)}
+                            IDR {formatCurrency(qrisData.total)}
                         </h3>
                     </div>
                     
@@ -204,13 +192,16 @@ export default function TopupClient() {
                 {/* SYARAT MIDTRANS: KONTAK CS DI HALAMAN QRIS */}
                 <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px dashed var(--border-color)', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
                     <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
-                        Butuh Bantuan? Hubungi Kami:
+                        need help? Contact us:
                     </p>
                     <p style={{ margin: '3px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                         <i className="fas fa-envelope" style={{ width: '20px' }}></i> dongworldid@gmail.com
                     </p>
                     <p style={{ margin: '3px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                         <i className="fab fa-whatsapp" style={{ width: '20px' }}></i> +62 821-9259-8451 (Chat Only)
+                    </p>
+                    <p style={{ margin: '3px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        <i className="fab fa-telegram" style={{ width: '20px' }}></i> @Losss11
                     </p>
                 </div>
             </section>
@@ -318,7 +309,7 @@ export default function TopupClient() {
                                 Payment Notes
                             </h4>
                             <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                                <li><strong>Platform Fee</strong> is applied based on the selected payment method.</li>
+                                <li>Final payment tag will include a <strong>Platform Fee</strong> based on your selected payment provider.</li>
                                 <li>Credit Card payments are secured with 3D Secure (OTP).</li>
                                 <li>Once the payment is successful, the balance is non-refundable.</li>
                             </ul>
@@ -326,32 +317,37 @@ export default function TopupClient() {
                             {/* SYARAT MIDTRANS: KONTAK CS DI HALAMAN CHECKOUT */}
                             <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px dashed var(--border-color)' }}>
                                 <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
-                                    Butuh Bantuan? Hubungi Kami:
+                                    Need help? Contact us:
                                 </p>
                                 <ul style={{ margin: 0, paddingLeft: '0', listStyleType: 'none', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                     <li style={{ marginBottom: '4px' }}><i className="fas fa-envelope" style={{ width: '20px' }}></i> dongworldid@gmail.com</li>
                                     <li><i className="fab fa-whatsapp" style={{ width: '20px' }}></i> +62 821-9259-8451 (Chat Only)</li>
+                                    <li><i className="fab fa-telegram" style={{ width: '20px' }}></i> @Losss11</li>
                                 </ul>
                             </div>
                         </div>
 
                         <div style={{ flex: '1 1 300px', backgroundColor: 'var(--bg-input)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'var(--text-muted)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
                                 <span>Top-up Amount</span>
                                 <span>IDR {formatCurrency(subtotal)}</span>
                             </div>
+
+                            <div style={{ textAlign: 'right', marginBottom: '20px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                *fee not included
+                            </div>
                             
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', color: 'var(--text-muted)' }}>
+                            {/* <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', color: 'var(--text-muted)' }}>
                                 <span>Platform Fee {paymentMethod === 'credit_card' && '(CC)'}</span>
-                                <span>IDR {formatCurrency(serviceFee)}</span>
+                                <span>IDR 300</span>
                             </div>
                             
                             <div style={{ borderTop: '1px dashed var(--border-color)', margin: '15px 0' }}></div>
                             
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
                                 <span>Total Payment</span>
-                                <span>IDR {formatCurrency(totalPayment)}</span>
-                            </div>
+                                <span>IDR 50000</span>
+                            </div> */}
 
                             <button 
                                 type="submit" 
