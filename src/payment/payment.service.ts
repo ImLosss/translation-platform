@@ -1,5 +1,5 @@
 // src/payment/payment.service.ts
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, NotFoundException, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { CreateQrisDto } from './dto/create-qris.dto';
@@ -148,6 +148,9 @@ export class PaymentService {
     }
 
     async generateSnapToken(userId: number, dto: { amount: number }) {
+        // return saat ini tidak mendukung metode cc dalam bahasa inggris
+        throw new NotImplementedException('This payment method is currently unavailable. Contact support for a manual top-up process.');
+
         // 1. Ambil data user dari database internal
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
