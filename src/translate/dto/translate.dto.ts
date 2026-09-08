@@ -31,7 +31,6 @@ export class TranslateDto {
   srtContent!: string;
 
   @IsInt()
-  @IsOptional()
   @Min(5)
   @Max(50)
   batchSize?: number; 
