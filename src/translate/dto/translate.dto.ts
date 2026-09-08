@@ -9,7 +9,7 @@ export class TranslateDto {
   fileName!: string;
 
   @IsNotEmpty({ message: 'LLM Model is required' })
-  @IsInt()
+  @IsInt({ message: 'LLM Model is required' })
   providerId!: number;
 
   @IsNotEmpty({ message: 'Source Language is required' })
