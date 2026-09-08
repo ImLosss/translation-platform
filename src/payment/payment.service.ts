@@ -37,59 +37,113 @@ export class PaymentService {
         if (!user) throw new NotFoundException('User tidak ditemukan');
 
         const orderId = `QRIS-${userId}-${Date.now()}`;
-
-        // 1. Kalkulasi Fee di sisi Backend untuk keamanan
-        let serviceFee = 0;
-        if (dto.method === 'qris') {
-            serviceFee = Math.round(dto.amount * 0.007); // Fee QRIS 0.7%
-        }
-        const grossAmount = dto.amount + serviceFee; // Total tagihan: 50.350
-
-        // 2. Kirim grossAmount (50.350) ke Midtrans
-        const payload = {
-            payment_type: 'qris',
-            transaction_details: {
-                order_id: orderId,
-                gross_amount: grossAmount,
-            },
-            customer_details: {
-                first_name: user.username || 'User',
-                email: user.email,
-            }
-        };
+        const paymentProvider = process.env.PAYMENT_PROVIDER || 'midtrans';
 
         try {
-            const { data } = await axios.post(`${this.baseUrl}/v2/charge`, payload, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...this.getBasicAuthHeader(),
-                },
-            });
+            // ==========================================
+            // LOGIKA PAKASIR
+            // ==========================================
+            if (paymentProvider === 'pakasir') {
+                const payload = {
+                    project: process.env.PAKASIR_PROJECT, // Sesuaikan dengan env Anda
+                    order_id: orderId,
+                    amount: dto.amount,
+                    api_key: process.env.PAKASIR_API_KEY, // Sesuaikan dengan env Anda
+                };
 
-            const qrAction = (data.actions || []).find((a: any) => a.name === 'generate-qr-code');
-            if (!qrAction?.url) throw new Error('Action URL untuk QRIS tidak ditemukan');
+                const { data } = await axios.post(
+                    'https://app.pakasir.com/api/transactioncreate/qris',
+                    payload,
+                    {
+                        headers: { 'Content-Type': 'application/json' },
+                    }
+                );
 
-            // 3. Simpan amount bersih (50.000) dan fee (350) ke database secara terpisah
-            const transaction = await this.prisma.transaction.create({
-                data: {
-                    id: orderId,
-                    userId: userId,
-                    amount: dto.amount, // <-- HANYA 50.000
-                    fee: serviceFee,    // <-- 350
-                    status: 'PENDING',
-                    paymentUrl: qrAction.url,
-                },
-            });
+                const paymentData = data.payment;
+                if (!paymentData || !paymentData.payment_number) {
+                    throw new Error('Gagal mendapatkan payment_number dari Pakasir');
+                }
 
-            return {
-                message: 'QRIS berhasil di-generate',
-                orderId: transaction.id,
-                qrImageUrl: transaction.paymentUrl,
-                expiryTime: data.expiry_time || null,
-            };
+                // Generate QR Image URL menggunakan API qrserver
+                const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(paymentData.payment_number)}`;
+
+                // Simpan transaksi ke database
+                const transaction = await this.prisma.transaction.create({
+                    data: {
+                        id: orderId,
+                        userId: userId,
+                        amount: paymentData.amount,
+                        fee: paymentData.fee,
+                        status: 'PENDING',
+                        paymentUrl: qrImageUrl,
+                    },
+                });
+
+                return {
+                    message: 'QRIS berhasil di-generate via Pakasir',
+                    orderId: transaction.id,
+                    qrImageUrl: transaction.paymentUrl,
+                    expiryTime: paymentData.expired_at || null,
+                };
+            }
+
+            // ==========================================
+            // LOGIKA MIDTRANS (Default)
+            // ==========================================
+            else {
+                // 1. Kalkulasi Fee di sisi Backend untuk keamanan
+                let serviceFee = 0;
+                if (dto.method === 'qris') {
+                    serviceFee = Math.round(dto.amount * 0.007); // Fee QRIS 0.7%
+                }
+                const grossAmount = dto.amount + serviceFee;
+
+                // 2. Kirim grossAmount ke Midtrans
+                const payload = {
+                    payment_type: 'qris',
+                    transaction_details: {
+                        order_id: orderId,
+                        gross_amount: grossAmount,
+                    },
+                    customer_details: {
+                        first_name: user.username || 'User',
+                        email: user.email,
+                    }
+                };
+
+                const { data } = await axios.post(`${this.baseUrl}/v2/charge`, payload, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...this.getBasicAuthHeader(),
+                    },
+                });
+
+                const qrAction = (data.actions || []).find((a: any) => a.name === 'generate-qr-code');
+                if (!qrAction?.url) throw new Error('Action URL untuk QRIS tidak ditemukan');
+
+                // 3. Simpan amount bersih dan fee ke database secara terpisah
+                const transaction = await this.prisma.transaction.create({
+                    data: {
+                        id: orderId,
+                        userId: userId,
+                        amount: dto.amount,
+                        fee: serviceFee,
+                        status: 'PENDING',
+                        paymentUrl: qrAction.url,
+                    },
+                });
+
+                return {
+                    message: 'QRIS berhasil di-generate via Midtrans',
+                    orderId: transaction.id,
+                    qrImageUrl: transaction.paymentUrl,
+                    expiryTime: data.expiry_time || null,
+                };
+            }
 
         } catch (error: any) {
-            throw new InternalServerErrorException('Gagal memproses transaksi');
+            // Anda bisa melakukan console.log(error.response?.data) di sini untuk debugging jika API Pakasir/Midtrans gagal
+            throw new InternalServerErrorException('Gagal memproses transaksi: ' + (error.message || ''));
         }
     }
 
@@ -142,8 +196,8 @@ export class PaymentService {
                 data: {
                     id: orderId,
                     userId: userId,
-                    amount: dto.amount, // Nominal asli (misal 50.000)
-                    fee: serviceFee,    // Biaya layanan (misal 3.350)
+                    amount: dto.amount,
+                    fee: serviceFee,
                     status: 'PENDING',
                     paymentUrl: data.redirect_url,
                 },
@@ -181,21 +235,50 @@ export class PaymentService {
                 return transaction;
             }
 
-            // 3. Jika status masih PENDING, ambil status terbaru dari Midtrans
-            const { data } = await axios.get(`${this.baseUrl}/v2/${transactionId}/status`, {
-                headers: this.getBasicAuthHeader(),
-            });
-
-            const midtransStatus = data.transaction_status;
+            // 3. Jika status masih PENDING, ambil status terbaru dari Provider Pembayaran
+            const paymentProvider = process.env.PAYMENT_PROVIDER || 'midtrans';
             let newStatus = transaction.status;
 
-            if (midtransStatus === 'settlement' || midtransStatus === 'capture') {
-                newStatus = 'SUCCESS';
-            } else if (['cancel', 'deny', 'expire'].includes(midtransStatus)) {
-                newStatus = 'FAILED';
+            if (paymentProvider === 'pakasir') {
+                // ==========================================
+                // FETCH STATUS KE PAKASIR
+                // ==========================================
+                const { data } = await axios.get('https://app.pakasir.com/api/transactiondetail', {
+                    params: {
+                        project: process.env.PAKASIR_PROJECT,
+                        amount: transaction.amount,
+                        order_id: transactionId,
+                        api_key: process.env.PAKASIR_API_KEY,
+                    }
+                });
+
+                const pakasirStatus = data.transaction?.status;
+
+                // Mapping status Pakasir ke status internal kita
+                if (pakasirStatus === 'completed') {
+                    newStatus = 'SUCCESS';
+                } else if (['failed', 'expired', 'canceled'].includes(pakasirStatus)) {
+                    newStatus = 'FAILED';
+                }
+            } else {
+                // ==========================================
+                // FETCH STATUS KE MIDTRANS (Default)
+                // ==========================================
+                const { data } = await axios.get(`${this.baseUrl}/v2/${transactionId}/status`, {
+                    headers: this.getBasicAuthHeader(),
+                });
+
+                const midtransStatus = data.transaction_status;
+
+                // Mapping status Midtrans ke status internal kita
+                if (midtransStatus === 'settlement' || midtransStatus === 'capture') {
+                    newStatus = 'SUCCESS';
+                } else if (['cancel', 'deny', 'expire'].includes(midtransStatus)) {
+                    newStatus = 'FAILED';
+                }
             }
 
-            // 4. Jika status di Midtrans sudah berubah, lakukan update atomik
+            // 4. Jika status di Provider Pembayaran sudah berubah, lakukan update atomik
             if (newStatus !== transaction.status) {
                 const updatedTransaction = await this.prisma.$transaction(async (prisma) => {
                     // a. Re-fetch data di dalam transaction block untuk mencegah race condition dengan Webhook
@@ -221,7 +304,7 @@ export class PaymentService {
                             where: { id: transaction.userId },
                             data: { balance: { increment: transaction.amount } }
                         });
-                        this.logger.log(`💰 Saldo ditambahkan via Frontend Sync untuk Order ID: ${transactionId}`);
+                        this.logger.log(`💰 Saldo ditambahkan via Frontend Sync untuk Order ID: ${transactionId} via ${paymentProvider.toUpperCase()}`);
                     }
 
                     return updated;
@@ -254,100 +337,138 @@ export class PaymentService {
     }
 
     async handlePaymentNotification(notificationData: any) {
-        const {
-            order_id,
-            transaction_status,
-            status_code,
-            gross_amount,
-            signature_key
-        } = notificationData;
+        const paymentProvider = process.env.PAYMENT_PROVIDER || 'midtrans';
 
-        this.logger.log(`🔔 Webhook Midtrans diterima untuk Order ID: ${order_id}`);
+        // Variabel untuk menampung data yang sudah dinormalisasi dari provider
+        let orderId = '';
+        let mappedStatus = '';
+        let logAmount = 0;
+        let originalStatus = '';
 
-        // 1. Gabungkan string sesuai rumus Midtrans
-        const inputString = `${order_id}${status_code}${gross_amount}${this.serverKey}`;
+        // ====================================================================
+        // 1. EKSTRAKSI & VALIDASI BERDASARKAN PROVIDER
+        // ====================================================================
+        if (paymentProvider === 'pakasir') {
+            const { order_id, status, amount, project } = notificationData;
+            orderId = order_id;
+            originalStatus = status;
+            logAmount = amount;
 
-        // 2. Lakukan Hashing menggunakan SHA512
-        const crypto = require('crypto'); // Pastikan sudah di-import di atas
-        const mySignature = crypto.createHash('sha512').update(inputString).digest('hex');
+            this.logger.log(`🔔 Webhook Pakasir diterima untuk Order ID: ${orderId}`);
 
-        // 3. Validasi Keamanan Signature
-        if (mySignature !== signature_key) {
-            this.logger.error(`🚨 ALERT: Invalid Signature Key untuk Order ID: ${order_id}!`);
-            throw new Error('Invalid Midtrans Signature Key');
+            // Validasi keamanan dasar Pakasir (Cek Project ID)
+            if (project !== process.env.PAKASIR_PROJECT) {
+                this.logger.error(`🚨 ALERT: Invalid Project Name untuk Order ID: ${orderId}!`);
+                throw new Error('Invalid Pakasir Project');
+            }
+
+            // Mapping Status Pakasir ke Internal
+            if (status === 'completed') {
+                mappedStatus = 'SUCCESS';
+            } else if (['failed', 'expired', 'canceled'].includes(status)) {
+                mappedStatus = 'FAILED';
+            } else {
+                mappedStatus = 'PENDING';
+            }
+
+        } else {
+            // Logika Midtrans (Default)
+            const { order_id, transaction_status, status_code, gross_amount, signature_key } = notificationData;
+            orderId = order_id;
+            originalStatus = transaction_status;
+            logAmount = gross_amount;
+
+            this.logger.log(`🔔 Webhook Midtrans diterima untuk Order ID: ${orderId}`);
+
+            // Validasi Keamanan Signature Midtrans
+            const inputString = `${orderId}${status_code}${gross_amount}${this.serverKey}`;
+            const mySignature = crypto.createHash('sha512').update(inputString).digest('hex');
+
+            if (mySignature !== signature_key) {
+                this.logger.error(`🚨 ALERT: Invalid Signature Key untuk Order ID: ${orderId}!`);
+                throw new Error('Invalid Midtrans Signature Key');
+            }
+
+            // Mapping Status Midtrans ke Internal
+            if (transaction_status === 'settlement' || transaction_status === 'capture') {
+                mappedStatus = 'SUCCESS';
+            } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
+                mappedStatus = 'FAILED';
+            } else {
+                mappedStatus = 'PENDING';
+            }
         }
 
-        // 4. Cari transaksi di database
+        // ====================================================================
+        // 2. CARI TRANSAKSI DI DATABASE
+        // ====================================================================
         const transaction = await this.prisma.transaction.findUnique({
-            where: { id: order_id },
+            where: { id: orderId },
         });
 
         if (!transaction) {
-            this.logger.error(`Transaksi ${order_id} tidak ditemukan di sistem.`);
+            this.logger.error(`Transaksi ${orderId} tidak ditemukan di sistem.`);
             return { status: 'error', message: 'Transaction not found' };
         }
 
         // ====================================================================
-        // 5. PENCEGAHAN DOUBLE TOP-UP (IDEMPOTENCY CHECK)
+        // 3. PENCEGAHAN DOUBLE TOP-UP (IDEMPOTENCY CHECK)
         // ====================================================================
-        if (transaction.status === 'SUCCESS' || transaction.status === 'SETTLEMENT') {
-            this.logger.log(`⚠️ Transaksi ${order_id} sudah sukses sebelumnya. Mengabaikan Webhook.`);
+        const finalStatuses = ['SUCCESS', 'SETTLEMENT', 'FAILED', 'EXPIRE', 'CANCEL'];
+        if (finalStatuses.includes(transaction.status)) {
+            this.logger.log(`⚠️ Transaksi ${orderId} sudah berstatus final (${transaction.status}). Mengabaikan Webhook.`);
             return { status: 'success', message: 'Transaction already processed' };
         }
 
-        // 6. Update Database menggunakan Prisma Transaction (Atomic)
+        // ====================================================================
+        // 4. UPDATE DATABASE MENGGUNAKAN PRISMA TRANSACTION (ATOMIC)
+        // ====================================================================
         try {
-            if (transaction_status === 'settlement' || transaction_status === 'capture') {
+            if (mappedStatus === 'SUCCESS') {
                 await this.prisma.$transaction(async (prisma) => {
                     // a. Update status transaksi
                     await prisma.transaction.update({
-                        where: { id: order_id },
+                        where: { id: orderId },
                         data: { status: 'SUCCESS' },
                     });
 
-                    // b. Tambah saldo user
+                    // b. Tambah saldo user (gunakan amount dari database untuk keamanan ganda)
                     await prisma.user.update({
                         where: { id: transaction.userId },
                         data: { balance: { increment: transaction.amount } }
                     });
                 });
-                this.logger.log(`✅ Transaksi Sukses & Saldo ditambahkan untuk Order ID: ${order_id}`);
+                this.logger.log(`✅ Transaksi Sukses & Saldo ditambahkan untuk Order ID: ${orderId} via ${paymentProvider.toUpperCase()}`);
 
                 this.activityLogService.logAction({
-                    userId: transaction.userId, 
-                    action: `Top-Up ${gross_amount} successful`,
+                    userId: transaction.userId,
+                    action: `Top-Up ${logAmount} successful via ${paymentProvider.toUpperCase()}`,
                     method: 'POST',
                     url: '/payment/webhook',
-                    details: { 
-                        orderId: order_id, 
-                        status: transaction_status
-                    },
+                    details: { orderId: orderId, status: originalStatus },
                     statusCode: 200,
                 });
 
-            } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
+            } else if (mappedStatus === 'FAILED') {
                 await this.prisma.transaction.update({
-                    where: { id: order_id },
+                    where: { id: orderId },
                     data: { status: 'FAILED' },
                 });
-                this.logger.log(`❌ Transaksi Gagal/Expired untuk Order ID: ${order_id}`);
+                this.logger.log(`❌ Transaksi Gagal/Expired untuk Order ID: ${orderId} via ${paymentProvider.toUpperCase()}`);
 
                 this.activityLogService.logAction({
-                    userId: transaction.userId, 
-                    action: `Top-Up ${gross_amount} expired`,
+                    userId: transaction.userId,
+                    action: `Top-Up ${logAmount} failed/expired via ${paymentProvider.toUpperCase()}`,
                     method: 'POST',
                     url: '/payment/webhook',
-                    details: { 
-                        orderId: order_id, 
-                        status: transaction_status
-                    },
+                    details: { orderId: orderId, status: originalStatus },
                     statusCode: 200,
                 });
             }
 
             return { status: 'success' };
         } catch (error: any) {
-            this.logger.error(`Gagal memproses webhook untuk ${order_id}: ${error.message}`);
+            this.logger.error(`Gagal memproses webhook untuk ${orderId}: ${error.message}`);
             throw new Error('Gagal memproses data ke database');
         }
     }
