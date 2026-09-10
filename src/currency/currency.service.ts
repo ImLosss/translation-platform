@@ -27,8 +27,8 @@ export class CurrencyService {
   /**
    * Cache selama 12 jam
    */
-  private cache?: CurrencyApiResponse;
-  private cacheExpiredAt = 0;
+  private cache: Record<string, CurrencyApiResponse> = {};
+  private cacheExpiredAt: Record<string, number> = {};
 
   /**
    * Mengambil seluruh kurs.
@@ -37,24 +37,14 @@ export class CurrencyService {
    */
   private async getRates(base = 'USD'): Promise<CurrencyApiResponse> {
     base = base.toUpperCase();
-
     const now = Date.now();
 
-    // gunakan cache jika belum expired dan base sama
-    if (
-      this.cache &&
-      this.cacheExpiredAt > now &&
-      this.cache.data[base] === undefined // cache hanya untuk base yang sama
-    ) {
-      return this.cache;
+    // Cek cache SPESIFIK untuk base yang diminta
+    if (this.cache[base] && this.cacheExpiredAt[base] > now) {
+      return this.cache[base]; // Berhasil menggunakan cache!
     }
 
-    this.logger.log(`Cache data: ${JSON.stringify(this.cache)}, base: ${base}, expiredAt: ${this.cacheExpiredAt}, now: ${now}`);
-
-    const params = new URLSearchParams({
-      apikey: this.API_KEY,
-    });
-
+    const params = new URLSearchParams({ apikey: this.API_KEY });
     if (base !== 'USD') {
       params.append('base_currency', base);
     }
@@ -68,15 +58,9 @@ export class CurrencyService {
     }
 
     const data = (await response.json()) as CurrencyApiResponse;
-
-    if (!data.data) {
-      throw new InternalServerErrorException(
-        'Currency API returned invalid response.',
-      );
-    }
-
-    this.cache = data;
-    this.cacheExpiredAt = now + 12 * 60 * 60 * 1000;
+    
+    this.cache[base] = data;
+    this.cacheExpiredAt[base] = now + 12 * 60 * 60 * 1000;
 
     return data;
   }
