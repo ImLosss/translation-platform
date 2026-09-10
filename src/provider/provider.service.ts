@@ -36,10 +36,7 @@ export class ProviderService {
       }),
     );
 
-    return {
-      success: true,
-      data: providersWithIDR,
-    };
+    return providersWithIDR;
   }
 
   async findOne(id: number) {
