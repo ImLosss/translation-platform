@@ -366,9 +366,9 @@ ${translatedCorpus}`;
       },
     });
 
-    if (!translation) {
-      throw new NotFoundException('Translation not found.');
-    }
+    if (!translation) throw new NotFoundException('Translation not found.');
+
+    const createdIdsMapping: { tempId: number; realId: number }[] = [];
 
     await this.prisma.$transaction(async (tx) => {
       // 1. Update row yang berubah saja
@@ -401,6 +401,23 @@ ${translatedCorpus}`;
             targetText: row.translated,
           })),
         });
+
+        const newSequences = dto.creates.map(r => r.sequence);
+            
+        const newlyCreatedRows = await tx.translationRow.findMany({
+            where: {
+                translationId: translationId,
+                sequence: { in: newSequences }
+            },
+            select: { id: true, sequence: true }
+        });
+
+        dto.creates.forEach(tempRow => {
+            const dbRow = newlyCreatedRows.find(db => db.sequence === tempRow.sequence);
+            if (dbRow) {
+                createdIdsMapping.push({ tempId: tempRow.id, realId: dbRow.id });
+            }
+        });
       }
 
       // 3. Hapus row yang di-delete
@@ -418,6 +435,7 @@ ${translatedCorpus}`;
     return {
       success: true,
       message: 'Subtitle berhasil diperbarui.',
+      createdIdsMapping,
     };
   }
 
