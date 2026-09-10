@@ -249,7 +249,23 @@ export default function GlosaryEditor({
             
             if (result.success) {
                 showAlert('Glosary entries saved successfully.', 'success');
-                setLastSavedEntries([...entries]); 
+
+                let finalEntries = [...entries];
+                
+                if (result.createdIdsMapping && result.createdIdsMapping.length > 0) {
+                    finalEntries = finalEntries.map(entry => {
+                        const mapping = result.createdIdsMapping.find(
+                            (m: any) => m.tempId === entry.id
+                        );
+                        if (mapping) {
+                            return { ...entry, id: mapping.realId };
+                        }
+                        return entry;
+                    });
+                }
+
+                setEntries(finalEntries);
+                setLastSavedEntries(finalEntries);
             } else {
                 showAlert(result.message, 'error');
             }

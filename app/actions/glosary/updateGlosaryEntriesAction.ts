@@ -10,14 +10,15 @@ interface UpdatePayload {
 
 export async function updateGlosaryEntriesAction(glosaryId: number, data: UpdatePayload) {
   try {
-    await api<any>(`/glosary/${glosaryId}/entries`, {
+    const response = await api<any>(`/glosary/${glosaryId}/entries`, {
       method: "PUT",
       body: JSON.stringify(data), 
     });
 
     return { 
       success: true, 
-      message: "Glosarium berhasil diperbarui!" 
+      message: "Glosarium berhasil diperbarui!",
+      createdIdsMapping: response.createdIdsMapping
     };
   } catch (error: any) {
     return {
