@@ -75,9 +75,9 @@ export class GlosaryService {
       },
     });
 
-    if (!glosary) {
-      throw new NotFoundException('Glosarium tidak ditemukan atau Anda tidak memiliki akses.');
-    }
+    if (!glosary) throw new NotFoundException('Glosarium tidak ditemukan atau Anda tidak memiliki akses.');
+
+    const createdIdsMapping: { tempId: number; realId: number }[] = [];
 
     // 2. Eksekusi Database dalam 1 Transaction
     await this.prisma.$transaction(async (tx) => {
@@ -108,6 +108,23 @@ export class GlosaryService {
             detail: row.detail || null,
           })),
         });
+
+        const newSources = dto.creates.map(r => r.source);
+
+        const newlyCreatedRows = await tx.glossaryEntry.findMany({
+          where: {
+            glossaryId: glosary.id,
+            source: { in: newSources }
+          },
+          select: { id: true, source: true }
+        });
+
+        dto.creates.forEach(tempRow => {
+          const dbRow = newlyCreatedRows.find(db => db.source === tempRow.source);
+          if (dbRow) {
+            createdIdsMapping.push({ tempId: tempRow.id, realId: dbRow.id });
+          }
+        });
       }
 
       // C. Hapus row yang di-delete
@@ -125,6 +142,7 @@ export class GlosaryService {
     return {
       success: true,
       message: 'Glosarium berhasil diperbarui.',
+      createdIdsMapping
     };
   }
 
