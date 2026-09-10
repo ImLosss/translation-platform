@@ -49,7 +49,7 @@ export class CurrencyService {
       return this.cache;
     }
 
-    this.logger.log(`Cache data: ${this.cache}, base: ${base}, expiredAt: ${this.cacheExpiredAt}, now: ${now}`);
+    this.logger.log(`Cache data: ${JSON.stringify(this.cache)}, base: ${base}, expiredAt: ${this.cacheExpiredAt}, now: ${now}`);
 
     const params = new URLSearchParams({
       apikey: this.API_KEY,
