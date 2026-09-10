@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 
 interface CurrencyApiResponse {
@@ -21,6 +22,7 @@ interface CurrencyApiResponse {
 export class CurrencyService {
   private readonly API_KEY = process.env.CURRENCY_API_KEY!;
   private readonly API_URL = 'https://api.currencyapi.com/v3/latest';
+  private readonly logger = new Logger(CurrencyService.name);
 
   /**
    * Cache selama 12 jam
@@ -46,6 +48,8 @@ export class CurrencyService {
     ) {
       return this.cache;
     }
+
+    this.logger.log(`Cache data: ${this.cache}, base: ${base}, expiredAt: ${this.cacheExpiredAt}, now: ${now}`);
 
     const params = new URLSearchParams({
       apikey: this.API_KEY,
