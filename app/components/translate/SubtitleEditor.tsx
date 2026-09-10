@@ -267,8 +267,23 @@ export default function SubtitleEditor({
             
             if (result.success) {
                 showAlert('Saved.', 'success');
-                setLastSavedLines(sequencedLines); 
-                setLines(sequencedLines);
+
+                let finalLines = [...sequencedLines];
+
+                if (result.createdIdsMapping && result.createdIdsMapping.length > 0) {
+                    finalLines = finalLines.map(line => {
+                        const mapping = result.createdIdsMapping.find(
+                            (m: any) => m.tempId === line.id
+                        );
+                        if (mapping) {
+                            return { ...line, id: mapping.realId };
+                        }
+                        return line;
+                    });
+                }
+
+                setLines(finalLines);
+                setLastSavedLines(finalLines);
             } else {
                 showAlert(result.message, 'error');
             }
