@@ -17,7 +17,10 @@ export class ProviderService {
 
   async findAll() {
     const providers = await this.prisma.provider.findMany({
-      orderBy: { id: 'desc' },
+      orderBy: [
+        { status: 'asc' }, 
+        { id: 'desc' },   
+      ],
     });
 
     if (providers.length === 0) return [];
