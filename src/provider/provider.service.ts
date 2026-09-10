@@ -20,18 +20,20 @@ export class ProviderService {
       orderBy: { id: 'desc' },
     });
 
+    if (providers.length === 0) return [];
+
+    // 1. Ambil rate USD ke IDR CUKUP 1 KALI di luar loop
+    const rateData = await this.currencyService.convert(1, 'USD', 'IDR');
+    const rate = rateData.rate;
+
     // Konversi setiap harga dari USD ke IDR
     const providersWithIDR = await Promise.all(
       providers.map(async (provider) => {
-        const inputPricingIDR = await this.currencyService.convert(provider.inputPricing, 'USD', 'IDR');
-        const inputCachePricingIDR = await this.currencyService.convert(provider.inputCachePricing, 'USD', 'IDR');
-        const outputPricingIDR = await this.currencyService.convert(provider.outputPricing, 'USD', 'IDR');
-
         return {
           ...provider,
-          inputPricingIDR: inputPricingIDR.result,
-          inputCachePricingIDR: inputCachePricingIDR.result,
-          outputPricingIDR: outputPricingIDR.result,
+          inputPricingIDR: provider.inputPricing * rate,
+          inputCachePricingIDR: provider.inputCachePricing * rate,
+          outputPricingIDR: provider.outputPricing * rate,
         };
       }),
     );
