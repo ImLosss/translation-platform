@@ -7,7 +7,8 @@ import { LlmProvider, LlmResponse } from '../interfaces/llm-provider.interface';
 @Injectable()
 export class NineInferenceService implements LlmProvider {
   private readonly logger = new Logger(NineInferenceService.name);
-  private readonly apiUrl = 'https://9inference.cloud/v1/package/chat/completions';
+  // private readonly apiUrl = 'https://9inference.cloud/v1/package/chat/completions';
+  private readonly apiUrl = 'https://9inference.cloud/v1/chat/completions';
 
   constructor(
     private readonly httpService: HttpService,
@@ -34,7 +35,7 @@ export class NineInferenceService implements LlmProvider {
     };
 
     // Ambil model dari env atau gunakan default
-    const modelName = this.configService.get<string>('NINE_INFERENCE_MODEL') || 'deepseek-v4-pro';
+    const modelName = this.configService.get<string>('NINE_INFERENCE_MODEL') || 'deepseek-v4-pro-0813';
 
     const payload: any = {
       model: modelName,
