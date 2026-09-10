@@ -68,15 +68,17 @@ export default async function ModelPricingPage() {
                 </div>
               </li>
 
-              <li className={styles.priceItem}>
-                <span className={styles.label}>
-                  <i className="fas fa-bolt text-muted"></i> Input (Cache)
-                </span>
-                <div className={styles.valueContainer}>
-                  <span className={styles.valueIdr}>{formatIDR(provider.inputCachePricingIDR)}</span>
-                  <span className={styles.valueUsd}>${provider.inputCachePricing} / 1M token</span>
-                </div>
-              </li>
+              {provider.inputCachePricing > 0 && (
+                <li className={styles.priceItem}>
+                  <span className={styles.label}>
+                    <i className="fas fa-bolt text-muted"></i> Input (Cache)
+                  </span>
+                  <div className={styles.valueContainer}>
+                    <span className={styles.valueIdr}>{formatIDR(provider.inputCachePricingIDR)}</span>
+                    <span className={styles.valueUsd}>${provider.inputCachePricing} / 1M token</span>
+                  </div>
+                </li>
+              )}
 
               <li className={styles.priceItem}>
                 <span className={styles.label}>

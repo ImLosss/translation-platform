@@ -17,8 +17,7 @@ export default async function AdminPage() {
             })
         }
     );
-
-    console.log("Currency Data:", currencyData); // Debugging line
+    
     const glosaries = await api<any>("/glosary");
     const providersData = await api<any[]>("/provider").catch((error) => { return [ { id: '', name: 'Something went wrong' } ]; }); 
     console.log("Providers Data:", providersData); // Debugging line
