@@ -235,21 +235,21 @@ async function main() {
     });
   }
 
-  // 3. Buat atau cek Glossary "Shrouding the Heavens"
+  // 3. Buat atau cek Glossary "Jade Dynasty"
   let glossary = await prisma.glossary.findFirst({
-    where: { name: 'Shrouding the Heavens' },
+    where: { name: 'Jade Dynasty' },
   });
 
   if (!glossary) {
     glossary = await prisma.glossary.create({
       data: {
-        name: 'Shrouding the Heavens',
+        name: 'Jade Dynasty',
         sourceLanguage: 'zh',
         targetLanguage: 'id',
         userId: adminUser.id,
       },
     });
-    console.log('Glossary "Shrouding the Heavens" dibuat.');
+    console.log('Glossary "Jade Dynasty" dibuat.');
   } else {
     // Opsional: Hapus entry lama supaya tidak dobel jika di-seed ulang
     await prisma.glossaryEntry.deleteMany({
@@ -268,7 +268,7 @@ async function main() {
     })),
   });
 
-  console.log(`Berhasil menyisipkan ${entriesToInsert.length} istilah ke dalam glossary "Shrouding the Heavens".`);
+  console.log(`Berhasil menyisipkan ${entriesToInsert.length} istilah ke dalam glossary "Jade Dynasty".`);
   console.log('Seeder selesai');
 }
 
