@@ -29,9 +29,9 @@ export class ProviderService {
 
         return {
           ...provider,
-          inputPricingIDR,
-          inputCachePricingIDR,
-          outputPricingIDR,
+          inputPricingIDR: inputPricingIDR.result,
+          inputCachePricingIDR: inputCachePricingIDR.result,
+          outputPricingIDR: outputPricingIDR.result,
         };
       }),
     );
