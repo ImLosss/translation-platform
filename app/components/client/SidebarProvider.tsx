@@ -117,6 +117,10 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
             <i className="fas fa-file-invoice-dollar"></i> Billing
             {/* <span className="badge">Pro</span> */}
           </Link>
+          <Link href="/pricing" className={isActive('/pricing') ? 'active' : ''} onClick={closeSidebar}>
+            <i className="fas fa-dollar-sign"></i> Pricing
+            {/* <span className="badge">Pro</span> */}
+          </Link>
           <Link href="/profile" className={isActive('/profile') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-user"></i> Profile
           </Link>

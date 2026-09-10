@@ -1,0 +1,121 @@
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.pricingCard {
+  background: var(--bg-input); /* Diubah agar lebih kontras di dalam .card utama */
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all var(--transition);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.pricingCard:hover {
+  border-color: var(--accent);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.pricingCard:hover::before {
+  opacity: 1;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title i {
+  color: var(--accent);
+  font-size: 18px;
+}
+
+.priceList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.priceItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-card); /* Kontras tambahan di bagian item list */
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: border var(--transition);
+}
+
+.label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.valueContainer {
+  text-align: right;
+}
+
+.valueIdr {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.valueUsd {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badgeSuccess {
+  background: var(--green-glow);
+  color: var(--green);
+  border: 1px solid rgba(0, 184, 148, 0.2);
+}
+
+.badgeDanger {
+  background: var(--red-glow);
+  color: var(--red);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}

@@ -22,7 +22,9 @@ export default async function AdminPage() {
     const glosaries = await api<any>("/glosary");
     const providersData = await api<any[]>("/provider").catch((error) => { return [ { id: '', name: 'Something went wrong' } ]; }); 
     console.log("Providers Data:", providersData); // Debugging line
-    const aiModels: AiModelOption[] = providersData.map((provider: any) => ({
+    const aiModels: AiModelOption[] = providersData
+    .filter((provider: any) => provider.status !== 'inactive')
+    .map((provider: any) => ({
         value: provider.id,
         label: provider.name
     }));
