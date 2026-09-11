@@ -101,6 +101,7 @@ export default function GlossaryRecommendationClient() {
     // --- State untuk Form Editor ---
     const [glossaryInfo, setGlossaryInfo] = useState<GlosaryInfo>({ name: '', sourceLanguage: 'en', targetLanguage: 'id' });
     const [entries, setEntries] = useState<GlosaryEntry[]>([]);
+    const [initialEntries, setInitialEntries] = useState<GlosaryEntry[]>([]);
     const [lastSavedEntries, setLastSavedEntries] = useState<GlosaryEntry[]>([]);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -164,7 +165,10 @@ export default function GlossaryRecommendationClient() {
                     isRecommended: true 
                 }));
 
+                const combinedEntries = [...newEntries, ...oldEntries];
+
                 setEntries([...newEntries, ...oldEntries]);
+                setInitialEntries(combinedEntries);
                 setLastSavedEntries(oldEntries);
                 setIsLoadingData(false);
 
@@ -312,25 +316,14 @@ export default function GlossaryRecommendationClient() {
             </div>
 
             <section className="card">
-                <div className="card-header">
-                    <h2>
-                        <i className="fas fa-magic" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
-                        Glossary Editor (Job #{translationId})
-                    </h2>
-                    <div className="card-actions">
-                        <button
-                            type="button"
-                            className="btn btn-outline btn-sm"
-                            onClick={() => {
-                                if(window.confirm('Are you sure you want to reset all entries?')) {
-                                    setEntries([]); 
-                                }
-                            }}
-                        >
-                            <i className="fas fa-undo-alt"></i> Reset
-                        </button>
-                    </div>
-                </div>
+                <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => {
+                        setEntries([...initialEntries]); 
+                    }}>
+                    <i className="fas fa-undo-alt"></i> Reset
+                </button>
 
                 <form onSubmit={handleSave}>
                     {!existingGlossaryId ? (
