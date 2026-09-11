@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAlert } from '@/app/components/ui/Alert';
 import { saveGlossaryAction } from '@/app/actions/translate/generateGlosaryAction';
@@ -20,6 +20,71 @@ export interface GlosaryInfo {
     sourceLanguage: string;
     targetLanguage: string;
 }
+
+// ======== KOMPONEN BARIS (DI-MEMOISASI) ========
+// Mencegah re-render pada semua baris saat user mengetik di salah satu baris
+const GlossaryRecommendationRow = memo(({
+    entry,
+    index,
+    isDuplicate,
+    handleUpdateEntry,
+    handleAddEntry,
+    handleDeleteEntry,
+    resizeTextarea
+}: any) => {
+    return (
+        <div className={`glosary-line ${isDuplicate ? 'duplicated-line' : ''} ${entry.isRecommended ? 'recommended-highlight' : ''}`}>
+            <div className="sub-field">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    Source Term <span style={{ color: 'var(--accent-red)' }}>*</span>
+                    {entry.isRecommended && (
+                        <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--accent-green, #28a745)', color: '#fff', padding: '2px 6px', borderRadius: '4px', textTransform: 'none' }}>
+                            <i className="fas fa-sparkles"></i> AI Suggested
+                        </span>
+                    )}
+                    {isDuplicate && (
+                        <span style={{ color: 'var(--accent-red, #dc3545)', fontWeight: 'bold', fontSize: '0.65rem', textTransform: 'none' }}>
+                            <i className="fas fa-exclamation-triangle"></i> Duplicate
+                        </span>
+                    )}
+                </label>
+                <textarea
+                    ref={resizeTextarea} className="sub-source" rows={1} placeholder="Source word/phrase"
+                    value={entry.source} onChange={(e) => handleUpdateEntry(index, 'source', e.target.value)} required
+                />
+            </div>
+            
+            <div className="sub-field">
+                <label>Target Translation <span style={{ color: 'var(--accent-red)' }}>*</span></label>
+                <textarea
+                    ref={resizeTextarea} className="sub-translated" rows={1} placeholder="Target word/phrase"
+                    value={entry.target} onChange={(e) => handleUpdateEntry(index, 'target', e.target.value)} required
+                />
+            </div>
+
+            <div className="sub-field">
+                <label>Detail / Context <span style={{ color: 'var(--text-muted)', textTransform: 'none', fontWeight: 'normal' }}>(Optional)</span></label>
+                <textarea
+                    ref={resizeTextarea} className="sub-detail" rows={1} placeholder="Additional context..."
+                    value={entry.detail || ''} onChange={(e) => handleUpdateEntry(index, 'detail', e.target.value)}
+                />
+            </div>
+
+            <div className="sub-actions">
+                <button type="button" className="btn-add-line" onClick={() => handleAddEntry(index)} title="Add entry below"><i className="fas fa-plus-circle" /></button>
+                <button type="button" className="btn-del-line" onClick={() => handleDeleteEntry(index)} title="Delete entry"><i className="fas fa-trash-alt" /></button>
+            </div>
+        </div>
+    );
+}, (prevProps, nextProps) => {
+    // Hanya render ulang baris ini jika datanya benar-benar berubah
+    return (
+        prevProps.entry === nextProps.entry &&
+        prevProps.isDuplicate === nextProps.isDuplicate &&
+        prevProps.index === nextProps.index
+    );
+});
+
 
 // ================= KOMPONEN UTAMA =================
 export default function GlossaryRecommendationClient() {
@@ -41,23 +106,17 @@ export default function GlossaryRecommendationClient() {
 
     // --- State untuk Floating Button ---
     const [isSaveVisible, setIsSaveVisible] = useState(true);
-    
-    // Perbaikan: Gunakan state untuk menyimpan instance observer agar bisa dibersihkan dengan benar
     const observer = useRef<IntersectionObserver | null>(null);
-
     const nextTempId = useRef(-1);
 
     const saveContainerRef = useCallback((node: HTMLDivElement | null) => {
-        if (observer.current) observer.current.disconnect(); // Bersihkan observer lama
+        if (observer.current) observer.current.disconnect();
         
         if (node) {
             observer.current = new IntersectionObserver(
                 ([entry]) => {
-                    // Jika isIntersecting true, tombol asli terlihat, maka sembunyikan tombol floating.
-                    // Jika false, tombol asli tersembunyi, munculkan tombol floating.
                     setIsSaveVisible(entry.isIntersecting);
                 },
-                // rootMargin membantu memicu observer sesaat sebelum/sesudah elemen benar-benar terlihat/menghilang
                 { threshold: 0, rootMargin: '0px 0px 50px 0px' } 
             );
             observer.current.observe(node);
@@ -106,9 +165,7 @@ export default function GlossaryRecommendationClient() {
                 }));
 
                 setEntries([...newEntries, ...oldEntries]);
-                // Yang dianggap 'terakhir disimpan' hanya data yang sudah ada di DB (oldEntries)
                 setLastSavedEntries(oldEntries);
-
                 setIsLoadingData(false);
 
             } catch (error) {
@@ -152,11 +209,12 @@ export default function GlossaryRecommendationClient() {
         setEntries((prev) => prev.map((entry, i) => (i === index ? { ...entry, [field]: value } : entry)));
     }, []);
 
-    const resizeTextarea = (el: HTMLTextAreaElement | null) => {
+    // PENTING: resizeTextarea sekarang dibungkus useCallback agar tidak memicu re-render pada memo
+    const resizeTextarea = useCallback((el: HTMLTextAreaElement | null) => {
         if (!el) return;
         el.style.height = 'auto';
         el.style.height = `${el.scrollHeight}px`;
-    };
+    }, []);
 
     // 3. Fungsi Save/Submit
     const handleSave = async (e: React.FormEvent) => {
@@ -170,7 +228,6 @@ export default function GlossaryRecommendationClient() {
 
         setIsSaving(true);
         try {
-            // Pemisahan data
             const creates = entries
                 .filter(l => !l.id || l.id < 0)
                 .map(({ id, source, target, detail }) => ({ id, source, target, detail }));
@@ -192,7 +249,6 @@ export default function GlossaryRecommendationClient() {
                 .filter(old => old.id && !entries.some(l => l.id === old.id))
                 .map(old => old.id as number);
 
-            // Jika menambah ke glossary lama (bukan buat baru), cegah submit kosong
             if (existingGlossaryId && creates.length === 0 && updates.length === 0 && deletes.length === 0) {
                 showAlert('Tidak ada perubahan untuk disimpan.', 'info');
                 setIsSaving(false);
@@ -328,59 +384,24 @@ export default function GlossaryRecommendationClient() {
                                 const sourceVal = entry.source.trim().toLowerCase();
                                 const isDuplicate = sourceVal !== '' && sourceCounts[sourceVal] > 1;
 
+                                // Gunakan komponen yang di-memo di sini
                                 return (
-                                    <div className={`glosary-line ${isDuplicate ? 'duplicated-line' : ''} ${entry.isRecommended ? 'recommended-highlight' : ''}`} key={entry.id}>
-                                        <div className="sub-field">
-                                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                Source Term <span style={{ color: 'var(--accent-red)' }}>*</span>
-                                                {entry.isRecommended && (
-                                                    <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--accent-green, #28a745)', color: '#fff', padding: '2px 6px', borderRadius: '4px', textTransform: 'none' }}>
-                                                        <i className="fas fa-sparkles"></i> AI Suggested
-                                                    </span>
-                                                )}
-                                                {isDuplicate && (
-                                                    <span style={{ color: 'var(--accent-red, #dc3545)', fontWeight: 'bold', fontSize: '0.65rem', textTransform: 'none' }}>
-                                                        <i className="fas fa-exclamation-triangle"></i> Duplicate
-                                                    </span>
-                                                )}
-                                            </label>
-                                            <textarea
-                                                ref={resizeTextarea} className="sub-source" rows={1} placeholder="Source word/phrase"
-                                                value={entry.source} onChange={(e) => handleUpdateEntry(index, 'source', e.target.value)} required
-                                            />
-                                        </div>
-                                        
-                                        <div className="sub-field">
-                                            <label>Target Translation <span style={{ color: 'var(--accent-red)' }}>*</span></label>
-                                            <textarea
-                                                ref={resizeTextarea} className="sub-translated" rows={1} placeholder="Target word/phrase"
-                                                value={entry.target} onChange={(e) => handleUpdateEntry(index, 'target', e.target.value)} required
-                                            />
-                                        </div>
-
-                                        <div className="sub-field">
-                                            <label>Detail / Context <span style={{ color: 'var(--text-muted)', textTransform: 'none', fontWeight: 'normal' }}>(Optional)</span></label>
-                                            <textarea
-                                                ref={resizeTextarea} className="sub-detail" rows={1} placeholder="Additional context..."
-                                                value={entry.detail || ''} onChange={(e) => handleUpdateEntry(index, 'detail', e.target.value)}
-                                            />
-                                        </div>
-
-                                        <div className="sub-actions">
-                                            <button type="button" className="btn-add-line" onClick={() => handleAddEntry(index)} title="Add entry below"><i className="fas fa-plus-circle" /></button>
-                                            <button type="button" className="btn-del-line" onClick={() => handleDeleteEntry(index)} title="Delete entry"><i className="fas fa-trash-alt" /></button>
-                                        </div>
-                                    </div>
+                                    <GlossaryRecommendationRow
+                                        key={entry.id}
+                                        entry={entry}
+                                        index={index}
+                                        isDuplicate={isDuplicate}
+                                        handleUpdateEntry={handleUpdateEntry}
+                                        handleAddEntry={handleAddEntry}
+                                        handleDeleteEntry={handleDeleteEntry}
+                                        resizeTextarea={resizeTextarea}
+                                    />
                                 );
                             })}
                         </div>
                     </div>
 
-                    <div 
-                        // Perbaikan ref: Menghubungkan div ini ke Observer
-                        ref={saveContainerRef} 
-                        style={{ marginTop: '30px' }}
-                    >
+                    <div ref={saveContainerRef} style={{ marginTop: '30px' }}>
                         <button type="submit" className="btn btn-primary" disabled={isSaving}>
                             <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`}></i>{' '}
                             {isSaving ? 'Saving Glossary...' : 'Confirm & Save Glossary'}
@@ -392,7 +413,6 @@ export default function GlossaryRecommendationClient() {
             {/* FLOATING SAVE BUTTON */}
             {!isSaveVisible && (
                 <button 
-                    // Mengubah onClick agar memanggil handleSave (karena tipe event di fungsi handleSave butuh any/FormEvent)
                     className="btn btn-primary" 
                     onClick={(e) => handleSave(e as any)} 
                     disabled={isSaving}
