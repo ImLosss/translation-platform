@@ -65,11 +65,7 @@ export class NineInferenceService implements LlmProvider {
       const promptTokens = usage.prompt_tokens || 0;
       const completionTokens = usage.completion_tokens || 0;
       const missedTokens = promptTokens - cachedTokens;
-
-      const remainingTokens = responseData.x_package_usage?.remainingTokens || 'N/A';
       
-      // Catat info tambahan (Reasoning & Biaya) di log server
-      this.logger.debug(`Remaining Pkg Tokens: ${remainingTokens}`);
       if (messageObj.reasoning_content) {
          this.logger.debug(`Reasoning: ${messageObj.reasoning_content}`);
       }
