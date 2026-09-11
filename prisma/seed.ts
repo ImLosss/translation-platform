@@ -162,7 +162,7 @@ async function main() {
     let mainDetail = 'Tingkat Kultivasi';
 
     // Jika 'details' adalah string, timpa atau gabungkan ke mainDetail
-    if (typeof item.details === 'string') {
+    if (typeof item.detail === 'string') {
       mainDetail = item.detail;
     }
 
