@@ -163,7 +163,7 @@ async function main() {
 
     // Jika 'details' adalah string, timpa atau gabungkan ke mainDetail
     if (typeof item.details === 'string') {
-      mainDetail = item.details;
+      mainDetail = item.detail;
     }
 
     // Masukkan data utama
