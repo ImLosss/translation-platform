@@ -16,121 +16,319 @@ const prisma = new PrismaClient({
 
 // Data mentah glossary
 const rawGlossaryData = {
-    "LIST_CULTIVATION": [
-        { "mandarin": "UNKNOWN", "replace": "Foundation Establishment" },
-        { "mandarin": "UNKNOWN2", "replace": "Marrow Cleansing" },
-        { "mandarin": "UNKNOWN3", "replace": "Mortal Shedding" },
-        { "mandarin": "UNKNOWN4", "replace": "Seamless", "detail": [{ "mandarin": "凝丹境", "replace": "Pemadatan Inti" }] },
-        { "mandarin": "云境", "replace": "Core Cloud" },
-        { "mandarin": "UNKNOWN5", "replace": "Tingkat Penentangan/Indestructible" },
-        { "mandarin": "大日境", "replace": "Great Solar" },
-        { "mandarin": "暗星境", "replace": "Darkstar/Tingkat Marquis" },
-        { "mandarin": "无间境/封王", "replace": "Incessant/Tingkat Regis" },
-        { "mandarin": "UNKNOWN6", "replace": "Chaos Hole/Tingkat Supremasi" },
-        { "mandarin": "UNKNOWN7", "replace": "Imperial Lord" },
-        { "mandarin": "UNKNOWN8", "replace": "Tribulation Eminance" }
-    ],
     "REPLACE_AND_LEARN": [
-        { "mandarin": "大长老", "translate_to": "Tetua Agung", "detail": "jabatan" },
-        { "mandarin": "长老", "translate_to": "Tetua", "detail": "jabatan" },
-        { "mandarin": "混沌蚊", "translate_to": "Nyamuk Kekacauan", "detail": "nama makhluk" },
-        { "mandarin": "虚空", "translate_to": "Kehampaan", "detail": "istilah/tempat" },
-        { "mandarin": "仙气", "translate_to": "Energi Abadi", "detail": "istilah" },
-        { "mandarin": "天劫", "translate_to": "Petaka Langit", "detail": "istilah" },
-        { "mandarin": "雷劫", "translate_to": "Petaka Petir", "detail": "istilah" },
-        { "mandarin": "天谴", "translate_to": "Hukuman Langit", "detail": "istilah" },
-        { "mandarin": "元神", "translate_to": "Roh Asal", "detail": "istilah" },
-        { "mandarin": "隐患", "translate_to": "Bahaya Tersembunyi", "detail": "istilah" },
-        { "mandarin": "修士", "translate_to": "Kultivator", "detail": "praktisi kultivasi" },
-        { "mandarin": "凡人", "translate_to": "orang biasa", "detail": "manusia biasa, bukan kultivator" },
-        { "mandarin": "宗门", "translate_to": "Sekte", "detail": "organisasi kultivasi/klan besar" },
-        { "mandarin": "法宝", "translate_to": "harta pusaka", "detail": "senjata/item tingkat tinggi" },
-        { "mandarin": "灵兽", "translate_to": "Binatang Roh", "detail": "hewan spiritual" },
-        { "mandarin": "荒阶", "translate_to": "Tingkat Kaisar", "detail": "tingkat senjata ilahi" },
-        { "mandarin": "玄阶", "translate_to": "Tingkat Misteri", "detail": "tingkat senjata ilahi" },
-        { "mandarin": "地阶", "translate_to": "Tingkat Bumi", "detail": "tingkat senjata ilahi" },
-        { "mandarin": "天阶", "translate_to": "Tingkat Langit", "detail": "tingkat senjata ilahi" },
-        { "mandarin": "神兵", "translate_to": "Senjata Ilahi", "detail": "istilah" },
-        { "mandarin": "修炼", "translate_to": "pelatihan", "detail": "istilah" },
-        { "mandarin": "传承", "translate_to": "warisan", "detail": "istilah" },
-        { "mandarin": "天才", "translate_to": "Jenius", "detail": "istilah" },
-        { "mandarin": "强者", "translate_to": "Ahli Kuat", "detail": "istilah" },
-        { "mandarin": "雷泽", "translate_to": "Rawa Petir", "detail": "istilah" },
-        { "mandarin": "副帅", "translate_to": "Wakil Panglima", "detail": "gelar/jabatan" },
-        { "mandarin": "妖帅", "translate_to": "Panglima Siluman", "detail": "gelar/jabatan" },
-        { "mandarin": "帅", "translate_to": "Panglima", "detail": "gelar/jabatan" },
-        { "mandarin": "副将", "translate_to": "Wakil Jenderal", "detail": "gelar/jabatan" },
-        { "mandarin": "将", "translate_to": "Jenderal", "detail": "gelar/jabatan" },
-        { "mandarin": "副统领", "translate_to": "Wakil Komandan", "detail": "gelar/jabatan" },
-        { "mandarin": "统领", "translate_to": "Komandan", "detail": "gelar/jabatan" },
-        { "mandarin": "统队", "translate_to": "Kapten Pasukan", "detail": "gelar/jabatan" },
-        { "mandarin": "师父", "translate_to": "Guru", "detail": "panggilan guru" },
-        { "mandarin": "师尊", "translate_to": "Guru Agung", "detail": "panggilan guru (lebih hormat)" },
-        { "mandarin": "魂力", "translate_to": "Energi Roh", "detail": "istilah energi/kultivasi" },
-        { "mandarin": "心意刀", "translate_to": "Pedang Kehendak Hati", "detail": "istilah" },
-        { "mandarin": "龙脉", "translate_to": "Nadi Naga", "detail": "istilah" },
-        { "mandarin": "九天应元", "translate_to": "Penguasa Sembilan Langit", "detail": "istilah" },
-        { "mandarin": "神尊", "translate_to": "Dewa", "detail": "istilah kultivasi" },
+        { "mandarin": "邪魂师", "translate_to": "Master Roh Iblis", "detail": "istilah profesi/kelas kultivasi" },
+        { "mandarin": "蛊惑", "translate_to": "menghasut", "detail": "istilah manipulasi/memengaruhi" },
+        { "mandarin": "亡灵之门", "translate_to": "Gerbang Kematian", "detail": "nama teknik/jurus" },
+        { "mandarin": "灵魂冲击", "translate_to": "Serangan Jiwa", "detail": "nama teknik/jurus" },
+        { "mandarin": "冰爆术", "translate_to": "Ledakan Es", "detail": "nama teknik/jurus" },
+        { "mandarin": "龙神咆哮", "translate_to": "Raungan Dewa Naga", "detail": "nama teknik/jurus" },
+        { "mandarin": "龙集舞刀法", "translate_to": "Teknik Pedang Tarian Hujan Naga", "detail": "nama teknik/jurus" },
+        { "mandarin": "龙神之光", "translate_to": "Cahaya Dewa Naga", "detail": "nama teknik/jurus" },
+        { "mandarin": "陛下", "translate_to": "Baginda", "detail": "gelar" },
+        { "mandarin": "龙神降临", "translate_to": "Turunnya Dewa Naga", "detail": "nama teknik/jurus" },
+        { "mandarin": "光明龙神斩", "translate_to": "Tebasan Dewa Naga Cahaya", "detail": "nama teknik/jurus" },
+        { "mandarin": "龙翼铡刀", "translate_to": "Sabit Sayap Naga", "detail": "nama teknik/jurus" },
+        { "mandarin": "龙神附体", "translate_to": "Penyatuan Dewa Naga", "detail": "nama teknik/jurus" },
+        { "mandarin": "光明龙神蝶", "translate_to": "Kupu-kupu Dewa Naga Cahaya", "detail": "nama roh" },
+        { "mandarin": "魂导师", "translate_to": "Master Pembimbing Roh", "detail": "istilah profesi/kelas kultivasi" },
+        { "mandarin": "魂导师大赛", "translate_to": "Kompetisi Master Roh", "detail": "nama acara/kompetisi" },
+        { "mandarin": "明都", "translate_to": "Mingdu", "detail": "nama kota" },
+        { "mandarin": "夕水盟", "translate_to": "Aliansi Xishui", "detail": "nama organisasi/aliansi" },
+        { "mandarin": "上官薇儿", "translate_to": "Shangguan Wei'er", "detail": "nama karakter" },
+        { "mandarin": "日月神针", "translate_to": "Jarum Dewa Riyue", "detail": "nama artefak/senjata" },
+        { "mandarin": "叶大师", "translate_to": "Master Ye", "detail": "panggilan kehormatan" },
+        { "mandarin": "唐五", "translate_to": "Tang Wu", "detail": "nama karakter" },
+        { "mandarin": "定装魂导炮弹", "translate_to": "Meriam Pembimbing Roh Tetap", "detail": "nama senjata/artefak" },
+        { "mandarin": "史莱克", "translate_to": "Shrek", "detail": "nama akademi/kelompok" },
+        { "mandarin": "唐门", "translate_to": "Sekte Tang", "detail": "nama sekte/kelompok" },
+        { "mandarin": "极限单兵", "translate_to": "Prajurit Individu Ekstrem", "detail": "istilah militer/kelas tempur" },
+        { "mandarin": "摄政王", "translate_to": "Raja Bupati", "detail": "jabatan kerajaan" },
+        { "mandarin": "王妃", "translate_to": "Putri Permaisuri", "detail": "jabatan kerajaan" },
+        { "mandarin": "重天门", "translate_to": "Sekte Chongtian", "detail": "nama sekte/kelompok" },
+        { "mandarin": "风凌", "translate_to": "Feng Ling", "detail": "nama karakter" },
+        { "mandarin": "地龙门", "translate_to": "Sekte Dilong", "detail": "nama sekte/kelompok" },
+        { "mandarin": "南水水", "translate_to": "Nan Shuishui", "detail": "nama karakter" },
+        { "mandarin": "霍雨浩", "translate_to": "Huo Yuhao", "detail": "nama karakter" },
+        { "mandarin": "星罗国家学院", "translate_to": "Akademi Xingluo", "detail": "nama akademi" },
+        { "mandarin": "雪魔宗", "translate_to": "Sekte Xuemo", "detail": "nama sekte/kelompok" },
+        { "mandarin": "魂环", "translate_to": "Cincin Roh", "detail": "istilah kultivasi/artefak" },
+        { "mandarin": "魂导师团", "translate_to": "Tim Master Pembimbing Roh", "detail": "nama kelompok/organisasi" },
+        { "mandarin": "邪君魂导师团", "translate_to": "Tim Master Roh Xiejun", "detail": "nama kelompok/organisasi" },
+        { "mandarin": "王奕衡", "translate_to": "Wang Yiheng", "detail": "nama karakter" },
+        { "mandarin": "魂导炮弹", "translate_to": "Meriam Pembimbing Roh", "detail": "nama senjata/artefak" },
+        { "mandarin": "魂导器", "translate_to": "Alat Pembimbing Roh", "detail": "nama alat/artefak" },
+        { "mandarin": "隐身魂导器", "translate_to": "Alat Pembimbing Roh Kamuflase", "detail": "nama alat/artefak" },
+        { "mandarin": "魂骨", "translate_to": "Tulang Roh", "detail": "istilah" },
+        { "mandarin": "阴阳互补", "translate_to": "Yin-yang saling melengkapi", "detail": "istilah" },
+        { "mandarin": "爆裂炮", "translate_to": "Meriam Ledakan", "detail": "nama senjata/artefak" },
+        { "mandarin": "分解炮", "translate_to": "Meriam Pengurai", "detail": "nama senjata/artefak" },
         { "mandarin": "魂技", "translate_to": "Teknik Roh", "detail": "nama teknik/jurus" },
-        { "mandarin": "剑光分化", "translate_to": "Pemisahan Cahaya Pedang", "detail": "nama teknik/jurus" },
-        { "mandarin": "心刀式", "translate_to": "Jurus Pedang Hati", "detail": "nama teknik/jurus" },
-        { "mandarin": "落叶刀", "translate_to": "Pedang Daun Gugur", "detail": "nama teknik/jurus" },
-        { "mandarin": "追风刀", "translate_to": "Pedang Mengejar Angin", "detail": "nama teknik/jurus" },
-        { "mandarin": "三秋叶", "translate_to": "Tiga Daun Musim Gugur", "detail": "nama teknik/jurus" },
-        { "mandarin": "拔刀式", "translate_to": "Jurus Cabut Pedang", "detail": "nama teknik/jurus" },
-        { "mandarin": "灵血", "translate_to": "Darah Spiritual", "detail": "istilah kultivasi/energi" },
-        { "mandarin": "灵体", "translate_to": "Tubuh Spiritual", "detail": "istilah kultivasi/jenis tubuh" },
-        { "mandarin": "元气", "translate_to": "Vitalitas", "detail": "energi kehidupan/kultivasi" },
-        { "mandarin": "神通", "translate_to": "Kekuatan Ilahi", "detail": "istilah kekuatan dewa" },
-        { "mandarin": "剑法", "translate_to": "Teknik Pedang", "detail": "istilah seni bela diri" },
-        { "mandarin": "修魔", "translate_to": "Kultivasi Iblis", "detail": "jenis kultivasi terlarang" },
-        { "mandarin": "阵法", "translate_to": "Formasi", "detail": "array atau sihir pertahanan" },
-        { "mandarin": "师兄", "translate_to": "Senior", "detail": "istilah" },
-        { "mandarin": "元意之瞳", "translate_to": "Mata Primordial", "detail": "istilah" },
-        { "mandarin": "分身", "translate_to": "Klon", "detail": "istilah" },
-        { "mandarin": "玉阳洞天", "translate_to": "Alam Rahasia Yuyang", "detail": "istilah" },
+        { "mandarin": "魂力", "translate_to": "Kekuatan Roh", "detail": "istilah energi/kultivasi" },
+        { "mandarin": "魂导", "translate_to": "Pembimbing Roh", "detail": "istilah teknologi/alat" },
+        { "mandarin": "魂师大赛", "translate_to": "Kompetisi Master Roh", "detail": "nama acara/kompetisi" },
+        { "mandarin": "魂师精英大赛", "translate_to": "Turnamen Elite Master Roh", "detail": "nama acara/kompetisi" },
+        { "mandarin": "魂师战队", "translate_to": "Tim Master Roh", "detail": "nama kelompok/kompetisi" },
+        { "mandarin": "魂师学院", "translate_to": "Akademi Master Roh", "detail": "nama akademi" },
+        { "mandarin": "魂师", "translate_to": "Master Roh", "detail": "istilah profesi/kelas kultivasi" },
+        { "mandarin": "冬儿", "translate_to": "Dong'er", "detail": "nama karakter" },
+        { "mandarin": "雨浩", "translate_to": "Yuhao", "detail": "nama karakter" },
+        { "mandarin": "圣灵斩", "translate_to": "Tebasan Roh Suci", "detail": "nama jurus/teknik" },
+        { "mandarin": "龟神撞", "translate_to": "Tabrakan Dewa Kura-Kura", "detail": "nama jurus/teknik" },
+        { "mandarin": "魂圣", "translate_to": "Master Roh Mulia", "detail": "tingkatan kultivasi" },
+        { "mandarin": "三师兄", "translate_to": "Kakak Ketiga", "detail": "panggilan senior" },
         { "mandarin": "前辈", "translate_to": "Senior", "detail": "panggilan" },
-        { "mandarin": "晚辈", "translate_to": "Junior", "detail": "istilah" },
-        { "mandarin": "魂之境", "translate_to": "Alam Jiwa", "detail": "istilah" },
-        { "mandarin": "两界岛", "translate_to": "Pulau Dua Alam", "detail": "istilah" },
-        { "mandarin": "东宁府", "translate_to": "Prefektur Dongning", "detail": "nama tempat" },
-        { "mandarin": "南阳港", "translate_to": "Pelabuhan Nanyang", "detail": "nama tempat" },
-        { "mandarin": "师姐", "translate_to": "Kakak Seperguruan", "detail": "panggilan senior perempuan" },
-        { "mandarin": "师弟", "translate_to": "Adik Seperguruan", "detail": "panggilan junior" },
-        { "mandarin": "掌门", "translate_to": "Ketua Sekte", "detail": "jabatan pemimpin sekte" },
-        { "mandarin": "妖人", "translate_to": "Siluman", "detail": "orang siluman/iblis" },
-        { "mandarin": "妖物", "translate_to": "Siluman", "detail": "makhluk iblis/monster" },
-        { "mandarin": "天书", "translate_to": "Kitab Langit", "detail": "buku kuno suci" },
-        { "mandarin": "灵魂", "translate_to": "Jiwa", "detail": "istilah umum roh" },
-        { "mandarin": "考核", "translate_to": "Ujian", "detail": "tahapan/seleksi sekte" },
-        { "mandarin": "炼药师", "translate_to": "Alkemis", "detail": "profesi pembuat pil" },
-        { "mandarin": "丹药", "translate_to": "Pil", "detail": "istilah" },
-        { "mandarin": "心魔", "translate_to": "Iblis Batin", "detail": "hambatan psikologis" },
-        { "mandarin": "灵气", "translate_to": "Energi Spiritual", "detail": "energi kultivasi umum" },
-        { "mandarin": "少宗主", "translate_to": "Pemimpin Muda", "detail": "jabatan" },
-        { "mandarin": "公子", "translate_to": "Tuan Muda", "detail": "istilah" },
-        { "mandarin": "秦五尊者", "translate_to": "Venerable Qinwu", "detail": "gelar/julukan" },
-        { "mandarin": "圣女", "translate_to": "Gadis Suci", "detail": "gelar/julukan" },
-        { "mandarin": "邪花侯", "translate_to": "Marquis Xiehua", "detail": "gelar/julukan" },
-        { "mandarin": "天下巡走", "translate_to": "Pengembara Dunia", "detail": "gelar/julukan" },
-        { "mandarin": "仙子", "translate_to": "Peri", "detail": "julukan" },
-        { "mandarin": "三弟", "translate_to": "Adik ketiga", "detail": "panggilan" },
-        { "mandarin": "神通", "translate_to": "Teknik Ilahi", "detail": "istilah" },
-        { "mandarin": "神力", "translate_to": "Kekuatan Ilahi", "detail": "istilah" },
-        { "mandarin": "法力", "translate_to": "Kekuatan Magis", "detail": "istilah" },
-        { "mandarin": "山人", "translate_to": "Petapa", "detail": "istilah" },
-        { "mandarin": "不好", "translate_to": "Gawat", "detail": "istilah" },
-        { "mandarin": "修罗", "translate_to": "Asura", "detail": "istilah" },
-        { "mandarin": "十字神尊相", "translate_to": "Fase Dewa Salib", "detail": "istilah" },
-        { "mandarin": "魔尊", "translate_to": "Penguasa Iblis", "detail": "istilah" },
-        { "mandarin": "七色煞", "translate_to": "Tujuh Warna Mematikan", "detail": "istilah" },
-        { "mandarin": "妖神", "translate_to": "Dewa Siluman", "detail": "gelar/panggilan" },
-        { "mandarin": "魔神", "translate_to": "Dewa Iblis", "detail": "gelar/panggilan" },
-        { "mandarin": "雷声普化天尊", "translate_to": "Tianzun Manifestasi Petir Langit", "detail": "gelar/panggilan" }
+        { "mandarin": "南秋秋", "translate_to": "Nan Qiuqiu", "detail": "nama karakter" },
+        { "mandarin": "叶骨衣", "translate_to": "Ye Guyi", "detail": "nama karakter" },
+        { "mandarin": "小师弟", "translate_to": "Adik Seperguruan", "detail": "panggilan junior" },
+        { "mandarin": "三石", "translate_to": "Sanshi", "detail": "nama karakter/panggilan" },
+        { "mandarin": "贝贝", "translate_to": "Bei Bei", "detail": "nama karakter" },
+        { "mandarin": "玄武盾阵", "translate_to": "Formasi Perisai Xuanwu", "detail": "nama teknik/formasi" },
+        { "mandarin": "念冬剑", "translate_to": "Pedang Kangen Dong", "detail": "nama teknik/jurus" },
+        { "mandarin": "思冬拳", "translate_to": "Tinju Rindu Dong", "detail": "nama teknik/jurus" },
+        { "mandarin": "玄武之域", "translate_to": "Domain Xuanwu", "detail": "nama teknik/area" },
+        { "mandarin": "浩冬掌", "translate_to": "Tapak Haodong", "detail": "nama teknik/jurus" },
+        { "mandarin": "昊天堡", "translate_to": "Istana Haotian", "detail": "nama tempat" },
+        { "mandarin": "海神缘", "translate_to": "Takdir Dewa Laut", "detail": "istilah" },
+        { "mandarin": "极北冰原", "translate_to": "Dataran Es Utara Ekstrem", "detail": "nama tempat" },
+        { "mandarin": "日月帝国", "translate_to": "Kekaisaran Riyue", "detail": "nama negara" },
+        { "mandarin": "天魂帝国", "translate_to": "Kekaisaran Tianhun", "detail": "nama negara" },
+        { "mandarin": "星斗大森林", "translate_to": "Hutan Pertarungan Bintang", "detail": "nama tempat" },
+        { "mandarin": "邪眼暴君", "translate_to": "Tiran Xieyan", "detail": "nama monster" },
+        { "mandarin": "邪眼暴君主宰", "translate_to": "Penguasa Tiran Xieyan", "detail": "nama monster/pemimpin" },
+        { "mandarin": "帝天", "translate_to": "Di Tian", "detail": "nama karakter/monster" },
+        { "mandarin": "大凶之地", "translate_to": "Tempat Paling Jahat", "detail": "istilah tempat" },
+        { "mandarin": "徐天然", "translate_to": "Xu Tianran", "detail": "nama karakter" },
+        { "mandarin": "明斗山脉", "translate_to": "Pegunungan Mingdou", "detail": "nama tempat" },
+        { "mandarin": "季绝尘", "translate_to": "Ji Juechen", "detail": "nama karakter" },
+        { "mandarin": "轩老师", "translate_to": "Guru Xuan", "detail": "panggilan guru" },
+        { "mandarin": "日升城", "translate_to": "Kota Risheng", "detail": "nama kota" },
+        { "mandarin": "明悦商城", "translate_to": "Kota Perdagangan Mingyue", "detail": "nama kota/tempat" },
+        { "mandarin": "海悦城", "translate_to": "Kota Haiyue", "detail": "nama kota/tempat" },
+        { "mandarin": "魂王", "translate_to": "Raja Roh", "detail": "tingkatan kultivasi" },
+        { "mandarin": "精神力", "translate_to": "Kekuatan spiritual", "detail": "istilah" },
+        { "mandarin": "圣灵教", "translate_to": "Sekte Roh Suci", "detail": "nama sekte/kelompok antagonis" },
+        { "mandarin": "人质", "translate_to": "sandera", "detail": "istilah" },
+        { "mandarin": "灭魂散", "translate_to": "Bubuk Penghancur Roh", "detail": "nama racun/obat" },
+        { "mandarin": "魂斗罗", "translate_to": "Master Roh Tertinggi", "detail": "tingkatan kultivasi" },
+        { "mandarin": "极致之火", "translate_to": "Api Ekstrem", "detail": "istilah kekuatan/elemen" },
+        { "mandarin": "极致之冰", "translate_to": "Es Ekstrem", "detail": "istilah kekuatan/elemen" },
+        { "mandarin": "净化", "translate_to": "Bersihkan", "detail": "istilah teknik/penyucian" },
+        { "mandarin": "凤凰流星雨", "translate_to": "Meteor Phoenix", "detail": "nama jurus/teknik" },
+        { "mandarin": "凤凰啸天击", "translate_to": "Serangan Phoenix", "detail": "nama jurus/teknik" },
+        { "mandarin": "八角万向刺", "translate_to": "Duri Octagonal", "detail": "nama jurus/teknik" },
+        { "mandarin": "冰熊彗星陨", "translate_to": "Komet Beruang Es", "detail": "nama jurus/teknik" },
+        { "mandarin": "永冻之域", "translate_to": "Domain Pembekuan Abadi", "detail": "nama teknik/area" },
+        { "mandarin": "精神探测", "translate_to": "Deteksi Roh", "detail": "nama teknik/kemampuan" },
+        { "mandarin": "药材", "translate_to": "bahan obat", "detail": "istilah pengobatan" },
+        { "mandarin": "毒经", "translate_to": "Kitab Racun", "detail": "nama kitab/artefak" },
+        { "mandarin": "解药", "translate_to": "obat penawar", "detail": "istilah pengobatan" },
+        { "mandarin": "魂导炮", "translate_to": "Meriam Pembimbing Roh", "detail": "nama senjata/artefak" },
+        { "mandarin": "全地形自走炮台", "translate_to": "Meriam Bergerak Seluruh Medan", "detail": "nama alat/senjata" },
+        { "mandarin": "封号斗罗", "translate_to": "Master Dunia Roh", "detail": "tingkatan kultivasi" },
+        { "mandarin": "兽王级", "translate_to": "tingkat Raja Monster", "detail": "tingkatan kekuatan" },
+        { "mandarin": "魂导师团长", "translate_to": "Kapten Tim Master Pembimbing Roh", "detail": "jabatan/posisi" },
+        { "mandarin": "团长", "translate_to": "Kapten", "detail": "jabatan/posisi" },
+        { "mandarin": "皇储", "translate_to": "Putra Mahkota", "detail": "jabatan/posisi" },
+        { "mandarin": "太上教主", "translate_to": "Pemimpin Tertinggi", "detail": "jabatan/posisi" },
+        { "mandarin": "魂导器的技术", "translate_to": "teknologi Alat Pembimbing Roh", "detail": "istilah" },
+        { "mandarin": "亡灵半位面", "translate_to": "Dimensi Kematian", "detail": "istilah" },
+        { "mandarin": "魂力波动", "translate_to": "fluktuasi kekuatan roh", "detail": "istilah" },
+        { "mandarin": "命运", "translate_to": "takdir", "detail": "istilah nasib/kehidupan" },
+        { "mandarin": "魂导炮打击", "translate_to": "serangan Meriam Pembimbing Roh", "detail": "istilah strategi/teknik" },
+        { "mandarin": "幽冥万刃", "translate_to": "Bilah Neraka", "detail": "nama jurus/teknik" },
+        { "mandarin": "幽冥剑", "translate_to": "Pedang Neraka", "detail": "nama senjata/jurus" },
+        { "mandarin": "王秋儿", "translate_to": "Wang Qiu'er", "detail": "nama karakter" },
+        { "mandarin": "伊莱克斯", "translate_to": "Elux", "detail": "nama karakter/guru" },
+        { "mandarin": "冰帝", "translate_to": "Kaisar Es", "detail": "nama karakter/roh" },
+        { "mandarin": "天梦哥", "translate_to": "Kak Tianmeng", "detail": "nama karakter/roh" },
+        { "mandarin": "雪女", "translate_to": "Dewi Salju", "detail": "nama karakter/roh" },
+        { "mandarin": "精神之海", "translate_to": "lautan roh", "detail": "istilah dunia batin/jiwa" },
+        { "mandarin": "天人合一", "translate_to": "Ranah Manusia Langit Bersatu", "detail": "tingkatan pencerahan/kultivasi" },
+        { "mandarin": "幽冥斩", "translate_to": "Sayatan Kegelapan", "detail": "nama jurus/teknik" },
+        { "mandarin": "吴雨", "translate_to": "Wu Yu", "detail": "nama karakter" },
+        { "mandarin": "三眼金猊", "translate_to": "Singa Emas Bermata Tiga", "detail": "nama monster/roh" },
+        { "mandarin": "命运之眼", "translate_to": "Mata Takdir", "detail": "nama teknik/kemampuan" },
+        { "mandarin": "光之女神", "translate_to": "Dewi Cahaya", "detail": "nama karakter/roh" },
+        { "mandarin": "冰火两仪眼", "translate_to": "Mata Air Es-Api", "detail": "nama tempat/artefak" },
+        { "mandarin": "阳泉", "translate_to": "Mata Air Panas", "detail": "nama tempat/artefak" },
+        { "mandarin": "相思断肠红", "translate_to": "Tanaman Patah Hati", "detail": "nama tanaman/artefak" },
+        { "mandarin": "帝皇瑞兽", "translate_to": "hewan kekaisaran", "detail": "istilah monster/tingkatan roh" },
+        { "mandarin": "气运", "translate_to": "keberuntungan", "detail": "istilah nasib/energi dunia" },
+        { "mandarin": "献祭", "translate_to": "pengorbanan", "detail": "istilah teknik/ritual" },
+        { "mandarin": "扭转乾坤", "translate_to": "membalikkan dunia", "detail": "idiom/kemampuan luar biasa" },
+        { "mandarin": "共鸣", "translate_to": "beresonansi", "detail": "istilah reaksi energi" },
+        { "mandarin": "乾坤问情谷", "translate_to": "Lembah Cinta Semesta", "detail": "nama tempat" },
+        { "mandarin": "使命", "translate_to": "misi", "detail": "istilah tujuan hidup" },
+        { "mandarin": "祝福", "translate_to": "memberkati", "detail": "istilah pemberian berkah" },
+        { "mandarin": "瑞兽", "translate_to": "hewan keberuntungan", "detail": "istilah monster/tingkatan roh" },
+        { "mandarin": "碧姬", "translate_to": "Bi Ji", "detail": "nama karakter" },
+        { "mandarin": "万妖王", "translate_to": "Raja Siluman", "detail": "nama karakter/monster" },
+        { "mandarin": "熊君", "translate_to": "Raja Beruang", "detail": "nama karakter/monster" },
+        { "mandarin": "赤王", "translate_to": "Raja Merah", "detail": "nama karakter/monster" },
+        { "mandarin": "魂兽大军", "translate_to": "Pasukan Monster Roh", "detail": "nama pasukan/kelompok" },
+        { "mandarin": "宁荣荣", "translate_to": "Ning Rong Rong", "detail": "nama karakter" },
+        { "mandarin": "武魂", "translate_to": "Roh Pelindung", "detail": "istilah" },
+        { "mandarin": "武魂大会", "translate_to": "Konferensi Roh", "detail": "istilah" },
+        { "mandarin": "邪眼凝视", "translate_to": "Tatapan Xieyan", "detail": "nama teknik/jurus khusus" },
+        { "mandarin": "灵魂吞噬", "translate_to": "Penelan Jiwa", "detail": "nama teknik/jurus" },
+        { "mandarin": "精神干扰领域", "translate_to": "Medan Gangguan Jiwa", "detail": "nama teknik/area" },
+        { "mandarin": "命运之头部魂骨", "translate_to": "Tulang Roh Kepala Takdir", "detail": "nama artefak/tulang roh" },
+        { "mandarin": "命运裁决", "translate_to": "Penghakiman Takdir", "detail": "nama teknik/jurus" },
+        { "mandarin": "精神丝线", "translate_to": "Benang Spiritual", "detail": "nama teknik/jurus" },
+        { "mandarin": "灵魂爆震", "translate_to": "Ledakan Jiwa", "detail": "nama teknik/jurus" },
+        { "mandarin": "暗金恐爪", "translate_to": "Cakar Emas Gelap", "detail": "nama teknik/jurus" },
+        { "mandarin": "生灵守望之刃", "translate_to": "Pisau Pelindung Spiritual", "detail": "nama senjata/teknik" },
+        { "mandarin": "净化之火", "translate_to": "Api Pemurnian", "detail": "nama teknik/jurus" },
+        { "mandarin": "内院弟子", "translate_to": "Murid Gedung Dalam", "detail": "tingkatan siswa akademi" },
+        { "mandarin": "踏平", "translate_to": "ratakan", "detail": "istilah penghancuran total" },
+        { "mandarin": "群体虚弱", "translate_to": "Kelemahan Kelompok", "detail": "nama teknik/jurus" },
+        { "mandarin": "精神混乱", "translate_to": "Pengacauan Spiritual", "detail": "nama teknik/jurus" },
+        { "mandarin": "鬼影迷踪", "translate_to": "Langkah Bayangan Hantu", "detail": "nama teknik/jurus" },
+        { "mandarin": "触手", "translate_to": "tentakel", "detail": "bagian tubuh monster" },
+        { "mandarin": "精神世界", "translate_to": "dunia spiritual", "detail": "istilah" },
+        { "mandarin": "天赋魂技", "translate_to": "keterampilan bakat", "detail": "istilah kemampuan bawaan" },
+        { "mandarin": "灵魂本源", "translate_to": "sumber jiwa", "detail": "istilah" },
+        { "mandarin": "灵魂波动", "translate_to": "fluktuasi jiwa", "detail": "istilah" },
+        { "mandarin": "十万年", "translate_to": "100.000 tahun", "detail": "istilah usia/tingkatan" },
+        { "mandarin": "融合", "translate_to": "menyatu", "detail": "istilah penyatuan" },
+        { "mandarin": "吸收", "translate_to": "menyerap", "detail": "istilah pengambilan energi" },
+        { "mandarin": "修为", "translate_to": "energi pelatihan", "detail": "istilah tingkatan kultivasi" },
+        { "mandarin": "属性克制", "translate_to": "pertentangan atribut", "detail": "istilah kelemahan elemen" },
+        { "mandarin": "光明圣龙", "translate_to": "Naga Suci Cahaya", "detail": "nama roh/monster" },
+        { "mandarin": "魂兽", "translate_to": "monster roh", "detail": "istilah makhluk spiritual" },
+        { "mandarin": "高阶凶兽", "translate_to": "monster roh tingkat tinggi", "detail": "istilah tingkatan monster" },
+        { "mandarin": "正面强攻", "translate_to": "serangan frontal yang kuat", "detail": "istilah strategi tempur" },
+        { "mandarin": "迎头痛击", "translate_to": "serangan mendadak", "detail": "istilah taktik militer" },
+        { "mandarin": "聚能高爆弹", "translate_to": "Peledak Energi Tinggi", "detail": "nama senjata/amunisi" },
+        { "mandarin": "燃烧热血", "translate_to": "bakar semangat tempur", "detail": "istilah motivasi" },
+        { "mandarin": "十大凶兽", "translate_to": "sepuluh monster ganas", "detail": "istilah kelompok monster elite" },
+        { "mandarin": "翡翠天鹅", "translate_to": "Angsa Giok", "detail": "nama monster/roh" },
+        { "mandarin": "血洗", "translate_to": "membantai", "detail": "istilah penghancuran brutal" },
+        { "mandarin": "走向灭亡", "translate_to": "musnah", "detail": "istilah kehancuran total" },
+        { "mandarin": "翡翠圣光普照", "translate_to": "Cahaya Suci Giok bersinar", "detail": "nama teknik/jurus" },
+        { "mandarin": "辅助能力", "translate_to": "kemampuan pendukung", "detail": "istilah jenis kemampuan" },
+        { "mandarin": "武魂真身", "translate_to": "Wujud Roh Pelindung", "detail": "nama teknik/transformasi" },
+        { "mandarin": "青影神鹰", "translate_to": "Elang Dewa Bayangan Biru", "detail": "nama roh/monster" },
+        { "mandarin": "六翼暗金虎", "translate_to": "Harimau Emas Bersayap Enam", "detail": "nama monster/roh" },
+        { "mandarin": "海神阁", "translate_to": "Paviliun Dewa Laut", "detail": "nama tempat" },
+        { "mandarin": "超级斗罗", "translate_to": "Master Dunia Super", "detail": "tingkatan kultivasi tertinggi" },
+        { "mandarin": "兽中之王", "translate_to": "raja monster", "detail": "istilah tingkatan monster" },
+        { "mandarin": "碧羽风暴", "translate_to": "Ledakan Sayap Hijau", "detail": "nama teknik/jurus" },
+        { "mandarin": "兽潮", "translate_to": "gelombang monster", "detail": "istilah serangan massal" },
+        { "mandarin": "城墙", "translate_to": "tembok kota", "detail": "istilah struktur pertahanan" },
+        { "mandarin": "时空银盘", "translate_to": "Pelat Waktu", "detail": "nama artefak/teknik" },
+        { "mandarin": "时空乱流", "translate_to": "Trubulensi Ruang Waktu", "detail": "nama teknik/jurus" },
+        { "mandarin": "时空间魂技", "translate_to": "teknik roh ruang waktu", "detail": "istilah jenis kemampuan" },
+        { "mandarin": "龙神斗罗", "translate_to": "Master Dewa Naga", "detail": "gelar/tingkatan kultivasi" },
+        { "mandarin": "穆恩", "translate_to": "Mu En", "detail": "nama karakter" },
+        { "mandarin": "过分", "translate_to": "keterlaluan", "detail": "istilah berlebihan" },
+        { "mandarin": "史莱克城", "translate_to": "Kota Shrek", "detail": "nama kota" },
+        { "mandarin": "生命之湖", "translate_to": "Danau Kehidupan", "detail": "nama tempat" },
+        { "mandarin": "生命力", "translate_to": "vitalitas", "detail": "istilah energi kehidupan" },
+        { "mandarin": "援军", "translate_to": "bala bantuan", "detail": "istilah militer" },
+        { "mandarin": "族人", "translate_to": "anggota klan", "detail": "istilah kelompok/kerabat" },
+        { "mandarin": "灭顶之灾", "translate_to": "malapetaka", "detail": "bencana besar" },
+        { "mandarin": "五大凶兽", "translate_to": "lima monster ganas", "detail": "istilah" },
+        { "mandarin": "雪帝", "translate_to": "Kaisar Salju", "detail": "nama roh/karakter" },
+        { "mandarin": "魂灵", "translate_to": "spiritual roh", "detail": "istilah" },
+        { "mandarin": "魂灵转化", "translate_to": "transformasi roh spiritual", "detail": "proses perubahan bentuk" },
+        { "mandarin": "魂灵融合", "translate_to": "gabungan roh", "detail": "penyatuan soul beast & manusia" },
+        { "mandarin": "魂灵秘法", "translate_to": "spiritual roh", "detail": "istilah" },
+        { "mandarin": "魂灵试验", "translate_to": "percobaan spiritual roh", "detail": "uji awal konsep" },
+        { "mandarin": "魂灵实验", "translate_to": "eksperimen spiritual roh", "detail": "pelaksanaan eksperimen" },
+        { "mandarin": "魂灵仪式", "translate_to": "ritual spiritual roh", "detail": "ritual kontrak" },
+        { "mandarin": "魂灵之息", "translate_to": "Aura spiritual roh", "detail": "energi/napas khas" },
+        { "mandarin": "生命本源", "translate_to": "esensi kehidupan", "detail": "sumber asal hidup" },
+        { "mandarin": "战斗力", "translate_to": "kekuatan tempur", "detail": "istilah evaluasi kekuatan" },
+        { "mandarin": "人形", "translate_to": "wujud manusia", "detail": "transformasi bentuk" },
+        { "mandarin": "君临天下", "translate_to": "menguasai dunia", "detail": "idiom tingkat dominasi" },
+        { "mandarin": "龙潭虎穴", "translate_to": "wilayah berbahaya", "detail": "idiom tempat sangat berbahaya" },
+        { "mandarin": "抱元归一", "translate_to": "Sumber Roh Bersatu", "detail": "nama teknik/seruan kultivasi" },
+        { "mandarin": "禁制", "translate_to": "larangan", "detail": "pembatas/segseal kekuatan" },
+        { "mandarin": "独眼烈虎", "translate_to": "Harimau Bermata Satu", "detail": "nama soul beast" },
+        { "mandarin": "万年", "translate_to": "10.000 tahun", "detail": "penanda usia/tingkat cincin" },
+        { "mandarin": "戴华斌", "translate_to": "Dai Huabin", "detail": "nama karakter" },
+        { "mandarin": "七环魂圣", "translate_to": "Master Roh Mulia tujuh cincin", "detail": "tingkatan (7th ring Soul Sage)" },
+        { "mandarin": "百万年", "translate_to": "satu juta tahun", "detail": "usia/tingkat legendaris" },
+        { "mandarin": "魂血相振", "translate_to": "Darah roh beresonansi", "detail": "mantra kontrak (bagian pertama)" },
+        { "mandarin": "同承共生", "translate_to": "berbagi kehidupan bersama", "detail": "mantra kontrak (lanjutan)" },
+        { "mandarin": "此身为路 此魂为引 契约永固", "translate_to": "Tubuh sebagai jalan, roh sebagai penuntun, perjanjian abadi", "detail": "mantra kontrak (frasa penuh)" },
+        { "mandarin": "焚尔残躯 铸尔新生", "translate_to": "Bakarlah tubuhmu yang fana, ciptakan kelahiranmu yang baru", "detail": "mantra kontrak (transformasi)" },
+        { "mandarin": "帝掌", "translate_to": "Telapak Kaisar", "detail": "nama jurus" },
+        { "mandarin": "大寒无雪", "translate_to": "Dingin Tanpa Salju", "detail": "nama jurus" },
+        { "mandarin": "传灵塔", "translate_to": "Menara Penghubung Roh", "detail": "nama organisasi" },
+        { "mandarin": "传灵师", "translate_to": "Master Penghubung Roh", "detail": "istilah" },
+        { "mandarin": "供奉堂", "translate_to": "Aula Persembahan", "detail": "istilah" },
+        { "mandarin": "逆鳞", "translate_to": "Sisik Terbalik", "detail": "istilah" },
+        { "mandarin": "蓝银皇", "translate_to": "Kaisar Biru Perak", "detail": "nama roh" },
+        { "mandarin": "蓝银草", "translate_to": "Rumput Biru Perak", "detail": "nama roh" },
+        { "mandarin": "八角玄冰草", "translate_to": "Rumput Es Octagonal", "detail": "nama roh" },
+        { "mandarin": "修罗之瞳", "translate_to": "Mata Asura", "detail": "istilah teknik" },
+        { "mandarin": "瞬移", "translate_to": "Teleportasi", "detail": "istilah teknik" },
+        { "mandarin": "重力控制", "translate_to": "Kendali Gravitasi", "detail": "istilah teknik" },
+        { "mandarin": "无敌金身", "translate_to": "Tubuh Emas Tak Terkalahkan", "detail": "istilah teknik" },
+        { "mandarin": "八角冰源凝", "translate_to": "Kristalisasi Sumber Es Octagonal", "detail": "istilah teknik" },
+        { "mandarin": "帝剑 冰极无双", "translate_to": "Pedang Kaisar, Es Tak Tertandingi", "detail": "istilah teknik" },
+        { "mandarin": "命运之殇", "translate_to": "Luka Takdir", "detail": "istilah teknik" },
+        { "mandarin": "第六魂技 命运之殇", "translate_to": "Teknik Roh Keenam, Luka Takdir", "detail": "istilah teknik" },
+        { "mandarin": "浩冬三绝", "translate_to": "Tiga Jurus Haodong", "detail": "nama jurus" },
+        { "mandarin": "雪帝三绝", "translate_to": "Tiga Jurus Kaisar Salju", "detail": "nama jurus" },
+        { "mandarin": "灵魂剥夺", "translate_to": "Pencabutan Jiwa", "detail": "istilah teknik" },
+        { "mandarin": "昊天宗", "translate_to": "Sekte Haotian", "detail": "nama sekte" },
+        { "mandarin": "本体宗", "translate_to": "Sekte Benti", "detail": "nama sekte" },
+        { "mandarin": "公爵", "translate_to": "Adipati", "detail": "gelar" },
+        { "mandarin": "白虎公爵", "translate_to": "Adipati Baihu", "detail": "gelar" },
+        { "mandarin": "元帅", "translate_to": "Panglima Tertinggi", "detail": "gelar" },
+        { "mandarin": "国师", "translate_to": "Guru Negara", "detail": "gelar" },
+        { "mandarin": "将军", "translate_to": "Jenderal", "detail": "gelar" },
+        { "mandarin": "首将", "translate_to": "Panglima Depan", "detail": "gelar" },
+        { "mandarin": "营长", "translate_to": "Komandan Batalion", "detail": "gelar" },
+        { "mandarin": "统领", "translate_to": "Komandan", "detail": "gelar" },
+        { "mandarin": "白虎金刚变", "translate_to": "Transformasi Vajra Harimau Putih", "detail": "nama teknik" },
+        { "mandarin": "白虎魔神变", "translate_to": "Transformasi Iblis Harimau Putih", "detail": "nama teknik" },
+        { "mandarin": "白虎真身", "translate_to": "Wujud Roh Pelindung Harimau Putih", "detail": "nama teknik" },
+        { "mandarin": "紫极魔瞳", "translate_to": "Mata Iblis Ungu", "detail": "nama teknik" },
+        { "mandarin": "天龙门", "translate_to": "Sekte Tianlong", "detail": "nama sekte" },
+        { "mandarin": "山蟒宗", "translate_to": "Sekte Shanman", "detail": "nama sekte" },
+        { "mandarin": "龙城", "translate_to": "Kota Naga", "detail": "nama kota" },
+        { "mandarin": "御明城", "translate_to": "Kota Yuming", "detail": "nama kota" },
+        { "mandarin": "天明城", "translate_to": "Kota Tianming", "detail": "nama kota" },
+        { "mandarin": "帝后战神", "translate_to": "Ratu Dewa Perang", "detail": "gelar" },
+        { "mandarin": "生灵守望之金", "translate_to": "Emas Penjaga Spiritual", "detail": "istilah" },
+        { "mandarin": "史莱克监察团", "translate_to": "Tim Pengawas Shrek", "detail": "istilah" },
+        { "mandarin": "死神塔", "translate_to": "Menara Kematian", "detail": "istilah" },
+        { "mandarin": "固态魂力", "translate_to": "Energi Roh Padat", "detail": "istilah" },
+        { "mandarin": "凝聚", "translate_to": "Memadatkan", "detail": "istilah" },
+        { "mandarin": "斗罗大陆", "translate_to": "Benua Douluo", "detail": "istilah" },
+        { "mandarin": "双生武魂", "translate_to": "Roh Pelindung Kembar", "detail": "istilah" },
+        { "mandarin": "魂核", "translate_to": "Inti Roh", "detail": "istilah" },
+        { "mandarin": "漏斗", "translate_to": "Pusaran", "detail": "istilah" },
+        { "mandarin": "久久公主", "translate_to": "Putri Jiujiu", "detail": "nama karakter" },
+        { "mandarin": "玳瑁黄金", "translate_to": "Kura-kura Tempurung Emas", "detail": "nama monster/roh" },
+        { "mandarin": "天龙马", "translate_to": "Kuda Naga Langit", "detail": "nama monster/roh" },
+        { "mandarin": "塔主", "translate_to": "Pemimpin Menara", "detail": "gelar/jabatan" },
+        { "mandarin": "魂兽共主", "translate_to": "Penguasa Tertinggi Monster Roh", "detail": "gelar/jabatan" },
+        { "mandarin": "死神斗罗", "translate_to": "Master Dunia Kematian", "detail": "gelar" },
+        { "mandarin": "青影斗罗", "translate_to": "Master Dunia Bayangan Hijau", "detail": "gelar" },
+        { "mandarin": "医仙斗罗", "translate_to": "Master Dunia Tabib", "detail": "gelar" },
+        { "mandarin": "兽神", "translate_to": "Dewa Monster", "detail": "gelar" },
+        { "mandarin": "极限斗罗", "translate_to": "Master Dunia Ekstrem", "detail": "gelar" },
+        { "mandarin": "火凤圣女", "translate_to": "Gadis Suci Phoenix Api", "detail": "gelar" },
+        { "mandarin": "维娜公主", "translate_to": "Putri Weina", "detail": "gelar" },
+        { "mandarin": "坎位", "translate_to": "utara", "detail": "istilah" },
+        { "mandarin": "离位", "translate_to": "selatan", "detail": "istilah" },
+        { "mandarin": "坤位", "translate_to": "barat daya", "detail": "istilah" },
+        { "mandarin": "巽位", "translate_to": "tenggara", "detail": "istilah" },
+        { "mandarin": "大供奉", "translate_to": "Tetua Agung", "detail": "istilah" },
+        { "mandarin": "凤凰图案", "translate_to": "Pola Phoenix", "detail": "istilah" },
+        { "mandarin": "冰极神晶", "translate_to": "Kristal Es Ekstrem", "detail": "nama benda" },
+        { "mandarin": "万载玄冰髓", "translate_to": "Inti Es Abadi", "detail": "istilah" },
+        { "mandarin": "万载玄冰窟", "translate_to": "Gua Es Abadi", "detail": "istilah" },
+        { "mandarin": "绝对零度", "translate_to": "Nol Mutlak", "detail": "istilah" },
+        { "mandarin": "天斗城", "translate_to": "Kota Tiandou", "detail": "nama kota" }
     ]
 }
-
-
 
 async function main() {
   // 1. Buat atau update admin user
@@ -153,50 +351,50 @@ async function main() {
   // 2. Persiapkan data entries ke format database
   const entriesToInsert: { source: string; target: string; detail?: string | null }[] = [];
 
-  for (const item of rawGlossaryData.LIST_CULTIVATION as any[]) {
-    let mainDetail = 'Tingkat Kultivasi';
+  // for (const item of rawGlossaryData.LIST_CULTIVATION as any[]) {
+  //   let mainDetail = 'Tingkat Kultivasi';
 
-    // Jika 'details' adalah string, timpa atau gabungkan ke mainDetail
-    if (typeof item.details === 'string') {
-      mainDetail = item.details;
-    }
+  //   // Jika 'details' adalah string, timpa atau gabungkan ke mainDetail
+  //   if (typeof item.details === 'string') {
+  //     mainDetail = item.details;
+  //   }
 
-    // Masukkan data utama
-    entriesToInsert.push({
-      source: item.mandarin,
-      target: item.replace,
-      detail: mainDetail,
-    });
+  //   // Masukkan data utama
+  //   entriesToInsert.push({
+  //     source: item.mandarin,
+  //     target: item.replace,
+  //     detail: mainDetail,
+  //   });
 
-    // Cek jika ada sub-tahapan di properti 'tahap' (Format Lama)
-    if (item.tahap && Array.isArray(item.tahap)) {
-      for (const subItem of item.tahap) {
-        entriesToInsert.push({
-          source: subItem.mandarin,
-          target: subItem.replace,
-          detail: 'Sub-tingkat Kultivasi',
-        });
-      }
-    }
+  //   // Cek jika ada sub-tahapan di properti 'tahap' (Format Lama)
+  //   if (item.tahap && Array.isArray(item.tahap)) {
+  //     for (const subItem of item.tahap) {
+  //       entriesToInsert.push({
+  //         source: subItem.mandarin,
+  //         target: subItem.replace,
+  //         detail: 'Sub-tingkat Kultivasi',
+  //       });
+  //     }
+  //   }
 
-    // Cek jika ada sub-tahapan di properti 'details' (Format Baru)
-    if (item.details && Array.isArray(item.details)) {
-      for (const subItem of item.details) {
-        let subDetail = 'Sub-tingkat Kultivasi';
+  //   // Cek jika ada sub-tahapan di properti 'details' (Format Baru)
+  //   if (item.details && Array.isArray(item.details)) {
+  //     for (const subItem of item.details) {
+  //       let subDetail = 'Sub-tingkat Kultivasi';
         
-        // Jika ada properti gelar tambahan, masukkan ke dalam detail
-        if (subItem.gelar) {
-          subDetail += ` | Gelar: ${subItem.gelar}`;
-        }
+  //       // Jika ada properti gelar tambahan, masukkan ke dalam detail
+  //       if (subItem.gelar) {
+  //         subDetail += ` | Gelar: ${subItem.gelar}`;
+  //       }
 
-        entriesToInsert.push({
-          source: subItem.mandarin,
-          target: subItem.replace,
-          detail: subDetail,
-        });
-      }
-    }
-  }
+  //       entriesToInsert.push({
+  //         source: subItem.mandarin,
+  //         target: subItem.replace,
+  //         detail: subDetail,
+  //       });
+  //     }
+  //   }
+  // }
 
   // Proses array REPLACE_AND_LEARN
   for (const item of rawGlossaryData.REPLACE_AND_LEARN) {
@@ -207,21 +405,21 @@ async function main() {
     });
   }
 
-  // 3. Buat atau cek Glossary "Azure Legacy"
+  // 3. Buat atau cek Glossary "Soul Land"
   let glossary = await prisma.glossary.findFirst({
-    where: { name: 'Azure Legacy' },
+    where: { name: 'Soul Land' },
   });
 
   if (!glossary) {
     glossary = await prisma.glossary.create({
       data: {
-        name: 'Azure Legacy',
+        name: 'Soul Land',
         sourceLanguage: 'zh',
         targetLanguage: 'id',
         userId: adminUser.id,
       },
     });
-    console.log('Glossary "Azure Legacy" dibuat.');
+    console.log('Glossary "Soul Land" dibuat.');
   } else {
     // Opsional: Hapus entry lama supaya tidak dobel jika di-seed ulang
     await prisma.glossaryEntry.deleteMany({
@@ -240,7 +438,7 @@ async function main() {
     })),
   });
 
-  console.log(`Berhasil menyisipkan ${entriesToInsert.length} istilah ke dalam glossary "Azure Legacy".`);
+  console.log(`Berhasil menyisipkan ${entriesToInsert.length} istilah ke dalam glossary "Soul Land".`);
   console.log('Seeder selesai');
 }
 

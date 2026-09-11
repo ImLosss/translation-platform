@@ -7,8 +7,8 @@ import { LlmProvider, LlmResponse } from '../interfaces/llm-provider.interface';
 @Injectable()
 export class NineInferenceService implements LlmProvider {
   private readonly logger = new Logger(NineInferenceService.name);
-  private readonly apiUrl = 'https://9inference.cloud/v1/package/chat/completions';
-  // private readonly apiUrl = 'https://9inference.cloud/v1/chat/completions';
+  // private readonly apiUrl = 'https://9inference.cloud/v1/package/chat/completions';
+  private readonly apiUrl = 'https://9inference.cloud/v1/chat/completions';
 
   constructor(
     private readonly httpService: HttpService,
