@@ -327,6 +327,7 @@ export default function GlossaryRecommendationClient() {
                             className="btn btn-outline btn-sm"
                             onClick={() => {
                                 setEntries([...initialEntries]);
+                                showAlert('Reverted to last saved state.', 'info');
                             }}>
                             <i className="fas fa-undo-alt"></i> Reset
                         </button>
