@@ -2,25 +2,26 @@
 
 import { api } from "@/app/lib/api";
 
-export async function generateGlossaryAction(jobId: number) {
+export async function generateGlossaryAction(translationId: number) {
   try {
     const response = await api<any>(`/translate/generate-glossary`, {
-      method: "POST",
-      body: JSON.stringify({
-        translationId: jobId,
-      }),
+      method: 'POST',
+      body: JSON.stringify({ translationId })
     });
-
-    return {
-      success: true,
-      message: "Glossary generated successfully.",
-      data: response,
-    }
+    return response;
   } catch (error: any) {
-    return {
-      success: false,
-      message: error.message,
-    };
+    return { success: false, message: error.message };
+  }
+}
+
+export async function checkGlossaryAction(translationId: number) {
+  try {
+    const response = await api<any>(`/translate/check-recommendation/${translationId}`, {
+      method: 'GET',
+    });
+    return response; 
+  } catch (error: any) {
+    return { success: false, message: error.message };
   }
 }
 
@@ -38,7 +39,7 @@ interface SaveGlossaryPayload {
 export async function saveGlossaryAction(payload: SaveGlossaryPayload) {
   try {
     const response = await api<any>(`/translate/save-recommendation`, {
-      method: "POST", 
+      method: "POST",
       body: JSON.stringify(payload),
     });
 
