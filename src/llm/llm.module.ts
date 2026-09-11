@@ -5,11 +5,13 @@ import { LlmService } from './llm.service';
 import { DeepseekService } from './providers/deepseek.service';
 import { GptLunaService } from './providers/gpt-luna.service';
 import { NineInferenceService } from './providers/nine-inference.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
 // import { GeminiService } from './providers/gemini.service';
 
 @Module({
   imports: [
-    HttpModule
+    HttpModule,
+    PrismaModule,
   ],
   providers: [
     LlmService,

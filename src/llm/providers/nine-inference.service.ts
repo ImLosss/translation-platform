@@ -15,7 +15,7 @@ export class NineInferenceService implements LlmProvider {
     private readonly configService: ConfigService,
   ) {}
 
-  async generateTranslation(chatHistory: any[], isJsonFormat: boolean): Promise<LlmResponse> {
+  async generateTranslation(chatHistory: any[], isJsonFormat: boolean, model?: string): Promise<LlmResponse> {
     const available = await this.isAvailable();
     if (!available) {
       this.logger.error('9inference API tidak tersedia atau API Key tidak valid.');
@@ -35,7 +35,7 @@ export class NineInferenceService implements LlmProvider {
     };
 
     // Ambil model dari env atau gunakan default
-    const modelName = this.configService.get<string>('NINE_INFERENCE_MODEL') || 'deepseek-v4-pro-0813';
+    const modelName = model || this.configService.get<string>('NINE_INFERENCE_MODEL') || 'deepseek-v4-pro-0813';
 
     const payload: any = {
       model: modelName,
