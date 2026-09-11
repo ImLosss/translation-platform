@@ -316,14 +316,22 @@ export default function GlossaryRecommendationClient() {
             </div>
 
             <section className="card">
-                <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    onClick={() => {
-                        setEntries([...initialEntries]); 
-                    }}>
-                    <i className="fas fa-undo-alt"></i> Reset
-                </button>
+                <div className="card-header">
+                    <h2>
+                        <i className="fas fa-magic" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
+                        Glossary Editor (Job #{translationId})
+                    </h2>
+                    <div className="card-actions">
+                        <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => {
+                                setEntries([...initialEntries]);
+                            }}>
+                            <i className="fas fa-undo-alt"></i> Reset
+                        </button>
+                    </div>
+                </div>
 
                 <form onSubmit={handleSave}>
                     {!existingGlossaryId ? (
