@@ -17,10 +17,7 @@ export class LlmService {
   async processTranslation(modelName: string, chatHistory: any[]): Promise<any> {
     const provider = await this.prisma.provider.findFirst({
       where: {
-        name: {
-          equals: modelName,
-          mode: 'insensitive', // Mengabaikan huruf besar/kecil (Deepseek == deepseek)
-        },
+        name: modelName, 
       },
     });
 
