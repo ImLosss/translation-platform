@@ -95,34 +95,35 @@ model GlossaryEntry {
 }
 
 model Translation {
-  id          Int               @id @default(autoincrement())
+  id              Int               @id @default(autoincrement())
   
-  userId      Int
-  user        User              @relation(fields: [userId], references: [id])
+  userId          Int
+  user            User              @relation(fields: [userId], references: [id])
 
-  glossaryId  Int?
-  glossary    Glossary?         @relation(fields: [glossaryId], references: [id])
+  glossaryId      Int?
+  glossary        Glossary?         @relation(fields: [glossaryId], references: [id])
 
-  providerId  Int               
-  provider    Provider          @relation(fields: [providerId], references: [id])
+  providerId      Int               
+  provider        Provider          @relation(fields: [providerId], references: [id])
 
-  whisperId   String?
+  whisperId       String?
 
-  fileName    String 
-  videoSource String?
+  fileName        String 
+  videoSource     String?
 
-  sourceLang  String  
-  targetLang  String   
-  batchSize   Int               @default(50)
-  totalCost   Float             @default(0)
-  totalToken  Float             @default(0)
+  sourceLang      String  
+  targetLang      String   
+  batchSize       Int               @default(50)
+  totalCost       Float             @default(0)
+  totalToken      Float             @default(0)
 
-  status      TranslationStatus @default(PROCESSING)   
+  status          TranslationStatus @default(PROCESSING)   
+  recommendations Json?
 
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
-  rows        TranslationRow[]
+  rows            TranslationRow[]
 }
 
 enum TranslationStatus {

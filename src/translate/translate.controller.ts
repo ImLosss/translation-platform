@@ -39,6 +39,13 @@ export class TranslateController {
         return this.translateService.generateGlossaryRecommendations(translationId, userId);
     }
 
+    @Get('check-recommendation/:translationId')
+    @LogActivity('Check Glossary Recommendations')
+    async checkGlossaryRecommendations(@Param('translationId') translationId: number, @Req() req: any) {
+        const userId = req.user.sub;
+        return this.translateService.checkGlossaryRecommendations(translationId, userId);
+    }
+
     @Post('save-recommendation')
     @LogActivity('Save Glossary Recommendations')
     async saveGlossaryRecommendations(@Body() payload: SaveGlossaryRecommendationDto, @Req() req: any) {
