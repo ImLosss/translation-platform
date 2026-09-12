@@ -470,6 +470,12 @@ export class TranslateService {
           });
         }
 
+        // 3. hapus data ddi kolom recommendations di tabel Translation karena sudah disimpan ke glossary
+        await tx.translation.update({
+          where: { id: translationId },
+          data: { recommendations: [] },
+        });
+
         return {
           message: 'Successfully created new glossary.',
           glossaryId: newGlossary.id,
