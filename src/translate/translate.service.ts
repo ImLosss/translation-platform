@@ -422,7 +422,14 @@ export class TranslateService {
             }
           });
         }
+
+        // hapus data ddi kolom recommendations di tabel Translation karena sudah disimpan ke glossary
+        await tx.translation.update({
+          where: { id: translationId },
+          data: { recommendations: [] },
+        });
       });
+      
 
       return { message: 'Successfully updated glossary.' };
     }
@@ -469,12 +476,6 @@ export class TranslateService {
             data: { glossaryId: newGlossary.id },
           });
         }
-
-        // 3. hapus data ddi kolom recommendations di tabel Translation karena sudah disimpan ke glossary
-        await tx.translation.update({
-          where: { id: translationId },
-          data: { recommendations: [] },
-        });
 
         return {
           message: 'Successfully created new glossary.',
