@@ -135,12 +135,12 @@ export default function TableData() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={10} style={{ padding: 0 }}>
+                <td colSpan={10} style={{ padding: "50px 0" }}>
                   <div style={{
                     position: "sticky",
-                    left: 0,
-                    width: "100%",
-                    padding: "40px 20px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "max-content",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
@@ -153,12 +153,12 @@ export default function TableData() {
               </tr>
             ) : jobs.length === 0 ? (
               <tr>
-                <td colSpan={10} style={{ padding: 0 }}>
+                <td colSpan={10} style={{ padding: "50px 0" }}>
                   <div style={{
                     position: "sticky",
-                    left: 0,
-                    width: "100%",
-                    padding: "40px 20px",
+                    left: "50%", 
+                    transform: "translateX(-50%)",
+                    width: "max-content",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
