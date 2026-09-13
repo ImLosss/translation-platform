@@ -67,12 +67,12 @@ export default function TableData() {
     const fetchInitialData = async () => {
       setIsLoading(true);
       const result = await getTranslationsAction(currentPage);
-      
+
       if (result.success && result.response && isMounted) {
         setJobs(result.response.data);
         setMeta(result.response.meta);
       }
-      
+
       if (isMounted) setIsLoading(false);
     };
 
@@ -135,16 +135,38 @@ export default function TableData() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={10} style={{ textAlign: "center", padding: "40px" }}>
-                  <i className="fas fa-spinner fa-spin" style={{ fontSize: 30, color: "var(--accent)", marginBottom: 10 }} />
-                  <p style={{ margin: 0, color: "var(--text-muted)" }}>Loading translation jobs...</p>
+                <td colSpan={10} style={{ padding: 0 }}>
+                  <div style={{
+                    position: "sticky",
+                    left: 0,
+                    width: "100%",
+                    padding: "40px 20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}>
+                    <i className="fas fa-spinner fa-spin" style={{ fontSize: 30, color: "var(--accent)", marginBottom: 10 }} />
+                    <p style={{ margin: 0, color: "var(--text-muted)" }}>Loading translation jobs...</p>
+                  </div>
                 </td>
               </tr>
             ) : jobs.length === 0 ? (
               <tr>
-                <td colSpan={10} style={{ textAlign: "center", padding: "40px" }}>
-                  <i className="fas fa-inbox" style={{ fontSize: 36, marginBottom: 12, display: "block", color: "#999" }} />
-                  No translation jobs found.
+                <td colSpan={10} style={{ padding: 0 }}>
+                  <div style={{
+                    position: "sticky",
+                    left: 0,
+                    width: "100%",
+                    padding: "40px 20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}>
+                    <i className="fas fa-inbox" style={{ fontSize: 36, marginBottom: 12, color: "#999" }} />
+                    <p style={{ margin: 0, color: "var(--text-muted)" }}>No translation jobs found.</p>
+                  </div>
                 </td>
               </tr>
             ) : (
@@ -168,7 +190,7 @@ export default function TableData() {
                   <td style={{ whiteSpace: "nowrap" }}>{new Date(job.createdAt).toLocaleString()}</td>
                   <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                     <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "4px", flexWrap: "nowrap" }}>
-                      
+
                       {job.status === "COMPLETED" && (
                         <a href={`/api/translate/${job.id}/download`} className="btn btn-outline btn-xs">
                           <i className="fas fa-download"></i>
@@ -200,9 +222,9 @@ export default function TableData() {
             Page <strong>{meta.page}</strong> from <strong>{meta.lastPage}</strong> (Total: {meta.total} data)
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            
-            <button 
-              className="btn btn-outline btn-sm" 
+
+            <button
+              className="btn btn-outline btn-sm"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={meta.page <= 1}
               style={{ opacity: meta.page <= 1 ? 0.5 : 1 }}
@@ -210,15 +232,15 @@ export default function TableData() {
               <i className="fas fa-chevron-left" /> Prev
             </button>
 
-            <button 
-              className="btn btn-outline btn-sm" 
+            <button
+              className="btn btn-outline btn-sm"
               onClick={() => setCurrentPage(prev => Math.min(meta.lastPage, prev + 1))}
               disabled={meta.page >= meta.lastPage}
               style={{ opacity: meta.page >= meta.lastPage ? 0.5 : 1 }}
             >
               Next <i className="fas fa-chevron-right" />
             </button>
-            
+
           </div>
         </div>
       )}
