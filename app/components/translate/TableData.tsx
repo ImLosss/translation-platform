@@ -197,7 +197,7 @@ export default function TableData() {
       {!isLoading && meta && meta.lastPage > 1 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', borderTop: '1px solid var(--border-color)' }}>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Halaman <strong>{meta.page}</strong> dari <strong>{meta.lastPage}</strong> (Total: {meta.total} transaksi)
+            Halaman <strong>{meta.page}</strong> dari <strong>{meta.lastPage}</strong> (Total: {meta.total} jobs)
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             
