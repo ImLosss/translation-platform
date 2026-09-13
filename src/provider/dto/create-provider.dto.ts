@@ -5,6 +5,9 @@ export class CreateProviderDto {
     @IsString()
     name!: string;
 
+    @IsString()
+    model!: string;
+
     @IsNumber()
     @IsOptional()
     inputPricing?: number;
