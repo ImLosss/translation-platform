@@ -4,9 +4,9 @@ import { api } from '@/app/lib/api';
 export interface ProviderPricing {
   id: number;
   name: string;
-  inputPricing: number;
-  inputCachePricing: number;
-  outputPricing: number;
+  inputPricingUSD: number;
+  inputCachePricingUSD: number;
+  outputPricingUSD: number;
   inputPricingIDR: number;
   inputCachePricingIDR: number;
   outputPricingIDR: number;
@@ -64,7 +64,7 @@ export default async function ModelPricingPage() {
                 </span>
                 <div className={styles.valueContainer}>
                   <span className={styles.valueIdr}>{formatIDR(provider.inputPricingIDR)}</span>
-                  <span className={styles.valueUsd}>${provider.inputPricing} / 1M token</span>
+                  <span className={styles.valueUsd}>${provider.inputPricingUSD} / 1M token</span>
                 </div>
               </li>
 
@@ -74,7 +74,7 @@ export default async function ModelPricingPage() {
                 </span>
                 <div className={styles.valueContainer}>
                   <span className={styles.valueIdr}>{formatIDR(provider.inputCachePricingIDR)}</span>
-                  <span className={styles.valueUsd}>${provider.inputCachePricing} / 1M token</span>
+                  <span className={styles.valueUsd}>${provider.inputCachePricingUSD} / 1M token</span>
                 </div>
               </li>
 
@@ -84,7 +84,7 @@ export default async function ModelPricingPage() {
                 </span>
                 <div className={styles.valueContainer}>
                   <span className={styles.valueIdr}>{formatIDR(provider.outputPricingIDR)}</span>
-                  <span className={styles.valueUsd}>${provider.outputPricing} / 1M token</span>
+                  <span className={styles.valueUsd}>${provider.outputPricingUSD} / 1M token</span>
                 </div>
               </li>
             </ul>

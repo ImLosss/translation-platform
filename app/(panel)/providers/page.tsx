@@ -7,6 +7,7 @@ import { deleteProviderAction, getProvidersAction, saveProviderAction } from '@/
 interface Provider {
     id: number;
     name: string;
+    model:string;
     inputPricing: number;
     inputCachePricing: number;
     outputPricing: number;
@@ -23,6 +24,7 @@ export default function ProviderManager() {
     const [editId, setEditId] = useState<number | null>(null);
     const [formData, setFormData] = useState({
         name: '',
+        model: '',
         inputPricing: 0,
         inputCachePricing: 0,
         outputPricing: 0,
@@ -53,6 +55,7 @@ export default function ProviderManager() {
         setEditId(provider.id);
         setFormData({
             name: provider.name,
+            model: provider.model,
             inputPricing: provider.inputPricing,
             inputCachePricing: provider.inputCachePricing,
             outputPricing: provider.outputPricing,
@@ -62,7 +65,7 @@ export default function ProviderManager() {
 
     const handleCancel = () => {
         setEditId(null);
-        setFormData({ name: '', inputPricing: 0, inputCachePricing: 0, outputPricing: 0, status: 'ACTIVE' });
+        setFormData({ name: '', model: '', inputPricing: 0, inputCachePricing: 0, outputPricing: 0, status: 'ACTIVE' });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -108,6 +111,10 @@ export default function ProviderManager() {
                         <input type="text" className="form-control" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. OpenAI, DeepSeek" />
                     </div>
                     <div className="form-group">
+                        <label>Model</label>
+                        <input type="text" className="form-control" required value={formData.model} onChange={(e) => setFormData({...formData, model: e.target.value})} placeholder="e.g. gpt-3.5-turbo, llama2-7b" />
+                    </div>
+                    <div className="form-group">
                         <label>Status</label>
                         <select className="form-control" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value as 'ACTIVE' | 'INACTIVE'})}>
                             <option value="ACTIVE">Active</option>
@@ -149,6 +156,7 @@ export default function ProviderManager() {
                         <thead>
                             <tr style={{ borderBottom: '1px solid var(--border-light)' }}>
                                 <th style={{ padding: '8px' }}>Name</th>
+                                <th style={{ padding: '8px' }}>Model</th>
                                 <th style={{ padding: '8px' }}>Input Price</th>
                                 <th style={{ padding: '8px' }}>Cache Price</th>
                                 <th style={{ padding: '8px' }}>Output Price</th>
@@ -160,6 +168,7 @@ export default function ProviderManager() {
                             {providers.map((p) => (
                                 <tr key={p.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
                                     <td style={{ padding: '8px', fontWeight: 'bold' }}>{p.name}</td>
+                                    <td style={{ padding: '8px' }}>{p.model}</td>
                                     <td style={{ padding: '8px' }}>${p.inputPricing}</td>
                                     <td style={{ padding: '8px' }}>${p.inputCachePricing}</td>
                                     <td style={{ padding: '8px' }}>${p.outputPricing}</td>

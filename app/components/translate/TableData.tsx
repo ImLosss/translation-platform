@@ -2,6 +2,7 @@ import { api } from "@/app/lib/api";
 import Link from "next/dist/client/link";
 import EllipsisDropdown from "../client/ElipsisDropdown";
 import ButtonGenerateGlosary from "./ButtonGenerateGlosary";
+import AutoRefresh from "../client/AutoRefresh";
 
 export interface Translation {
   id: number;
@@ -9,7 +10,8 @@ export interface Translation {
   sourceLang: string;
   targetLang: string;
 
-  status: "PROCESSING" | "COMPLETED" | "ERROR";
+  status: "PROCESSING" | "TRANSCRIBING" | "COMPLETED" | "ERROR";
+  progress: string;
 
   batchSize: number;
 
@@ -62,6 +64,7 @@ export default async function TableData() {
 
   return (
     <section className="card">
+      <AutoRefresh interval={5000} />
       <div className="card-header">
         <h2>
           <i
@@ -119,7 +122,7 @@ export default async function TableData() {
                   <td>{job.glossary ? job.glossary.name : "No"}</td>
                   <td style={{ whiteSpace: "nowrap" }}>{job.totalToken}</td>
                   <td style={{ whiteSpace: "nowrap" }}>{job.totalCost.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</td>
-                  <td><span className={`status-badge ${statusClass[job.status]}`}>{job.status}</span></td>
+                  <td><span className={`status-badge ${statusClass[job.status]}`}>{job.status}: {!["ERROR", "COMPLETED"].includes(job.status) ? job.progress : ""}</span></td>
                   <td style={{ whiteSpace: "nowrap" }}>{new Date(job.createdAt).toLocaleString()}</td>
                   <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                     {/* Tambahkan div container flex di sini */}
