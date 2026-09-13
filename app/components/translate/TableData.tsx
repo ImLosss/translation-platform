@@ -21,6 +21,10 @@ export interface Translation {
     name: string;
   } | null;
 
+  provider: {
+    model: string;
+  };
+
   totalCost: number;
   totalToken: number;
 
@@ -89,6 +93,7 @@ export default async function TableData() {
               <th>Source</th>
               <th>Target</th>
               <th>Glossary</th>
+              <th>Model</th>
               <th>Total Tokens</th>
               <th>Total Cost</th>
               <th>Status</th>
@@ -120,6 +125,7 @@ export default async function TableData() {
                   <td>{job.sourceLang}</td>
                   <td>{job.targetLang}</td>
                   <td>{job.glossary ? job.glossary.name : "No"}</td>
+                  <td>{job.provider.model}</td>
                   <td style={{ whiteSpace: "nowrap" }}>{job.totalToken}</td>
                   <td style={{ whiteSpace: "nowrap" }}>{job.totalCost.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}</td>
                   <td><span className={`status-badge ${statusClass[job.status]}`}>{job.status}: {!["ERROR", "COMPLETED"].includes(job.status) ? job.progress : ""}</span></td>
