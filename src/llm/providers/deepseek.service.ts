@@ -14,7 +14,7 @@ export class DeepseekService implements LlmProvider {
     private readonly configService: ConfigService, // Tambahkan ConfigService untuk akses .env
   ) {}
 
-  async generateTranslation(chatHistory: any[], isJsonFormat: boolean): Promise<LlmResponse> {
+  async generateTranslation(chatHistory: any[], isJsonFormat: boolean, model?: string): Promise<LlmResponse> {
     const available = await this.isAvailable();
     if (!available) {
       this.logger.error('DeepSeek API tidak tersedia atau API Key tidak valid.');
@@ -38,7 +38,7 @@ export class DeepseekService implements LlmProvider {
     // 3. Siapkan Payload (Body Request)
     const payload = {
       messages: chatHistory,
-      model: 'deepseek-v4-pro', 
+      model: model || 'deepseek-v4-pro', 
       thinking: { type: 'disabled' },
       frequency_penalty: 0,
       max_tokens: 8192,

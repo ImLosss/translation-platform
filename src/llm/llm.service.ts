@@ -23,7 +23,7 @@ export class LlmService {
 
     if (!provider) throw new BadRequestException(`Model '${modelName}' not found.`);
 
-    return this.nineInferenceService.generateTranslation(chatHistory, true, modelName);
+    return this.deepseekService.generateTranslation(chatHistory, true, modelName);
 
 
     // switch (modelName.toLowerCase()) {
