@@ -347,25 +347,37 @@ export class TranslateService {
     };
   }
 
-  async getUserTranslations(userId: number) {
-    const translations = await this.prisma.translation.findMany({
-      where: { userId: userId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        glossary: {
-          select: {
-            id: true,
-            name: true
+  async getUserTranslations(userId: number, page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.translation.findMany({
+        where: { userId: userId },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          glossary: {
+            select: { id: true, name: true },
+          },
+          provider: {
+            select: { model: true },
           },
         },
-        provider: {
-          select: {
-            model: true
-          }
-        }
-      }
-    });
-    return translations;
+      }),
+      this.prisma.translation.count({
+        where: { userId: userId },
+      }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 
   async saveGlossaryRecommendation(payload: SaveGlossaryRecommendationDto, userId: number) {

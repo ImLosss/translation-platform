@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, Param, Patch, Post, Req, Res, StreamableFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Patch, Post, Query, Req, Res, StreamableFile, UseInterceptors } from '@nestjs/common';
 import { TranslateService } from './translate.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
@@ -55,9 +55,13 @@ export class TranslateController {
 
     @Get()
     @LogActivity('Get User Translations')
-    async getUserTranslations(@Req() req: any) {
+    async getUserTranslations(
+        @Req() req: any,
+        @Query('page') page: string = '1',
+        @Query('limit') limit: string = '10'
+    ) {
         const userId = req.user.sub;
-        return this.translateService.getUserTranslations(userId);
+        return this.translateService.getUserTranslations(userId, parseInt(page, 10), parseInt(limit, 10));
     }
 
     @Get(':translationId')
