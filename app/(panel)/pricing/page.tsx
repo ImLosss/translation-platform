@@ -74,7 +74,7 @@ export default async function ModelPricingPage() {
                 </span>
                 <div className={styles.valueContainer}>
                   <span className={styles.valueIdr}>{formatIDR(provider.inputPricingIDR)}</span>
-                  <span className={styles.valueUsd}>${provider.inputPricingUSD} / 1M token</span>
+                  <span className={styles.valueUsd}>{formatUSD(provider.inputPricingUSD)} / 1M token</span>
                 </div>
               </li>
 
@@ -94,7 +94,7 @@ export default async function ModelPricingPage() {
                 </span>
                 <div className={styles.valueContainer}>
                   <span className={styles.valueIdr}>{formatIDR(provider.outputPricingIDR)}</span>
-                  <span className={styles.valueUsd}>${provider.outputPricingUSD} / 1M token</span>
+                  <span className={styles.valueUsd}>{formatUSD(provider.outputPricingUSD)} / 1M token</span>
                 </div>
               </li>
             </ul>
