@@ -28,6 +28,7 @@ export async function saveProviderAction(payload: any, id?: number) {
     // Pastikan tipe data sesuai dengan DTO NestJS
     const payloadData = {
       name: payload.name,
+      model: payload.model,
       inputPricing: Number(payload.inputPricing),
       inputCachePricing: Number(payload.inputCachePricing),
       outputPricing: Number(payload.outputPricing),
