@@ -33,6 +33,15 @@ export default async function ModelPricingPage() {
     }).format(value);
   };
 
+  const formatUSD = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
+
   if (error) {
     return (
       <section className="card">
@@ -75,7 +84,7 @@ export default async function ModelPricingPage() {
                 </span>
                 <div className={styles.valueContainer}>
                   <span className={styles.valueIdr}>{formatIDR(provider.inputCachePricingIDR)}</span>
-                  <span className={styles.valueUsd}>${provider.inputCachePricingUSD} / 1M token</span>
+                  <span className={styles.valueUsd}>{formatUSD(provider.inputCachePricingUSD)} / 1M token</span>
                 </div>
               </li>
 
