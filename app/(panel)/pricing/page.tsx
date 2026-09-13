@@ -4,6 +4,7 @@ import { api } from '@/app/lib/api';
 export interface ProviderPricing {
   id: number;
   name: string;
+  model: string;
   inputPricingUSD: number;
   inputCachePricingUSD: number;
   outputPricingUSD: number;
@@ -50,7 +51,7 @@ export default async function ModelPricingPage() {
           <div key={provider.id} className={styles.pricingCard}>
             <div className={styles.header}>
               <div className={styles.title}>
-                {provider.name}
+                {provider.model}
               </div>
               <span className={`${styles.statusBadge} ${provider.status === 'ACTIVE' ? styles.badgeSuccess : styles.badgeDanger}`}>
                 {provider.status}
