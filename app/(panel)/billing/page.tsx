@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import BillingHistoryClient, { TransactionDB } from "@/app/components/billing/BillingHistoryClient";
 import { api } from "@/app/lib/api";
 
