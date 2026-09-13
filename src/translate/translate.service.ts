@@ -357,6 +357,11 @@ export class TranslateService {
             id: true,
             name: true
           },
+        },
+        provider: {
+          select: {
+            model: true
+          }
         }
       }
     });
