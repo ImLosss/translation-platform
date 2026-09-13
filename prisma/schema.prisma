@@ -118,6 +118,7 @@ model Translation {
   totalToken      Float             @default(0)
 
   status          TranslationStatus @default(PROCESSING)   
+  progress        String?
   recommendations Json?
 
   createdAt       DateTime          @default(now())
@@ -158,6 +159,7 @@ model TranslationRow {
 model Provider {
   id                Int            @id @default(autoincrement())
   name              String
+  model             String?
   inputPricing      Float          @default(0)
   inputCachePricing Float          @default(0)
   outputPricing     Float          @default(0)

@@ -32,8 +32,6 @@ export class TranslateService {
   constructor(
     private readonly prisma: PrismaService,
     private eventEmitter: EventEmitter2,
-    private readonly llmService: LlmService,
-    private readonly currencyService: CurrencyService,
   ) { }
 
   async processTranslationInBackground(dto: TranslateDto, userId: number) {
@@ -60,7 +58,6 @@ export class TranslateService {
         userId: userId,
         batchSize: dto.batchSize || 50,
         glossaryId: dto.glossaryId || null,
-        // status: 'PENDING' -> Pastikan kolom ini ditambahkan di schema Prisma
       },
       include: {
         provider: true,

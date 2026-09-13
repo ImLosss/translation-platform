@@ -68,6 +68,11 @@ export class TranslateListener {
         const chunk = chunks[i];
         this.logger.debug(`Memproses Batch ${i + 1}/${chunks.length} [Max ${payload.translation.batchSize || 50} lines/Req]`);
 
+        await this.prisma.translation.update({
+          where: { id: payload.translation.id },
+          data: { progress: `${i + 1}/${chunks.length}` },
+        });
+
         // Susun Chat History sesuai referensi Anda
         const chatHistory: ChatMessage[] = [];
         chatHistory.push({ role: 'system', content: globalSystemPrompt });
@@ -86,7 +91,7 @@ export class TranslateListener {
 
         this.logger.debug(`Chat History untuk Batch ${i + 1}: ${JSON.stringify(chatHistory)}`);
 
-        const response = await this.llmService.processTranslation(payload.translation.provider.name, chatHistory);
+        const response = await this.llmService.processTranslation(payload.translation.provider.model, chatHistory);
 
         if (!response.status) {
           this.logger.warn(`Request gagal pada batch ${i + 1}. Mengulang...`);
@@ -148,8 +153,10 @@ export class TranslateListener {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      // biaya fee 10%
-      totalCost = totalCost * 1.15;
+      // Tambahkan fee platform sebelum mengurangi balance user
+      const feePercentage = parseFloat(process.env.FEE_PERCENT || '0');
+      const feeMultiplier = 1 + (feePercentage / 100);
+      totalCost = totalCost * feeMultiplier;
 
       let cv = await this.currencyService.convert(totalCost, 'USD', 'IDR');
 
@@ -243,6 +250,10 @@ export class TranslateListener {
 
         // Tampilkan progres
         this.logger.debug(`Progres ekstrak audio [Task ${taskId}]: ${taskData.progress}%`);
+        await this.prisma.translation.update({
+          where: { id: payload.translation.id },
+          data: { progress: `${taskData.progress}%` },
+        });
       }
 
       const parsedSrt = this.srtParser.fromSrt(srtContent!);

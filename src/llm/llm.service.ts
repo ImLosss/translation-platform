@@ -17,24 +17,22 @@ export class LlmService {
   async processTranslation(modelName: string, chatHistory: any[]): Promise<any> {
     const provider = await this.prisma.provider.findFirst({
       where: {
-        name: modelName, 
+        model: modelName, 
       },
     });
 
     if (!provider) throw new BadRequestException(`Model '${modelName}' not found.`);
+    if(provider.status === 'INACTIVE') throw new BadRequestException(`Model '${modelName}' is inactive.`);
 
-    return this.deepseekService.generateTranslation(chatHistory, true, modelName);
-
-
-    // switch (modelName.toLowerCase()) {
-    //   case 'deepseek':
-    //     return this.nineInferenceService.generateTranslation(chatHistory, true);
-    //   case 'gpt-luna':
-    //     return this.gptLunaService.generateTranslation(chatHistory, true);
-    //   case '9inference':
-    //     return this.nineInferenceService.generateTranslation(chatHistory, true, modelName);
-    //   default:
-    //     throw new BadRequestException(`Model LLM '${modelName}' tidak didukung.`);
-    // }
+    switch (provider.name.toLowerCase()) {
+      case 'deepseek':
+        return this.deepseekService.generateTranslation(chatHistory, true, provider.model!);
+      case 'openai':
+        return this.gptLunaService.generateTranslation(chatHistory, true);
+      case '9inference':
+        return this.nineInferenceService.generateTranslation(chatHistory, true, provider.model!);
+      default:
+        throw new BadRequestException(`Model LLM '${modelName}' tidak didukung.`);
+    }
   }
 }
