@@ -6,26 +6,40 @@ import EllipsisDropdown from "../client/ElipsisDropdown";
 import ButtonGenerateGlosary from "./ButtonGenerateGlosary";
 import { getTranslationsAction } from "@/app/actions/translate/getTranslationsAction";
 
+export interface MetaPagination {
+  total: number;
+  page: number;
+  lastPage: number;
+}
+
 export interface Translation {
   id: number;
   fileName: string;
   sourceLang: string;
   targetLang: string;
+
   status: "PROCESSING" | "TRANSCRIBING" | "COMPLETED" | "ERROR";
   progress: string;
+
   batchSize: number;
+
   glossaryId: number | null;
   glossary: {
     id: number;
     name: string;
   } | null;
+
   provider: {
     model: string;
   };
+
   totalCost: number;
   totalToken: number;
+
   videoSource: string | null;
+
   userId: number;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -37,24 +51,39 @@ const statusClass = {
   ERROR: "danger",
 };
 
+// ==============================
+// 2. Client Component
+// ==============================
 export default function TableData() {
   const [jobs, setJobs] = useState<Translation[]>([]);
-  const [isLoading, setIsLoading] = useState(true); 
+  const [meta, setMeta] = useState<MetaPagination | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
+  // 1. Fetch Data Awal & Pindah Halaman
   useEffect(() => {
+    let isMounted = true;
+
     const fetchInitialData = async () => {
-      const result = await getTranslationsAction();
-      if (result.success && result.data) {
-        setJobs(result.data);
+      setIsLoading(true);
+      const result = await getTranslationsAction(currentPage);
+      
+      if (result.success && result.response && isMounted) {
+        setJobs(result.response.data);
+        setMeta(result.response.meta);
       }
-      setIsLoading(false); 
+      
+      if (isMounted) setIsLoading(false);
     };
 
     fetchInitialData();
-  }, []);
 
+    return () => { isMounted = false; };
+  }, [currentPage]);
+
+  // 2. Logika Polling Data (Otomatis & Aman)
   useEffect(() => {
-    if (isLoading) return; 
+    if (isLoading) return;
 
     const hasPendingJobs = jobs.some(
       (job) => job.status === "PROCESSING" || job.status === "TRANSCRIBING"
@@ -63,14 +92,15 @@ export default function TableData() {
     if (!hasPendingJobs) return;
 
     const timer = setTimeout(async () => {
-      const result = await getTranslationsAction();
-      if (result.success && result.data) {
-        setJobs(result.data);
+      const result = await getTranslationsAction(currentPage);
+      if (result.success && result.response) {
+        setJobs(result.response.data);
+        setMeta(result.response.meta);
       }
     }, 5000);
 
-    return () => clearTimeout(timer); 
-  }, [jobs, isLoading]);
+    return () => clearTimeout(timer);
+  }, [jobs, isLoading, currentPage]);
 
   return (
     <section className="card">
@@ -103,7 +133,6 @@ export default function TableData() {
             </tr>
           </thead>
           <tbody>
-            {/* Tampilkan Loading Spinner jika isLoading true */}
             {isLoading ? (
               <tr>
                 <td colSpan={10} style={{ textAlign: "center", padding: "40px" }}>
@@ -112,7 +141,6 @@ export default function TableData() {
                 </td>
               </tr>
             ) : jobs.length === 0 ? (
-              // Tampilkan pesan kosong jika tidak ada data
               <tr>
                 <td colSpan={10} style={{ textAlign: "center", padding: "40px" }}>
                   <i className="fas fa-inbox" style={{ fontSize: 36, marginBottom: 12, display: "block", color: "#999" }} />
@@ -120,7 +148,6 @@ export default function TableData() {
                 </td>
               </tr>
             ) : (
-              // Tampilkan data tabel jika data tersedia
               jobs.map((job) => (
                 <tr key={job.id}>
                   <td>{job.fileName}</td>
@@ -132,7 +159,7 @@ export default function TableData() {
                   <td style={{ whiteSpace: "nowrap" }}>
                     {job.totalCost.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}
                   </td>
-                  <td>
+                  <td style={{ whiteSpace: "nowrap" }}>
                     <span className={`status-badge ${statusClass[job.status]}`}>
                       {job.status}
                       {!["ERROR", "COMPLETED"].includes(job.status) ? `: ${job.progress}` : ""}
@@ -165,6 +192,36 @@ export default function TableData() {
           </tbody>
         </table>
       </div>
+
+      {/* Kontrol Paginasi */}
+      {!isLoading && meta && meta.lastPage > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', borderTop: '1px solid var(--border-color)' }}>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            Halaman <strong>{meta.page}</strong> dari <strong>{meta.lastPage}</strong> (Total: {meta.total} transaksi)
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            
+            <button 
+              className="btn btn-outline btn-sm" 
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={meta.page <= 1}
+              style={{ opacity: meta.page <= 1 ? 0.5 : 1 }}
+            >
+              <i className="fas fa-chevron-left" /> Prev
+            </button>
+
+            <button 
+              className="btn btn-outline btn-sm" 
+              onClick={() => setCurrentPage(prev => Math.min(meta.lastPage, prev + 1))}
+              disabled={meta.page >= meta.lastPage}
+              style={{ opacity: meta.page >= meta.lastPage ? 0.5 : 1 }}
+            >
+              Next <i className="fas fa-chevron-right" />
+            </button>
+            
+          </div>
+        </div>
+      )}
     </section>
   );
 }

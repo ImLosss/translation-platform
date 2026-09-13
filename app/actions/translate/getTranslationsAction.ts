@@ -1,12 +1,21 @@
 'use server';
 
 import { api } from "@/app/lib/api";
-import { Translation } from "@/app/components/translate/TableData"; 
+import { Translation, MetaPagination } from "@/app/components/translate/TableData"; // Sesuaikan path
 
-export async function getTranslationsAction() {
+// Buat interface untuk response dari backend
+interface TranslationResponse {
+  data: Translation[];
+  meta: MetaPagination;
+}
+
+export async function getTranslationsAction(page: number = 1, limit: number = 10) {
   try {
-    const jobs = await api<Translation[]>("/translate", { cache: "no-store" });
-    return { success: true, data: jobs };
+    const response = await api<TranslationResponse>(
+      `/translate?page=${page}&limit=${limit}`, 
+      { cache: "no-store" }
+    );
+    return { success: true, response };
   } catch (error: any) {
     return { success: false, message: error.message };
   }
