@@ -1413,6 +1413,52 @@ table .status-badge {
   cursor: not-allowed;
 }
 
+/* ---------- PAGINATION ---------- */
+.pagination-text {
+  font-size: 0.85rem;
+}
+.pagination-btn {
+  font-size: 0.85rem;
+}
+
+/* ---------- OVERLAY (sidebar mobile) ---------- */
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.sidebar-overlay.open {
+    display: block;
+}
+
+/* ---------- MISC ---------- */
+.text-muted {
+    color: var(--text-muted);
+}
+
+.mt-2 {
+    margin-top: 12px;
+}
+
+.gap-2 {
+    gap: 8px;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.items-center {
+    align-items: center;
+}
+
 @keyframes slideInAlert {
     from {
         opacity: 0;
@@ -1568,42 +1614,21 @@ table .status-badge {
     grid-template-columns: 1fr 1fr;  /* 2 kolom */
     gap: 12px 0;
   }
-}
 
-/* ---------- OVERLAY (sidebar mobile) ---------- */
-.sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    display: none;
-}
+  .pagination-container {
+    padding: 12px 10px !important; /* Kurangi padding kiri-kanan */
+  }
+  
+  .pagination-text {
+    font-size: 0.75rem; /* Perkecil ukuran font info halaman */
+  }
 
-.sidebar-overlay.open {
-    display: block;
-}
+  .pagination-total {
+    display: none; /* Sembunyikan tulisan "(Total transaksi)" di HP agar rapi */
+  }
 
-/* ---------- MISC ---------- */
-.text-muted {
-    color: var(--text-muted);
-}
-
-.mt-2 {
-    margin-top: 12px;
-}
-
-.gap-2 {
-    gap: 8px;
-}
-
-.flex {
-    display: flex;
-}
-
-.flex-wrap {
-    flex-wrap: wrap;
-}
-
-.items-center {
-    align-items: center;
+  .pagination-btn {
+    font-size: 0.75rem !important; /* Perkecil text tombol */
+    padding: 4px 8px !important; /* Perkecil ukuran kotak tombol */
+  }
 }

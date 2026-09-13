@@ -215,33 +215,35 @@ export default function TableData() {
         </table>
       </div>
 
-      {/* Kontrol Paginasi */}
+      {/* KONTROL PAGINASI */}
       {!isLoading && meta && meta.lastPage > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', borderTop: '1px solid var(--border-color)' }}>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Page <strong>{meta.page}</strong> from <strong>{meta.lastPage}</strong> (Total: {meta.total} data)
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="pagination-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', borderTop: '1px solid var(--border-color)' }}>
 
+          <div className="pagination-text" style={{ color: 'var(--text-muted)' }}>
+            Page <strong>{meta.page}</strong> from <strong>{meta.lastPage}</strong>
+            <span className="pagination-total"> (Total: {meta.total} data)</span>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
-              className="btn btn-outline btn-sm"
+              className="btn btn-outline btn-sm pagination-btn"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={meta.page <= 1}
               style={{ opacity: meta.page <= 1 ? 0.5 : 1 }}
             >
-              <i className="fas fa-chevron-left" /> Prev
+              <i className="fas fa-chevron-left" /> <span>Prev</span>
             </button>
 
             <button
-              className="btn btn-outline btn-sm"
+              className="btn btn-outline btn-sm pagination-btn"
               onClick={() => setCurrentPage(prev => Math.min(meta.lastPage, prev + 1))}
               disabled={meta.page >= meta.lastPage}
               style={{ opacity: meta.page >= meta.lastPage ? 0.5 : 1 }}
             >
-              Next <i className="fas fa-chevron-right" />
+              <span>Next</span> <i className="fas fa-chevron-right" />
             </button>
-
           </div>
+
         </div>
       )}
     </section>
