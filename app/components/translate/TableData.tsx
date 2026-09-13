@@ -39,41 +39,37 @@ const statusClass = {
 
 export default function TableData() {
   const [jobs, setJobs] = useState<Translation[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // State untuk mengontrol ikon loading
+  const [isLoading, setIsLoading] = useState(true); 
 
-  // 1. useEffect Pertama: Untuk mengambil data saat komponen pertama kali dimuat di layar
   useEffect(() => {
     const fetchInitialData = async () => {
       const result = await getTranslationsAction();
       if (result.success && result.data) {
         setJobs(result.data);
       }
-      setIsLoading(false); // Matikan loading setelah data pertama berhasil didapat
+      setIsLoading(false); 
     };
 
     fetchInitialData();
   }, []);
 
-  // 2. useEffect Kedua: Logika interval (polling) setiap 5 detik
   useEffect(() => {
-    // Jangan mulai interval kalau data awal saja belum selesai dimuat
     if (isLoading) return; 
 
     const hasPendingJobs = jobs.some(
       (job) => job.status === "PROCESSING" || job.status === "TRANSCRIBING"
     );
 
-    // Hentikan interval jika semua sudah selesai atau error
     if (!hasPendingJobs) return;
 
-    const timer = setInterval(async () => {
+    const timer = setTimeout(async () => {
       const result = await getTranslationsAction();
       if (result.success && result.data) {
         setJobs(result.data);
       }
     }, 5000);
 
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer); 
   }, [jobs, isLoading]);
 
   return (
