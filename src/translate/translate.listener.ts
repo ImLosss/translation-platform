@@ -148,8 +148,8 @@ export class TranslateListener {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      // biaya fee 5%
-      totalCost = totalCost * 1.05;
+      // biaya fee 10%
+      totalCost = totalCost * 1.15;
 
       let cv = await this.currencyService.convert(totalCost, 'USD', 'IDR');
 
