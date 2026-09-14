@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { loginAction, signupAction, googleLoginAction } from '@/app/actions/auth'; 
 import "./login.css"; // Pastikan path ini sesuai dengan file CSS Anda
+import Image from "next/image";
 
 // Komponen Isi Form (Dipisah agar bisa memakai hook useGoogleLogin)
 function AuthContent() {
@@ -114,8 +115,10 @@ function AuthContent() {
         
         {/* Brand */}
         <div className="auth-brand">
-          <div className="logo-icon"><i className="fas fa-language"></i></div>
-          <h1>Subnova</h1>
+          <div className="logo-icon">
+            <Image src="/favicon-512x512.png" alt="Subnova" width={56} height={56} />
+          </div>
+          <h1>SubNova</h1>
           <p>Translation Platform &middot; LLM Powered</p>
         </div>
 

@@ -13,6 +13,7 @@ import { useAlert } from '../ui/Alert';
 import { logoutAction } from '@/app/actions/logout';
 import { usePathname, useRouter } from 'next/navigation';
 import { CurrentUser } from './UserProvider';
+import Image from "next/image";
 
 // Definisikan tipe untuk context
 interface SidebarContextType {
@@ -69,7 +70,7 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
   }, [isOpen]);
 
   const closeSidebar = () => {
-      setIsOpen(false);
+    setIsOpen(false);
   };
 
   return (
@@ -84,10 +85,16 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
       <aside className={`sidebar ${isOpen ? 'open' : ''}`} id="sidebar">
         <div className="sidebar-brand">
           <div className="logo-icon">
-            <i className="fas fa-language"></i>
+            <Image
+              src="/favicon-512x512.png"
+              alt="Subnova"
+              width={36}
+              height={36}
+            />
           </div>
+
           <div>
-            <h1>Subnova</h1>
+            <h1>SubNova</h1>
             <span>Translation Platform</span>
           </div>
         </div>
