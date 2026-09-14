@@ -23,6 +23,11 @@ export class ProviderController {
     return this.providerService.findAll();
   }
 
+  @Get('landing')
+  findLanding() {
+    return this.providerService.landing();
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN)
   findOne(@Param('id') id: string) {
