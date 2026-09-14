@@ -5,6 +5,7 @@ import "./home.css";
 
 // 1. OPTIMASI SEO (Metadata) & ICONS LENGKAP
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.APP_URL || "https://subnova.xyz"),
   title: "SubNova | AI-Powered Subtitle Translation",
   description:
     "Translate your subtitles with unmatched precision using state-of-the-art LLMs. Support .SRT files and Google Drive video extraction.",
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "SubNova | AI-Powered Subtitle Translation",
     description: "Automate your subtitle workflow with high accuracy and smart glossaries.",
-    url: "https://subnova.xyz",
+    url: process.env.APP_URL,
     siteName: "SubNova",
     images: [
       {
