@@ -1,26 +1,115 @@
+import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import "./home.css";
 
-export default function HomePage() {
+// 1. OPTIMASI SEO (Metadata) & ICONS LENGKAP
+export const metadata: Metadata = {
+  title: "SubNova | AI-Powered Subtitle Translation",
+  description:
+    "Translate your subtitles with unmatched precision using state-of-the-art LLMs. Support .SRT files and Google Drive video extraction.",
+  keywords: [
+    "subtitle translation",
+    "AI translator",
+    "SRT translator",
+    "LLM translation",
+    "video subtitle generator",
+  ],
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-64x64.png", sizes: "64x64", type: "image/png" },
+      { url: "/favicon-128x128.png", sizes: "128x128", type: "image/png" },
+      { url: "/favicon-256x256.png", sizes: "256x256", type: "image/png" },
+      { url: "/favicon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/apple-touch-icon-120x120.png", sizes: "120x120", type: "image/png" },
+      { url: "/apple-touch-icon-114x114.png", sizes: "114x114", type: "image/png" },
+      { url: "/apple-touch-icon-57x57.png", sizes: "57x57", type: "image/png" },
+    ],
+  },
+  openGraph: {
+    title: "SubNova | AI-Powered Subtitle Translation",
+    description: "Automate your subtitle workflow with high accuracy and smart glossaries.",
+    url: "https://subnova.xyz",
+    siteName: "SubNova",
+    images: [
+      {
+        url: "/favicon-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "SubNova Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SubNova | AI-Powered Subtitle Translation",
+    description: "Translate your subtitles with unmatched precision using state-of-the-art LLMs.",
+    images: ["/favicon-512x512.png"],
+  },
+};
+
+// 2. INTERFACE
+export interface ProviderPricing {
+  id: number;
+  model: string;
+  status: string;
+}
+
+// Ambil URL API dari Environment Variable
+const API_URL = process.env.API_URL || "";
+
+// 3. ASYNC SERVER COMPONENT
+export default async function HomePage() {
+  // Fetch data provider dari API
+  let providers: ProviderPricing[] = [];
+  try {
+    const response = await fetch(`${API_URL}/provider/landing`, {
+      next: { revalidate: 86400 }, 
+    });
+
+    if (response.ok) {
+      providers = await response.json();
+    } else {
+      console.error("Gagal mengambil data provider. Status HTTP:", response.status);
+    }
+  } catch (error) {
+    console.error("Terjadi kesalahan saat fetch provider:", error);
+  }
+
   return (
-    <div className="landing-page">
+    <main className="landing-page">
       {/* ===== NAVBAR ===== */}
-      <nav className="landing-nav">
+      <header className="landing-nav">
         <div className="landing-nav-inner">
-          <div className="landing-logo">
+          <Link href="/" className="landing-logo">
             <div className="logo-icon">
-              <i className="fas fa-language"></i>
+              <Image
+                src="/favicon-512x512.png"
+                alt="Subnova Logo"
+                width={36}
+                height={36}
+              />
             </div>
             <span className="logo-text">
               Sub<span className="accent">Nova</span>
             </span>
-          </div>
+          </Link>
 
-          <div className="landing-nav-links">
-            <a href="#features">Features</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="#glossary">Glossary</a>
-          </div>
+          <nav className="landing-nav-links">
+            <Link href="#features">Features</Link>
+            <Link href="#models">Models</Link>
+            <Link href="#how-it-works">How It Works</Link>
+            <Link href="#glossary">Glossary</Link>
+          </nav>
 
           <a
             href="https://app.subnova.xyz"
@@ -29,7 +118,7 @@ export default function HomePage() {
             <i className="fab fa-google"></i> Login with Google
           </a>
         </div>
-      </nav>
+      </header>
 
       {/* ===== HERO ===== */}
       <section className="landing-hero">
@@ -100,7 +189,6 @@ export default function HomePage() {
               cultural nuances to produce natural subtitle translations.
             </p>
           </div>
-
           <div className="feature-card">
             <div className="feature-icon green">
               <i className="fas fa-bullseye"></i>
@@ -111,7 +199,6 @@ export default function HomePage() {
               across episodes, movies, and series.
             </p>
           </div>
-
           <div className="feature-card">
             <div className="feature-icon yellow">
               <i className="fas fa-book"></i>
@@ -122,7 +209,6 @@ export default function HomePage() {
               model becomes smarter with every job, learning your preferred terms.
             </p>
           </div>
-
           <div className="feature-card">
             <div className="feature-icon blue">
               <i className="fas fa-cogs"></i>
@@ -133,7 +219,6 @@ export default function HomePage() {
               result. No manual editing required — unless you want to.
             </p>
           </div>
-
           <div className="feature-card">
             <div className="feature-icon red">
               <i className="fas fa-globe-asia"></i>
@@ -144,7 +229,6 @@ export default function HomePage() {
               Japanese, Chinese, and more.
             </p>
           </div>
-
           <div className="feature-card">
             <div className="feature-icon cyan">
               <i className="fas fa-file-audio"></i>
@@ -158,8 +242,46 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ===== SUPPORTED MODELS (INFINITE MARQUEE - NO NAME) ===== */}
+      <section id="models" className="landing-section section-alt" style={{ overflow: "hidden" }}>
+        <div className="section-header">
+          <h2>Supported AI Models</h2>
+          <p>We leverage industry-leading LLMs to deliver accurate translations.</p>
+        </div>
+
+        <div className="models-marquee-wrapper">
+          <div className="models-marquee-track">
+            {[1, 2].map((loopIndex) => (
+              <div key={loopIndex} style={{ display: "flex", gap: "24px" }}>
+                {providers && providers.length > 0 ? (
+                  providers.map((provider) => (
+                    <div key={`${loopIndex}-${provider.id}`} className="model-chip">
+                      <div className="chip-left">
+                        <span 
+                          className={`chip-dot ${
+                            provider.status.toLowerCase() === "active" ? "active" : "inactive"
+                          }`}
+                        ></span>
+                        <span className="chip-id">{provider.model}</span>
+                      </div>
+                      {/* <span className="chip-status-text">
+                        {provider.status}
+                      </span> */}
+                    </div>
+                  ))
+                ) : (
+                  <div className="model-card empty-card">
+                    <p className="text-muted">Loading models...</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== HOW IT WORKS ===== */}
-      <section id="how-it-works" className="landing-section section-alt">
+      <section id="how-it-works" className="landing-section">
         <div className="section-header">
           <h2>How SubNova Works</h2>
           <p>Three simple steps from input to translated subtitle.</p>
@@ -185,7 +307,7 @@ export default function HomePage() {
       </section>
 
       {/* ===== GLOSSARY HIGHLIGHT ===== */}
-      <section id="glossary" className="landing-section">
+      <section id="glossary" className="landing-section section-alt">
         <div className="glossary-wrapper">
           <div className="glossary-content">
             <h2>Your Private Glossary, Always Learning</h2>
@@ -242,12 +364,19 @@ export default function HomePage() {
       <footer className="landing-footer">
         <div className="footer-inner">
           <div className="footer-logo">
-            <i className="fas fa-language"></i> SubNova
+            <Image
+              src="/favicon-512x512.png"
+              alt="SubNova"
+              width={20}
+              height={20}
+            />
+            <span>SubNova</span>
           </div>
           <div className="footer-links">
-            <a href="#features">Features</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="#glossary">Glossary</a>
+            <Link href="#features">Features</Link>
+            <Link href="#models">Models</Link>
+            <Link href="#how-it-works">How It Works</Link>
+            <Link href="#glossary">Glossary</Link>
             <a href="https://app.subnova.xyz">Login</a>
           </div>
           <div className="footer-copy">
@@ -255,6 +384,6 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-    </div>
+    </main>
   );
 }

@@ -256,15 +256,10 @@ img {
 }
 
 .landing-logo .logo-icon {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, var(--accent), #a29bfe);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  font-size: 20px;
 }
 
 .landing-logo .accent {
@@ -704,6 +699,92 @@ img {
 
 .footer-links a:hover {
   color: var(--text-primary);
+}
+
+/* ============================================================
+   INFINITE MARQUEE MODELS - CHIP UI
+   ============================================================ */
+
+.models-marquee-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 30px 0;
+  /* Efek pudar transparan di ujung kiri dan kanan layar */
+  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+
+.models-marquee-track {
+  display: flex;
+  gap: 16px; /* Jarak antar chip lebih rapat */
+  width: max-content;
+  animation: marqueeScroll 35s linear infinite;
+}
+
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-50% - 8px)); }
+}
+
+/* UI Kapsul / Chip */
+.model-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 10px 16px 10px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 50px; /* Membuat bentuk kapsul bulat penuh */
+  white-space: nowrap;
+}
+
+.chip-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Titik Indikator Menyala */
+.chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.chip-dot.active { 
+  background: var(--green); 
+  box-shadow: 0 0 10px var(--green); 
+}
+.chip-dot.inactive { 
+  background: var(--text-muted); 
+}
+
+/* Teks ID Model */
+.chip-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+/* Teks Status di Kanan */
+.chip-status-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: var(--bg-base);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.empty-chip {
+  justify-content: center;
+  min-width: 200px;
 }
 
 /* ---------- RESPONSIVE ---------- */
