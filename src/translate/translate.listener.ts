@@ -392,7 +392,7 @@ ${translatedCorpus}`;
 
       try {
         const response = await this.llmService.processTranslation(
-          translation.provider.name,
+          translation.provider.model!,
           chatHistory,
         );
 
