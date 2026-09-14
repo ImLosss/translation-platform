@@ -8,39 +8,43 @@ import { Role } from 'generated/prisma/enums';
 import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('provider')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProviderController {
   constructor(private readonly providerService: ProviderService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   create(@Body() createProviderDto: CreateProviderDto) {
     return this.providerService.create(createProviderDto);
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   findAll() {
     return this.providerService.findAll();
   }
 
   @Get('landing')
-  findLanding() {
+  landing() {
     return this.providerService.landing();
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   findOne(@Param('id') id: string) {
     return this.providerService.findOne(+id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   update(@Param('id') id: string, @Body() updateProviderDto: UpdateProviderDto) {
     return this.providerService.update(+id, updateProviderDto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   remove(@Param('id') id: string) {
     return this.providerService.remove(+id);
