@@ -204,7 +204,7 @@ export default function TableData() {
                         <Link href={`api/translate/${job.id}/downloadsource`} className={`dropdown-item ${!["COMPLETED", "PROCESSING"].includes(job.status) ? "disabled" : ""}`}>
                           <i className="fas fa-download"></i> Download Source
                         </Link>
-                        <ButtonGenerateGlosary jobId={job.id} jobStatus={job.status} />
+                        <ButtonGenerateGlosary jobId={job.id} jobStatus={job.status} jobName={job.fileName} />
                       </EllipsisDropdown>
                     </div>
                   </td>

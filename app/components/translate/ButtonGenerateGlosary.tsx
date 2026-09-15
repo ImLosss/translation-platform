@@ -9,9 +9,10 @@ import { generateGlossaryAction, checkGlossaryAction } from "@/app/actions/trans
 interface ButtonGenerateGlosaryProps {
   jobId: number;
   jobStatus: string;
+  jobName: string;
 }
 
-export default function ButtonGenerateGlosary({ jobId, jobStatus }: ButtonGenerateGlosaryProps) {
+export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: ButtonGenerateGlosaryProps) {
   const { showModal } = useModal();
   const { showLoading, updateMessage, hideLoading } = useLoading();
   const { showAlert } = useAlert();
@@ -109,12 +110,13 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus }: ButtonGenera
 
       const existingRecs = checkRes.data?.recommendations;
       const isExistAndValid = Array.isArray(existingRecs) && existingRecs.length > 0;
+      const isExistAndSubmitted = Array.isArray(existingRecs) && existingRecs.length === 0;
 
       if (isExistAndValid) {
         // 2. Jika SUDAH ADA, tampilkan modal dengan 3 Tombol
         showModal({
           title: "Glossary Found",
-          message: "Glossary recommendations already exist for this translation job. What would you like to do?",
+          message: "Glossary recommendations already exist for this translation job " + jobName + ". What would you like to do?",
           buttons: [
             {
               label: "Cancel",
@@ -135,11 +137,28 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus }: ButtonGenera
             }
           ],
         });
+      } else if (isExistAndSubmitted) {
+        showModal({
+          title: "Generate Glossary",
+          message: "You have already submitted a glossary for this translation job " + jobName + ". Would you like to regenerate it?\n\nThis action will consume balance.",
+          buttons: [
+            {
+              label: "Cancel",
+              variant: "outline",
+              onClick: () => { }
+            },
+            {
+              label: "Generate",
+              variant: "primary",
+              onClick: handleTriggerGenerate,
+            }
+          ],
+        });
       } else {
         // 3. Jika BELUM ADA, tampilkan modal default (2 tombol)
         showModal({
           title: "Generate Glossary",
-          message: "Are you sure you want to generate a glossary for this translation job?\n\nThis action will consume balance.",
+          message: "Are you sure you want to generate a glossary for this translation job " + jobName + "?\n\nThis action will consume balance.",
           buttons: [
             {
               label: "Cancel",
