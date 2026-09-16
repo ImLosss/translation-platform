@@ -60,7 +60,7 @@ export class CurrencyService {
     const data = (await response.json()) as CurrencyApiResponse;
     
     this.cache[base] = data;
-    this.cacheExpiredAt[base] = now + 12 * 60 * 60 * 1000;
+    this.cacheExpiredAt[base] = now + 24 * 60 * 60 * 1000;
 
     return data;
   }
