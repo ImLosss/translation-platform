@@ -66,6 +66,47 @@ export class GlosaryService {
     });
   }
 
+  async duplicate(glosaryId: number, userId: number) {
+    // 1. Pastikan glosarium milik user
+    const glosary = await this.prisma.glossary.findFirst({
+      where: {
+        id: glosaryId,
+        userId,
+      },
+      include: {
+        entries: true,
+      },
+    });
+    if (!glosary) throw new NotFoundException('Glosarium tidak ditemukan atau Anda tidak memiliki akses.');
+
+    // 2. Buat nama baru untuk glosarium duplikat
+    const newName = `${glosary.name} (Copy)`;
+
+    // 3. Buat glosarium baru
+    const newGlosary = await this.prisma.glossary.create({
+      data: {
+        name: newName,
+        sourceLanguage: glosary.sourceLanguage,
+        targetLanguage: glosary.targetLanguage,
+        userId: userId,
+      },
+    });
+
+    // 4. Duplikat semua entry ke glosarium baru
+    const newEntries = glosary.entries.map(entry => ({
+      glossaryId: newGlosary.id,
+      source: entry.source,
+      target: entry.target,
+      detail: entry.detail,
+    }));
+
+    await this.prisma.glossaryEntry.createMany({
+      data: newEntries,
+    });
+
+    return { success: true, message: 'Glossary duplicated successfully.', newGlosaryId: newGlosary.id };
+  }
+
   async updateGlosary(glosaryId: number, userId: number, dto: UpdateGlosaryEntryDto) {
     // 1. Pastikan glosarium milik user
     const glosary = await this.prisma.glossary.findFirst({

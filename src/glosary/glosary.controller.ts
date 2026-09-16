@@ -81,4 +81,11 @@ export class GlosaryController {
       disposition: `attachment; filename="${fileName}"`, // Menggantikan res.setHeader
     });
   }
+
+  @Get('duplicate/:id')
+  @LogActivity('Get Glosary Details')
+  duplicate(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    const userId = req.user.sub;
+    return this.glosaryService.duplicate(id, userId);
+  }
 }
