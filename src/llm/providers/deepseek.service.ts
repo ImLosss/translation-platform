@@ -70,6 +70,8 @@ export class DeepseekService implements LlmProvider {
       const promptCacheHitTokens = usage.prompt_cache_hit_tokens || 0;
       const completionTokens = usage.completion_tokens || 0;
 
+      if (responseData.choices[0].message.reasoning_content) this.logger.debug(`Reasoning: ${responseData.choices[0].message.reasoning_content}`);
+
       // 6. Kembalikan data sesuai kontrak interface LlmResponse
       return {
         status: true,
