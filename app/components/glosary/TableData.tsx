@@ -2,6 +2,7 @@ import { api } from "@/app/lib/api";
 import Link from "next/dist/client/link";
 import EllipsisDropdown from "../client/ElipsisDropdown";
 import DeleteGlossaryButton from "./DeleteGlossaryButton";
+import DuplicateGlossaryButton from "./DuplicateGlossaryButton";
 
 export interface GlosaryData {
   id: number;
@@ -98,6 +99,7 @@ export default async function TableData() {
                       <Link href={`/glosary/${g.id}/edit`} className="dropdown-item">
                         <i className="fas fa-edit"></i> Edit
                       </Link>
+                      <DuplicateGlossaryButton glossaryId={g.id} />
                       <Link href={`api/glosary/${g.id}/download`} className={`dropdown-item`}>
                         <i className="fas fa-download"></i> Download CSV
                       </Link>
