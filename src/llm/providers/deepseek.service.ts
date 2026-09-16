@@ -39,8 +39,8 @@ export class DeepseekService implements LlmProvider {
     const payload = {
       messages: chatHistory,
       model: model || 'deepseek-v4-pro', 
-      thinking: { type: 'disabled' },
-      // reasoning_effort: 'low',
+      thinking: { type: 'enabled' },
+      reasoning_effort: 'low',
       frequency_penalty: 0,
       max_tokens: 8192,
       presence_penalty: 0,
