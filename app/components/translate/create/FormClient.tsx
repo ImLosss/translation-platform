@@ -281,7 +281,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
             style={{ marginTop: '8px' }}
           />
           <small style={{ color: 'var(--text-muted)', display: 'block', marginTop: '8px' }}>
-            <i className="fas fa-info-circle"></i> Pastikan akses link video Google Drive diatur menjadi <strong>"Anyone with the link" (Publik)</strong>.
+            <i className="fas fa-info-circle"></i> Ensure the Google Drive video link access is set to <strong>"Anyone with the link" (Public)</strong>.
           </small>
         </div>
 
