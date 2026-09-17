@@ -53,7 +53,7 @@ const GlossaryRecommendationRow = memo(({
                     value={entry.source} onChange={(e) => handleUpdateEntry(index, 'source', e.target.value)} required
                 />
             </div>
-            
+
             <div className="sub-field">
                 <label>Target Translation <span style={{ color: 'var(--accent-red)' }}>*</span></label>
                 <textarea
@@ -89,7 +89,7 @@ const GlossaryRecommendationRow = memo(({
 // ================= KOMPONEN UTAMA =================
 export default function GlossaryRecommendationClient() {
     const router = useRouter();
-    const { showAlert } = useAlert(); 
+    const { showAlert } = useAlert();
 
     // --- State untuk Load Data ---
     const [isLoadingData, setIsLoadingData] = useState(true);
@@ -112,13 +112,13 @@ export default function GlossaryRecommendationClient() {
 
     const saveContainerRef = useCallback((node: HTMLDivElement | null) => {
         if (observer.current) observer.current.disconnect();
-        
+
         if (node) {
             observer.current = new IntersectionObserver(
                 ([entry]) => {
                     setIsSaveVisible(entry.isIntersecting);
                 },
-                { threshold: 0, rootMargin: '0px 0px 50px 0px' } 
+                { threshold: 0, rootMargin: '0px 0px 50px 0px' }
             );
             observer.current.observe(node);
         }
@@ -127,7 +127,7 @@ export default function GlossaryRecommendationClient() {
     // 1. Ambil data dari sessionStorage
     useEffect(() => {
         const savedData = sessionStorage.getItem('tempGlossary');
-        
+
         if (savedData) {
             try {
                 const parsedData = JSON.parse(savedData);
@@ -162,7 +162,7 @@ export default function GlossaryRecommendationClient() {
                 const newEntries = recommendations.map((e: any) => ({
                     ...e,
                     id: nextTempId.current--,
-                    isRecommended: true 
+                    isRecommended: true
                 }));
 
                 const combinedEntries = [...newEntries, ...oldEntries];
@@ -181,7 +181,7 @@ export default function GlossaryRecommendationClient() {
             showAlert('No recommendation data available.', 'error');
             router.push('/translate');
         }
-    }, [router, showAlert]); 
+    }, [router, showAlert]);
 
     // 2. Fungsi Logika Form Editor
     const sourceCounts = entries.reduce((acc, entry) => {
@@ -222,7 +222,7 @@ export default function GlossaryRecommendationClient() {
 
     // 3. Fungsi Save/Submit
     const handleSave = async (e: React.FormEvent) => {
-        if (e && e.preventDefault) e.preventDefault(); 
+        if (e && e.preventDefault) e.preventDefault();
 
         const hasDuplicates = Object.values(sourceCounts).some(count => count > 1);
         if (hasDuplicates) {
@@ -235,7 +235,7 @@ export default function GlossaryRecommendationClient() {
             const creates = entries
                 .filter(l => !l.id || l.id < 0)
                 .map(({ id, source, target, detail }) => ({ id, source, target, detail }));
-            
+
             const updates = entries
                 .filter(l => {
                     if (!l.id || l.id < 0) return false;
@@ -280,7 +280,7 @@ export default function GlossaryRecommendationClient() {
             showAlert(response.message, 'success');
             sessionStorage.removeItem('tempGlossary');
             return router.push('/translate');
-            
+
         } catch (error) {
             console.error(error);
             showAlert('Gagal menyimpan glosarium', 'error');
@@ -301,12 +301,12 @@ export default function GlossaryRecommendationClient() {
 
     // --- Tampilan Form Utama ---
     return (
-        <div style={{ padding: '20px' }}>
+        <>
             <div style={{ marginBottom: '20px' }}>
-                <button 
-                    className="btn btn-outline btn-sm" 
+                <button
+                    className="btn btn-outline btn-sm"
                     onClick={() => {
-                        if(window.confirm('Batal menyimpan glosarium dan kembali ke daftar?')) {
+                        if (window.confirm('Batal menyimpan glosarium dan kembali ke daftar?')) {
                             router.push('/translate');
                         }
                     }}
@@ -414,9 +414,9 @@ export default function GlossaryRecommendationClient() {
 
             {/* FLOATING SAVE BUTTON */}
             {!isSaveVisible && (
-                <button 
-                    className="btn btn-primary" 
-                    onClick={(e) => handleSave(e as any)} 
+                <button
+                    className="btn btn-primary"
+                    onClick={(e) => handleSave(e as any)}
                     disabled={isSaving}
                     style={{
                         position: 'fixed',
@@ -431,10 +431,10 @@ export default function GlossaryRecommendationClient() {
                         gap: '8px'
                     }}
                 >
-                    <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} /> 
+                    <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} />
                     {isSaving ? 'Saving...' : 'Confirm & Save'}
                 </button>
             )}
-        </div>
+        </>
     );
 }
