@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
+    "@sentry/nextjs": "^10.75.0",
     "docx": "^9.7.1",
     "google-auth-library": "^10.9.1",
     "googleapis": "^173.0.0",
