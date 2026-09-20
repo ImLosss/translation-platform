@@ -84,17 +84,14 @@ export class NineInferenceService implements LlmProvider {
               // 1. Akumulasi pesan teks
               const delta = parsed.choices?.[0]?.delta;
               if (delta?.content) {
-                this.logger.debug(`Delta content diterima: ${delta.content}`);
                 fullMessage += delta.content;
               }
               if (delta?.reasoning_content) {
-                this.logger.debug(`Delta reasoning diterima: ${delta.reasoning_content}`);
                 fullReasoning += delta.reasoning_content;
               }
 
               // 2. Tangkap usage token (biasanya dikirim di chunk paling akhir)
               if (parsed.usage) {
-                this.logger.debug(`Usage data diterima: ${JSON.stringify(parsed.usage)}`);
                 usageData = parsed.usage;
               }
             } catch (err) {
