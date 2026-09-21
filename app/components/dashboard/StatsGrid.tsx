@@ -20,9 +20,20 @@ const stats: StatCardProps[] = [
 ];
 
 export default async function StatsGrid() {
-  const data = await api<any>("/user/profile-stats");
+  let data = null;
+  let fetchError = false;
 
-  console.log("StatsGrid data:", data);
+  try {
+    data = await api<any>("/user/profile-stats");
+  } catch (error) {
+    console.error("Gagal mengambil data statistik:", error);
+    fetchError = true;
+  }
+
+  const balance = data?.profile?.balance || 0;
+  const totalCostToday = data?.statistics?.totalCostToday || 0;
+  const totalTranslations = data?.statistics?.totalTranslations || 0;
+  const processing = data?.statistics?.processing || 0;
 
   return (
     <section className="stats-grid">
@@ -33,11 +44,11 @@ export default async function StatsGrid() {
         <div className="stat-label">Balance</div>
         <div className="stat-value">
           <span className="currency">IDR</span>
-          {data.profile.balance.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {balance.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
-        {data.statistics.totalCostToday !== 0 && (
+        {totalCostToday !== 0 && (
           <div className={`stat-change down`}>
-            <i className={`fas fa-arrow-down`}></i> -{data.statistics.totalCostToday.toFixed(2)}
+            <i className={`fas fa-arrow-down`}></i> -{totalCostToday.toFixed(2)}
           </div>
         )}
       </div>
@@ -47,7 +58,7 @@ export default async function StatsGrid() {
         </div>
         <div className="stat-label">Total Translations</div>
         <div className="stat-value">
-          {data.statistics.totalTranslations}
+          {totalTranslations}
         </div>
         {/* <div className={`stat-change ${stat.direction}`}>
           <i className={`fas fa-arrow-${stat.direction}`}></i> {stat.change}
@@ -59,7 +70,7 @@ export default async function StatsGrid() {
         </div>
         <div className="stat-label">Processing</div>
         <div className="stat-value">
-          {data.statistics.processing}
+          {processing}
         </div>
         {/* <div className={`stat-change ${stat.direction}`}>
           <i className={`fas fa-arrow-${stat.direction}`}></i> {stat.change}
