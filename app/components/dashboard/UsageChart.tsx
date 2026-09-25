@@ -5,50 +5,44 @@ import {
   getUsageStatsAction,
   UsagePoint,
 } from '@/app/actions/profile/getUsageStatsAction';
+import { useLanguage } from '../client/LanguageProvider';
+import { interpolate } from '@/app/lib/i18n/format';
 
 type Metric = 'translations' | 'cost' | 'tokens';
 
 interface MetricConfig {
   key: Metric;
-  label: string;
-  short: string;
+  labelKey: 'metricTranslations' | 'metricCost' | 'metricTokens';
+  shortKey: 'shortTranslations' | 'shortCost' | 'shortTokens';
   color: string;
   gradientFrom: string;
   gradientTo: string;
-  format: (value: number) => string;
 }
 
 const METRICS: Record<Metric, MetricConfig> = {
   translations: {
     key: 'translations',
-    label: 'Translations',
-    short: 'Trans.',
+    labelKey: 'metricTranslations',
+    shortKey: 'shortTranslations',
     color: '#6c5ce7',
     gradientFrom: 'rgba(108, 92, 231, 0.85)',
     gradientTo: 'rgba(108, 92, 231, 0.15)',
-    format: (v) => v.toLocaleString('id-ID'),
   },
   cost: {
     key: 'cost',
-    label: 'Cost',
-    short: 'Cost',
+    labelKey: 'metricCost',
+    shortKey: 'shortCost',
     color: '#00b894',
     gradientFrom: 'rgba(0, 184, 148, 0.85)',
     gradientTo: 'rgba(0, 184, 148, 0.15)',
-    format: (v) =>
-      `$${v.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`,
   },
   tokens: {
     key: 'tokens',
-    label: 'Tokens',
-    short: 'Tokens',
+    labelKey: 'metricTokens',
+    shortKey: 'shortTokens',
     color: '#4a9eff',
     gradientFrom: 'rgba(74, 158, 255, 0.85)',
     gradientTo: 'rgba(74, 158, 255, 0.15)',
-    format: (v) => v.toLocaleString('id-ID'),
   },
 };
 
@@ -64,13 +58,14 @@ function niceMax(value: number): number {
   return step * magnitude;
 }
 
-function formatCompact(value: number): string {
+function formatCompact(value: number, locale: string): string {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}k`;
-  return value.toLocaleString('id-ID');
+  return value.toLocaleString(locale);
 }
 
 export default function UsageChart() {
+  const { t, intlLocale } = useLanguage();
   const [range, setRange] = useState<number>(30);
   const [metric, setMetric] = useState<Metric>('translations');
   const [points, setPoints] = useState<UsagePoint[]>([]);
@@ -108,18 +103,31 @@ export default function UsageChart() {
       setPoints(result.response.data);
       setSummary(result.response.summary);
     } else {
-      setError(result.message || 'Gagal memuat data usage.');
+      setError(result.message || t.dashboard.errorLoad);
       setPoints([]);
     }
 
     setLoading(false);
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load(range);
   }, [range, load]);
 
   const config = METRICS[metric];
+
+  const formatValue = useCallback(
+    (value: number) => {
+      if (metric === 'cost') {
+        return `IDR ${value.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
+      }
+      return value.toLocaleString(intlLocale);
+    },
+    [metric, intlLocale]
+  );
 
   const chart = useMemo(() => {
     const height = width < 520 ? 220 : 280;
@@ -188,14 +196,14 @@ export default function UsageChart() {
     <section className="card usage-card">
       <div className="card-header usage-header">
         <div>
-          <h2>Usage Overview</h2>
+          <h2>{t.dashboard.usageOverview}</h2>
           <p className="usage-subtitle">
-            Aktivitas terjemahan {range} hari terakhir
+            {interpolate(t.dashboard.usageSubtitle, { days: range })}
           </p>
         </div>
 
         <div className="usage-controls">
-          <div className="usage-metrics" role="tablist" aria-label="Pilih metrik">
+          <div className="usage-metrics" role="tablist" aria-label={t.dashboard.selectMetric}>
             {(Object.keys(METRICS) as Metric[]).map((key) => (
               <button
                 key={key}
@@ -209,12 +217,12 @@ export default function UsageChart() {
                   className="usage-dot"
                   style={{ background: METRICS[key].color }}
                 />
-                {METRICS[key].label}
+                {t.dashboard[METRICS[key].labelKey]}
               </button>
             ))}
           </div>
 
-          <div className="usage-ranges" role="group" aria-label="Pilih rentang waktu">
+          <div className="usage-ranges" role="group" aria-label={t.dashboard.selectRange}>
             {RANGES.map((days) => (
               <button
                 key={days}
@@ -231,24 +239,24 @@ export default function UsageChart() {
 
       <div className="usage-summary">
         <div className="usage-summary-item">
-          <span className="usage-summary-label">Total Translations</span>
+          <span className="usage-summary-label">{t.dashboard.totalTranslations}</span>
           <span className="usage-summary-value">
-            {summary.translations.toLocaleString('id-ID')}
+            {summary.translations.toLocaleString(intlLocale)}
           </span>
         </div>
         <div className="usage-summary-item">
-          <span className="usage-summary-label">Total Cost</span>
+          <span className="usage-summary-label">{t.dashboard.totalCost}</span>
           <span className="usage-summary-value">
-            ${summary.cost.toLocaleString('en-US', {
+            IDR {summary.cost.toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
           </span>
         </div>
         <div className="usage-summary-item">
-          <span className="usage-summary-label">Total Tokens</span>
+          <span className="usage-summary-label">{t.dashboard.totalTokens}</span>
           <span className="usage-summary-value">
-            {formatCompact(summary.tokens)}
+            {formatCompact(summary.tokens, intlLocale)}
           </span>
         </div>
       </div>
@@ -257,7 +265,7 @@ export default function UsageChart() {
         {loading && (
           <div className="usage-state">
             <div className="spinner" />
-            <p className="loading-text">Memuat data usage...</p>
+            <p className="loading-text">{t.dashboard.loading}</p>
           </div>
         )}
 
@@ -271,7 +279,7 @@ export default function UsageChart() {
         {!loading && !error && points.length === 0 && (
           <div className="usage-state">
             <i className="fas fa-chart-bar" />
-            <p className="loading-text">Belum ada data usage pada periode ini.</p>
+            <p className="loading-text">{t.dashboard.empty}</p>
           </div>
         )}
 
@@ -281,7 +289,7 @@ export default function UsageChart() {
               width={width}
               height={chart.height}
               role="img"
-              aria-label={`Grafik ${config.label} ${range} hari terakhir`}
+              aria-label={interpolate(t.dashboard.chartAria, { metric: t.dashboard[config.labelKey], days: range })}
               onMouseLeave={() => setHoverIndex(null)}
             >
               <defs>
@@ -316,8 +324,8 @@ export default function UsageChart() {
                     className="usage-axis-text"
                   >
                     {metric === 'cost'
-                      ? `$${line.value.toFixed(line.value >= 10 ? 0 : 2)}`
-                      : formatCompact(line.value)}
+                      ? `${line.value.toFixed(line.value >= 10 ? 0 : 2)}`
+                      : formatCompact(line.value, intlLocale)}
                   </text>
                 </g>
               ))}
@@ -387,11 +395,11 @@ export default function UsageChart() {
                     className="usage-dot"
                     style={{ background: config.color }}
                   />
-                  {config.format(activeBar.value)}
+                  {formatValue(activeBar.value)}
                 </span>
                 {metric !== 'translations' && (
                   <span className="usage-tooltip-meta">
-                    {activeBar.point.translations} translations
+                    {interpolate(t.dashboard.translationsCount, { count: activeBar.point.translations })}
                   </span>
                 )}
               </div>

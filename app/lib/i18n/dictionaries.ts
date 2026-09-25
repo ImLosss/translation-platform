@@ -305,6 +305,28 @@ export interface Dictionary {
     duplicating: string;
     alertDuplicateFailed: string;
   };
+  dashboard: {
+    balance: string;
+    totalTranslations: string;
+    processing: string;
+    usageOverview: string;
+    usageSubtitle: string;
+    metricTranslations: string;
+    metricCost: string;
+    metricTokens: string;
+    shortTranslations: string;
+    shortCost: string;
+    shortTokens: string;
+    selectMetric: string;
+    selectRange: string;
+    totalCost: string;
+    totalTokens: string;
+    loading: string;
+    empty: string;
+    chartAria: string;
+    translationsCount: string;
+    errorLoad: string;
+  };
 }
 
 const id: Dictionary = {
@@ -603,6 +625,28 @@ const id: Dictionary = {
     duplicating: 'Menduplikasi glosarium...',
     alertDuplicateFailed: 'Gagal menduplikasi glosarium: {message}',
   },
+  dashboard: {
+    balance: 'Saldo',
+    totalTranslations: 'Total Terjemahan',
+    processing: 'Sedang Diproses',
+    usageOverview: 'Ringkasan Penggunaan',
+    usageSubtitle: 'Aktivitas terjemahan {days} hari terakhir',
+    metricTranslations: 'Terjemahan',
+    metricCost: 'Biaya',
+    metricTokens: 'Token',
+    shortTranslations: 'Terj.',
+    shortCost: 'Biaya',
+    shortTokens: 'Token',
+    selectMetric: 'Pilih metrik',
+    selectRange: 'Pilih rentang waktu',
+    totalCost: 'Total Biaya',
+    totalTokens: 'Total Token',
+    loading: 'Memuat data penggunaan...',
+    empty: 'Belum ada data penggunaan pada periode ini.',
+    chartAria: 'Grafik {metric} {days} hari terakhir',
+    translationsCount: '{count} terjemahan',
+    errorLoad: 'Gagal memuat data penggunaan.',
+  },
 };
 
 const en: Dictionary = {
@@ -900,6 +944,28 @@ const en: Dictionary = {
     duplicateConfirm: 'Duplicate',
     duplicating: 'Duplicating glossary...',
     alertDuplicateFailed: 'Failed to duplicate glossary: {message}',
+  },
+  dashboard: {
+    balance: 'Balance',
+    totalTranslations: 'Total Translations',
+    processing: 'Processing',
+    usageOverview: 'Usage Overview',
+    usageSubtitle: 'Translation activity over the last {days} days',
+    metricTranslations: 'Translations',
+    metricCost: 'Cost',
+    metricTokens: 'Tokens',
+    shortTranslations: 'Trans.',
+    shortCost: 'Cost',
+    shortTokens: 'Tokens',
+    selectMetric: 'Select metric',
+    selectRange: 'Select time range',
+    totalCost: 'Total Cost',
+    totalTokens: 'Total Tokens',
+    loading: 'Loading usage data...',
+    empty: 'No usage data for this period.',
+    chartAria: 'Chart of {metric} over the last {days} days',
+    translationsCount: '{count} translations',
+    errorLoad: 'Failed to load usage data.',
   },
 };
 
