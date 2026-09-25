@@ -6,6 +6,7 @@ import { DeepseekService } from './providers/deepseek.service';
 import { GptLunaService } from './providers/gpt-luna.service';
 import { NineInferenceService } from './providers/nine-inference.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { NineInferencePkgService } from './providers/nine-inference-pkg.service';
 // import { GeminiService } from './providers/gemini.service';
 
 @Module({
@@ -18,6 +19,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
     DeepseekService,
     GptLunaService,
     NineInferenceService,
+    NineInferencePkgService,
   ],
   exports: [
     LlmService, 
