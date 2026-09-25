@@ -29,6 +29,30 @@ export class UserController {
     return this.userService.findAll(Number(page), Number(limit));
   }
 
+  @Get('profile-stats')
+  async getProfileStats(@Req() req: any) {
+    // req.user.sub biasanya berisi ID user yang di-decode dari token JWT
+    const userId = Number(req.user.sub);
+
+    return await this.userService.getUserDashboardStats(userId);
+  }
+
+  @Get('usage-stats')
+  async getUsageStats(
+    @Req() req: any,
+    @Query('days') days: string = '30',
+  ) {
+    const userId = Number(req.user.sub);
+    return await this.userService.getUsageStats(userId, Number(days));
+  }
+
+  @Get('me')
+  @LogActivity('Get user profile')
+  async getMe(@Req() req: any) {
+    const userId = Number(req.user.sub);
+    return await this.userService.findOne(userId);
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -48,20 +72,5 @@ export class UserController {
   @Roles(Role.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.userService.remove(id);
-  }
-
-  @Get('profile-stats')
-  async getProfileStats(@Req() req: any) {
-    // req.user.sub biasanya berisi ID user yang di-decode dari token JWT
-    const userId = Number(req.user.sub); 
-    
-    return await this.userService.getUserDashboardStats(userId);
-  }
-
-  @Get('me')
-  @LogActivity('Get user profile')
-  async getMe(@Req() req: any) {
-    const userId = Number(req.user.sub);
-    return await this.userService.findOne(userId);
   }
 }

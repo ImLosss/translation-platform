@@ -171,4 +171,104 @@ export class UserService {
       },
     };
   }
+
+  /**
+   * Mengambil data usage harian (jumlah terjemahan, biaya, dan token)
+   * untuk kebutuhan chart/diagram pada dashboard.
+   */
+  async getUsageStats(userId: number, days: number = 30) {
+    const timeZone = 'Asia/Makassar';
+    const safeDays = Math.min(Math.max(Number(days) || 30, 1), 90);
+
+    // Tentukan awal hari ini berdasarkan WITA
+    const now = toZonedTime(new Date(), timeZone);
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    // Mundur (safeDays - 1) hari ke belakang
+    const startDate = new Date(startOfToday);
+    startDate.setDate(startDate.getDate() - (safeDays - 1));
+
+    const endDate = new Date(startOfToday);
+    endDate.setDate(endDate.getDate() + 1);
+
+    // Konversi kembali ke UTC untuk query Prisma
+    const startUtc = fromZonedTime(startDate, timeZone);
+    const endUtc = fromZonedTime(endDate, timeZone);
+
+    const translations = await this.prisma.translation.findMany({
+      where: {
+        userId,
+        createdAt: { gte: startUtc, lt: endUtc },
+      },
+      select: {
+        createdAt: true,
+        totalCost: true,
+        totalToken: true,
+        status: true,
+      },
+    });
+
+    // Siapkan bucket kosong untuk setiap hari agar chart tetap rapi
+    const monthLabels = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+    ];
+
+    const buckets = new Map<
+      string,
+      {
+        date: string;
+        label: string;
+        fullLabel: string;
+        translations: number;
+        completed: number;
+        cost: number;
+        tokens: number;
+      }
+    >();
+
+    for (let i = 0; i < safeDays; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+      buckets.set(key, {
+        date: key,
+        label: `${d.getDate()} ${monthLabels[d.getMonth()]}`,
+        fullLabel: `${d.getDate()} ${monthLabels[d.getMonth()]} ${d.getFullYear()}`,
+        translations: 0,
+        completed: 0,
+        cost: 0,
+        tokens: 0,
+      });
+    }
+
+    for (const t of translations) {
+      const local = toZonedTime(t.createdAt, timeZone);
+      const key = `${local.getFullYear()}-${String(local.getMonth() + 1).padStart(2, '0')}-${String(local.getDate()).padStart(2, '0')}`;
+
+      const bucket = buckets.get(key);
+      if (!bucket) continue;
+
+      bucket.translations += 1;
+      if (t.status === 'COMPLETED') bucket.completed += 1;
+      bucket.cost += t.totalCost || 0;
+      bucket.tokens += t.totalToken || 0;
+    }
+
+    const data = Array.from(buckets.values());
+
+    return {
+      days: safeDays,
+      timeZone,
+      data,
+      summary: {
+        translations: data.reduce((acc, d) => acc + d.translations, 0),
+        cost: data.reduce((acc, d) => acc + d.cost, 0),
+        tokens: data.reduce((acc, d) => acc + d.tokens, 0),
+      },
+    };
+  }
 }
