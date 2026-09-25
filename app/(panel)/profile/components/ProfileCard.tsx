@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useLanguage } from "@/app/components/client/LanguageProvider";
+import { formatCurrency } from "@/app/lib/i18n/format";
 
 interface UserProfile {
   email: string;
@@ -32,10 +33,7 @@ export default function ProfileCard({ user }: { user: UserProfile }) {
   });
 
   const projectsCount = user._count?.translations ?? '-';
-  const balanceFormatted = user.balance.toLocaleString(intlLocale, {
-    style: 'currency',
-    currency: 'IDR',
-  });
+  const balanceFormatted = formatCurrency(user.balance, intlLocale);
 
   return (
     <div className="profile-card">
