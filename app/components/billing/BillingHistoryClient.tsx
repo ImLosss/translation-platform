@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '../client/LanguageProvider';
 
 // Sesuaikan dengan skema tabel Transaction di Prisma
 export interface TransactionDB {
@@ -20,13 +21,14 @@ interface Props {
 
 export default function BillingHistoryClient({ initialTransactions }: Props) {
     const [transactions] = useState<TransactionDB[]>(initialTransactions);
+    const { t, intlLocale } = useLanguage();
 
     const formatCurrency = (val: number) => {
-        return new Intl.NumberFormat('id-ID').format(val);
+        return new Intl.NumberFormat(intlLocale).format(val);
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleString('id-ID', {
+        return new Date(dateString).toLocaleString(intlLocale, {
             year: 'numeric', month: 'short', day: '2-digit',
             hour: '2-digit', minute: '2-digit'
         });
@@ -38,7 +40,7 @@ export default function BillingHistoryClient({ initialTransactions }: Props) {
         if (status === 'SETTLEMENT' || status === 'SUCCESS') {
             return (
                 <span style={{ backgroundColor: 'rgba(40, 167, 69, 0.1)', color: 'var(--accent-green, #28a745)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                    <i className="fas fa-check-circle" style={{ marginRight: '5px' }}></i> Success
+                    <i className="fas fa-check-circle" style={{ marginRight: '5px' }}></i> {t.billing.status.success}
                 </span>
             );
         }
@@ -46,14 +48,14 @@ export default function BillingHistoryClient({ initialTransactions }: Props) {
         if (status === 'PENDING') {
             return (
                 <span style={{ backgroundColor: 'rgba(255, 193, 7, 0.1)', color: '#d39e00', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                    <i className="fas fa-clock" style={{ marginRight: '5px' }}></i> Pending
+                    <i className="fas fa-clock" style={{ marginRight: '5px' }}></i> {t.billing.status.pending}
                 </span>
             );
         }
 
         return (
             <span style={{ backgroundColor: 'rgba(220, 53, 69, 0.1)', color: 'var(--accent-red, #dc3545)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                <i className="fas fa-times-circle" style={{ marginRight: '5px' }}></i> Failed
+                <i className="fas fa-times-circle" style={{ marginRight: '5px' }}></i> {t.billing.status.failed}
             </span>
         );
     };
@@ -62,11 +64,11 @@ export default function BillingHistoryClient({ initialTransactions }: Props) {
         <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div>
-                    <h2 style={{ margin: '0 0 5px 0', color: 'var(--text-primary)' }}>Billing & History</h2>
-                    <p style={{ margin: 0, color: 'var(--text-muted)' }}>Manage your invoices and track your recent transactions.</p>
+                    <h2 style={{ margin: '0 0 5px 0', color: 'var(--text-primary)' }}>{t.billing.title}</h2>
+                    <p style={{ margin: 0, color: 'var(--text-muted)' }}>{t.billing.subtitle}</p>
                 </div>
                 <Link href="/topup" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <i className="fas fa-coins"></i> Top Up Balance
+                    <i className="fas fa-coins"></i> {t.billing.topUpBalance}
                 </Link>
             </div>
 
@@ -74,7 +76,7 @@ export default function BillingHistoryClient({ initialTransactions }: Props) {
                 <div className="card-header">
                     <h2>
                         <i className="fas fa-file-invoice-dollar" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
-                        Transaction History
+                        {t.billing.transactionHistory}
                     </h2>
                 </div>
 
@@ -82,10 +84,10 @@ export default function BillingHistoryClient({ initialTransactions }: Props) {
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
                             <tr>
-                                <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>Transaction ID</th>
-                                <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>Date</th>
-                                <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>Amount</th>
-                                <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px', textAlign: 'center' }}>Status</th>
+                                <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>{t.billing.table.transactionId}</th>
+                                <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>{t.billing.table.date}</th>
+                                <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px' }}>{t.billing.table.amount}</th>
+                                <th style={{ borderBottom: '2px solid var(--border-color)', padding: '12px 15px', textAlign: 'center' }}>{t.billing.table.status}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -104,7 +106,7 @@ export default function BillingHistoryClient({ initialTransactions }: Props) {
                                 <tr>
                                     <td colSpan={6} style={{ padding: '30px', textAlign: 'center', color: 'var(--text-muted)' }}>
                                         <i className="fas fa-box-open" style={{ fontSize: '2rem', marginBottom: '10px' }}></i>
-                                        <p>No transactions found.</p>
+                                        <p>{t.billing.empty}</p>
                                     </td>
                                 </tr>
                             )}

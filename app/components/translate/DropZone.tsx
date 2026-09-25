@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useLanguage } from '../client/LanguageProvider';
+import { interpolate } from '@/app/lib/i18n/format';
 
 export default function Dropzone() {
+  const { t } = useLanguage();
   const [isDragOver, setIsDragOver] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -11,15 +14,15 @@ export default function Dropzone() {
     const ext = file.name.split('.').pop()?.toLowerCase();
     const allowed = ['srt', 'ass', 'txt'];
     if (!ext || !allowed.includes(ext)) {
-      alert('Unsupported file format. Please upload .srt, .ass, or .txt.');
+      alert(t.translate.dropzone.alertUnsupported);
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      alert('File too large. Max 10MB.');
+      alert(t.translate.dropzone.alertTooLarge);
       return;
     }
     setFile(file);
-    alert(`File "${file.name}" uploaded successfully! (${(file.size / 1024).toFixed(1)} KB)`);
+    alert(interpolate(t.translate.dropzone.alertUploaded, { name: file.name, size: (file.size / 1024).toFixed(1) }));
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -58,7 +61,7 @@ export default function Dropzone() {
       <div className="card-header">
         <h2>
           <i className="fas fa-upload" style={{ color: 'var(--accent)', marginRight: '10px' }}></i>
-          Upload Subtitle File
+          {t.translate.dropzone.title}
         </h2>
       </div>
       <div
@@ -71,9 +74,9 @@ export default function Dropzone() {
         <div className="dz-icon">
           <i className="fas fa-cloud-upload-alt"></i>
         </div>
-        <p>Drag &amp; drop your .srt or .ass file here, or</p>
+        <p>{t.translate.dropzone.dragDrop}</p>
         <label className="browse-btn" htmlFor="fileInput" onClick={(e) => e.stopPropagation()}>
-          Browse Files
+          {t.translate.dropzone.browseFiles}
         </label>
         <input
           ref={fileInputRef}
@@ -84,12 +87,12 @@ export default function Dropzone() {
           style={{ display: 'none' }}
         />
         <p style={{ marginTop: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
-          Supported: SRT, ASS, TXT (max 10MB)
+          {t.translate.dropzone.supported}
         </p>
       </div>
       {file && (
         <div style={{ marginTop: '12px', color: 'var(--green)', fontSize: '13px' }}>
-          <i className="fas fa-check-circle"></i> Last uploaded: {file.name}
+          <i className="fas fa-check-circle"></i> {t.translate.dropzone.lastUploaded} {file.name}
         </div>
       )}
     </section>

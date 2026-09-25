@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAlert } from '@/app/components/ui/Alert';
 import { saveGlossaryAction } from '@/app/actions/translate/generateGlosaryAction';
+import { useLanguage } from '../client/LanguageProvider';
+import { interpolate } from '@/app/lib/i18n/format';
 
 // ================= INTERFACES & CONSTANTS =================
 export interface GlosaryEntry {
@@ -27,6 +29,7 @@ const GlossaryRecommendationRow = memo(({
     entry,
     index,
     isDuplicate,
+    t,
     handleUpdateEntry,
     handleAddEntry,
     handleDeleteEntry,
@@ -36,43 +39,43 @@ const GlossaryRecommendationRow = memo(({
         <div className={`glosary-line ${isDuplicate ? 'duplicated-line' : ''} ${entry.isRecommended ? 'recommended-highlight' : ''}`}>
             <div className="sub-field">
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    Source Term <span style={{ color: 'var(--accent-red)' }}>*</span>
+                    {t.translate.glossary.sourceTerm} <span style={{ color: 'var(--accent-red)' }}>*</span>
                     {entry.isRecommended && (
                         <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--accent-green, #28a745)', color: '#fff', padding: '2px 6px', borderRadius: '4px', textTransform: 'none' }}>
-                            <i className="fas fa-sparkles"></i> AI Suggested
+                            <i className="fas fa-sparkles"></i> {t.translate.glossary.aiSuggested}
                         </span>
                     )}
                     {isDuplicate && (
                         <span style={{ color: 'var(--accent-red, #dc3545)', fontWeight: 'bold', fontSize: '0.65rem', textTransform: 'none' }}>
-                            <i className="fas fa-exclamation-triangle"></i> Duplicate
+                            <i className="fas fa-exclamation-triangle"></i> {t.translate.glossary.duplicate}
                         </span>
                     )}
                 </label>
                 <textarea
-                    ref={resizeTextarea} className="sub-source" rows={1} placeholder="Source word/phrase"
+                    ref={resizeTextarea} className="sub-source" rows={1} placeholder={t.translate.glossary.sourcePlaceholder}
                     value={entry.source} onChange={(e) => handleUpdateEntry(index, 'source', e.target.value)} required
                 />
             </div>
 
             <div className="sub-field">
-                <label>Target Translation <span style={{ color: 'var(--accent-red)' }}>*</span></label>
+                <label>{t.translate.glossary.targetTranslation} <span style={{ color: 'var(--accent-red)' }}>*</span></label>
                 <textarea
-                    ref={resizeTextarea} className="sub-translated" rows={1} placeholder="Target word/phrase"
+                    ref={resizeTextarea} className="sub-translated" rows={1} placeholder={t.translate.glossary.targetPlaceholder}
                     value={entry.target} onChange={(e) => handleUpdateEntry(index, 'target', e.target.value)} required
                 />
             </div>
 
             <div className="sub-field">
-                <label>Detail / Context <span style={{ color: 'var(--text-muted)', textTransform: 'none', fontWeight: 'normal' }}>(Optional)</span></label>
+                <label>{t.translate.glossary.detailContext} <span style={{ color: 'var(--text-muted)', textTransform: 'none', fontWeight: 'normal' }}>({t.translate.glossary.optional})</span></label>
                 <textarea
-                    ref={resizeTextarea} className="sub-detail" rows={1} placeholder="Additional context..."
+                    ref={resizeTextarea} className="sub-detail" rows={1} placeholder={t.translate.glossary.detailPlaceholder}
                     value={entry.detail || ''} onChange={(e) => handleUpdateEntry(index, 'detail', e.target.value)}
                 />
             </div>
 
             <div className="sub-actions">
-                <button type="button" className="btn-add-line" onClick={() => handleAddEntry(index)} title="Add entry below"><i className="fas fa-plus-circle" /></button>
-                <button type="button" className="btn-del-line" onClick={() => handleDeleteEntry(index)} title="Delete entry"><i className="fas fa-trash-alt" /></button>
+                <button type="button" className="btn-add-line" onClick={() => handleAddEntry(index)} title={t.translate.glossary.addEntry}><i className="fas fa-plus-circle" /></button>
+                <button type="button" className="btn-del-line" onClick={() => handleDeleteEntry(index)} title={t.translate.glossary.deleteEntry}><i className="fas fa-trash-alt" /></button>
             </div>
         </div>
     );
@@ -81,7 +84,8 @@ const GlossaryRecommendationRow = memo(({
     return (
         prevProps.entry === nextProps.entry &&
         prevProps.isDuplicate === nextProps.isDuplicate &&
-        prevProps.index === nextProps.index
+        prevProps.index === nextProps.index &&
+        prevProps.t === nextProps.t
     );
 });
 
@@ -90,6 +94,7 @@ const GlossaryRecommendationRow = memo(({
 export default function GlossaryRecommendationClient() {
     const router = useRouter();
     const { showAlert } = useAlert();
+    const { t } = useLanguage();
 
     // --- State untuk Load Data ---
     const [isLoadingData, setIsLoadingData] = useState(true);
@@ -137,7 +142,7 @@ export default function GlossaryRecommendationClient() {
 
                 const recommendations = parsedData.recommendations || [];
                 if (recommendations.length === 0) {
-                    showAlert('No recommendation data available.', 'error');
+                    showAlert(t.translate.glossary.alertNoRecommendation, 'error');
                     router.push('/translate');
                     return;
                 }
@@ -174,14 +179,14 @@ export default function GlossaryRecommendationClient() {
 
             } catch (error) {
                 console.error("Gagal mem-parsing data dari sessionStorage", error);
-                showAlert('Format data rekomendasi tidak valid.', 'error');
+                showAlert(t.translate.glossary.alertInvalidFormat, 'error');
                 router.push('/translate');
             }
         } else {
-            showAlert('No recommendation data available.', 'error');
+            showAlert(t.translate.glossary.alertNoRecommendation, 'error');
             router.push('/translate');
         }
-    }, [router, showAlert]);
+    }, [router, showAlert, t]);
 
     // 2. Fungsi Logika Form Editor
     const sourceCounts = entries.reduce((acc, entry) => {
@@ -226,7 +231,7 @@ export default function GlossaryRecommendationClient() {
 
         const hasDuplicates = Object.values(sourceCounts).some(count => count > 1);
         if (hasDuplicates) {
-            showAlert('There are duplicate Source Terms. Please fix them before saving!', 'error');
+            showAlert(t.translate.glossary.alertDuplicate, 'error');
             return;
         }
 
@@ -254,7 +259,7 @@ export default function GlossaryRecommendationClient() {
                 .map(old => old.id as number);
 
             if (existingGlossaryId && creates.length === 0 && updates.length === 0 && deletes.length === 0) {
-                showAlert('Tidak ada perubahan untuk disimpan.', 'info');
+                showAlert(t.translate.glossary.alertNoChanges, 'info');
                 setIsSaving(false);
                 return;
             }
@@ -273,7 +278,7 @@ export default function GlossaryRecommendationClient() {
             const response = await saveGlossaryAction(payload);
 
             if (!response.success) {
-                showAlert(`Failed to save glossary: ${response.message}`, 'error');
+                showAlert(interpolate(t.translate.glossary.alertSaveFailed, { message: response.message }), 'error');
                 return;
             }
 
@@ -283,7 +288,7 @@ export default function GlossaryRecommendationClient() {
 
         } catch (error) {
             console.error(error);
-            showAlert('Gagal menyimpan glosarium', 'error');
+            showAlert(t.translate.glossary.alertSaveError, 'error');
         } finally {
             setIsSaving(false);
         }
@@ -294,7 +299,7 @@ export default function GlossaryRecommendationClient() {
         return (
             <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-primary)' }}>
                 <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px', fontSize: '1.5rem' }}></i>
-                <p style={{ marginTop: '12px' }}>Memuat data rekomendasi...</p>
+                <p style={{ marginTop: '12px' }}>{t.translate.glossary.loadingData}</p>
             </div>
         );
     }
@@ -306,12 +311,12 @@ export default function GlossaryRecommendationClient() {
                 <button
                     className="btn btn-outline btn-sm"
                     onClick={() => {
-                        if (window.confirm('Batal menyimpan glosarium dan kembali ke daftar?')) {
+                        if (window.confirm(t.translate.glossary.confirmBack)) {
                             router.push('/translate');
                         }
                     }}
                 >
-                    <i className="fas fa-arrow-left"></i> Kembali
+                    <i className="fas fa-arrow-left"></i> {t.translate.glossary.back}
                 </button>
             </div>
 
@@ -319,7 +324,7 @@ export default function GlossaryRecommendationClient() {
                 <div className="card-header">
                     <h2>
                         <i className="fas fa-magic" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
-                        Glossary Editor (Job #{translationId})
+                        {interpolate(t.translate.glossary.editorTitle, { id: translationId ?? '' })}
                     </h2>
                     <div className="card-actions">
                         <button
@@ -327,9 +332,9 @@ export default function GlossaryRecommendationClient() {
                             className="btn btn-outline btn-sm"
                             onClick={() => {
                                 setEntries([...initialEntries]);
-                                showAlert('Reverted to last saved state.', 'info');
+                                showAlert(t.translate.glossary.alertReverted, 'info');
                             }}>
-                            <i className="fas fa-undo-alt"></i> Reset
+                            <i className="fas fa-undo-alt"></i> {t.translate.glossary.reset}
                         </button>
                     </div>
                 </div>
@@ -339,27 +344,27 @@ export default function GlossaryRecommendationClient() {
                         <div style={{ marginBottom: '20px' }}>
                             <h3 style={{ fontSize: '1.1rem', marginBottom: '15px', color: 'var(--text-primary)' }}>
                                 <i className="fas fa-book-medical" style={{ marginRight: 8, color: 'var(--accent-green)' }}></i>
-                                Create New Glossary
+                                {t.translate.glossary.createNew}
                             </h3>
                             <div className="form-row">
                                 <div className="form-group" style={{ flex: '1 1 100%' }}>
-                                    <label htmlFor="glossaryName">Glossary Name <span style={{ color: 'var(--accent-red)' }}>*</span></label>
+                                    <label htmlFor="glossaryName">{t.translate.glossary.glossaryName} <span style={{ color: 'var(--accent-red)' }}>*</span></label>
                                     <input
-                                        type="text" className="form-control" id="glossaryName" placeholder="e.g. Anime Subtitle DB"
+                                        type="text" className="form-control" id="glossaryName" placeholder={t.translate.glossary.glossaryNamePlaceholder}
                                         value={glossaryInfo.name} onChange={(e) => setGlossaryInfo({ ...glossaryInfo, name: e.target.value })} required
                                     />
                                 </div>
                             </div>
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label htmlFor="sourceLang">Source Language <span style={{ color: 'var(--accent-red)' }}>*</span></label>
+                                    <label htmlFor="sourceLang">{t.translate.glossary.sourceLanguage} <span style={{ color: 'var(--accent-red)' }}>*</span></label>
                                     <input
                                         type="text" className="form-control" id="sourceLang"
                                         value={sourceLang} required disabled
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label htmlFor="targetLang">Target Language <span style={{ color: 'var(--accent-red)' }}>*</span></label>
+                                    <label htmlFor="targetLang">{t.translate.glossary.targetLanguage} <span style={{ color: 'var(--accent-red)' }}>*</span></label>
                                     <input
                                         type="text" className="form-control" id="targetLang"
                                         value={targetLang} required disabled
@@ -372,14 +377,14 @@ export default function GlossaryRecommendationClient() {
                         <div style={{ padding: '12px 16px', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '8px', marginBottom: '20px' }}>
                             <p style={{ margin: 0, color: 'var(--text-primary)' }}>
                                 <i className="fas fa-info-circle" style={{ color: 'var(--accent-blue)', marginRight: '8px' }}></i>
-                                Appending to Glossary: <strong>{glossaryInfo.name}</strong> ({glossaryInfo.sourceLanguage} → {glossaryInfo.targetLanguage})
+                                {t.translate.glossary.appendingTo} <strong>{glossaryInfo.name}</strong> ({glossaryInfo.sourceLanguage} → {glossaryInfo.targetLanguage})
                             </p>
                         </div>
                     )}
 
                     <div className="form-group" style={{ marginBottom: '20px' }}>
                         <label style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '12px', display: 'block' }}>
-                            Glossary Entries
+                            {t.translate.glossary.entries}
                         </label>
                         <div id="GlosaryContainer">
                             {entries.map((entry, index) => {
@@ -393,6 +398,7 @@ export default function GlossaryRecommendationClient() {
                                         entry={entry}
                                         index={index}
                                         isDuplicate={isDuplicate}
+                                        t={t}
                                         handleUpdateEntry={handleUpdateEntry}
                                         handleAddEntry={handleAddEntry}
                                         handleDeleteEntry={handleDeleteEntry}
@@ -406,7 +412,7 @@ export default function GlossaryRecommendationClient() {
                     <div ref={saveContainerRef} style={{ marginTop: '30px' }}>
                         <button type="submit" className="btn btn-primary" disabled={isSaving}>
                             <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`}></i>{' '}
-                            {isSaving ? 'Saving Glossary...' : 'Confirm & Save Glossary'}
+                            {isSaving ? t.translate.glossary.savingGlossary : t.translate.glossary.confirmSave}
                         </button>
                     </div>
                 </form>
@@ -432,7 +438,7 @@ export default function GlossaryRecommendationClient() {
                     }}
                 >
                     <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} />
-                    {isSaving ? 'Saving...' : 'Confirm & Save'}
+                    {isSaving ? t.translate.glossary.savingGlossary : t.translate.glossary.confirmSaveShort}
                 </button>
             )}
         </>

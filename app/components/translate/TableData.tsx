@@ -5,6 +5,7 @@ import Link from "next/link";
 import EllipsisDropdown from "../client/ElipsisDropdown";
 import ButtonGenerateGlosary from "./ButtonGenerateGlosary";
 import { getTranslationsAction } from "@/app/actions/translate/getTranslationsAction";
+import { useLanguage } from "../client/LanguageProvider";
 
 export interface MetaPagination {
   total: number;
@@ -59,6 +60,7 @@ export default function TableData() {
   const [meta, setMeta] = useState<MetaPagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const { t, intlLocale } = useLanguage();
 
   // 1. Fetch Data Awal & Pindah Halaman
   useEffect(() => {
@@ -107,11 +109,11 @@ export default function TableData() {
       <div className="card-header">
         <h2>
           <i className="fas fa-table" style={{ color: "var(--accent)", marginRight: 10 }} />
-          Recent Translation Jobs
+          {t.translate.list.recentJobs}
         </h2>
         <div className="card-actions">
           <Link href="/translate/create" className="btn btn-primary btn-sm">
-            <i className="fas fa-plus"></i> New Translate
+            <i className="fas fa-plus"></i> {t.translate.list.newTranslate}
           </Link>
         </div>
       </div>
@@ -120,16 +122,16 @@ export default function TableData() {
         <table>
           <thead>
             <tr>
-              <th>Job Name</th>
-              <th>Source</th>
-              <th>Target</th>
-              <th>Glossary</th>
-              <th>Model</th>
-              <th>Total Tokens</th>
-              <th>Total Cost</th>
-              <th>Status</th>
-              <th>Date</th>
-              <th style={{ textAlign: "right" }}>Actions</th>
+              <th>{t.translate.list.jobName}</th>
+              <th>{t.translate.list.source}</th>
+              <th>{t.translate.list.target}</th>
+              <th>{t.translate.list.glossary}</th>
+              <th>{t.translate.list.model}</th>
+              <th>{t.translate.list.totalTokens}</th>
+              <th>{t.translate.list.totalCost}</th>
+              <th>{t.translate.list.status}</th>
+              <th>{t.translate.list.date}</th>
+              <th style={{ textAlign: "right" }}>{t.translate.list.actions}</th>
             </tr>
           </thead>
           <tbody>
@@ -147,7 +149,7 @@ export default function TableData() {
                     justifyContent: "center"
                   }}>
                     <i className="fas fa-spinner fa-spin" style={{ fontSize: 30, color: "var(--accent)", marginBottom: 10 }} />
-                    <p style={{ margin: 0, color: "var(--text-muted)" }}>Loading translation jobs...</p>
+                    <p style={{ margin: 0, color: "var(--text-muted)" }}>{t.translate.list.loading}</p>
                   </div>
                 </td>
               </tr>
@@ -165,7 +167,7 @@ export default function TableData() {
                     justifyContent: "center"
                   }}>
                     <i className="fas fa-inbox" style={{ fontSize: 36, marginBottom: 12, color: "#999" }} />
-                    <p style={{ margin: 0, color: "var(--text-muted)" }}>No translation jobs found.</p>
+                    <p style={{ margin: 0, color: "var(--text-muted)" }}>{t.translate.list.empty}</p>
                   </div>
                 </td>
               </tr>
@@ -175,11 +177,11 @@ export default function TableData() {
                   <td>{job.fileName}</td>
                   <td>{job.sourceLang}</td>
                   <td>{job.targetLang}</td>
-                  <td>{job.glossary ? job.glossary.name : "No"}</td>
+                  <td>{job.glossary ? job.glossary.name : t.translate.list.no}</td>
                   <td style={{ whiteSpace: "nowrap" }}>{job.provider.model}</td>
                   <td style={{ whiteSpace: "nowrap" }}>{job.totalToken}</td>
                   <td style={{ whiteSpace: "nowrap" }}>
-                    {job.totalCost.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}
+                    {job.totalCost.toLocaleString(intlLocale, { style: "currency", currency: "IDR" })}
                   </td>
                   <td style={{ whiteSpace: "nowrap" }}>
                     <span className={`status-badge ${statusClass[job.status]}`}>
@@ -187,7 +189,7 @@ export default function TableData() {
                       {!["ERROR", "COMPLETED"].includes(job.status) ? `: ${job.progress}` : ""}
                     </span>
                   </td>
-                  <td style={{ whiteSpace: "nowrap" }}>{new Date(job.createdAt).toLocaleString()}</td>
+                  <td style={{ whiteSpace: "nowrap" }}>{new Date(job.createdAt).toLocaleString(intlLocale)}</td>
                   <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                     <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "4px", flexWrap: "nowrap" }}>
 
@@ -199,10 +201,10 @@ export default function TableData() {
 
                       <EllipsisDropdown>
                         <Link href={`/translate/${job.id}`} className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
-                          <i className="fas fa-eye"></i> View
+                          <i className="fas fa-eye"></i> {t.translate.list.view}
                         </Link>
                         <Link href={`api/translate/${job.id}/downloadsource`} className={`dropdown-item ${!["COMPLETED", "PROCESSING"].includes(job.status) ? "disabled" : ""}`}>
-                          <i className="fas fa-download"></i> Download Source
+                          <i className="fas fa-download"></i> {t.translate.list.downloadSource}
                         </Link>
                         <ButtonGenerateGlosary jobId={job.id} jobStatus={job.status} jobName={job.fileName} />
                       </EllipsisDropdown>
@@ -220,8 +222,8 @@ export default function TableData() {
         <div className="pagination-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', borderTop: '1px solid var(--border-color)' }}>
 
           <div className="pagination-text" style={{ color: 'var(--text-muted)' }}>
-            Page <strong>{meta.page}</strong> from <strong>{meta.lastPage}</strong>
-            <span className="pagination-total"> (Total: {meta.total} data)</span>
+            {t.translate.list.page} <strong>{meta.page}</strong> {t.translate.list.from} <strong>{meta.lastPage}</strong>
+            <span className="pagination-total"> ({t.translate.list.total}: {meta.total})</span>
           </div>
 
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -231,7 +233,7 @@ export default function TableData() {
               disabled={meta.page <= 1}
               style={{ opacity: meta.page <= 1 ? 0.5 : 1 }}
             >
-              <i className="fas fa-chevron-left" /> <span>Prev</span>
+              <i className="fas fa-chevron-left" /> <span>{t.translate.list.prev}</span>
             </button>
 
             <button
@@ -240,7 +242,7 @@ export default function TableData() {
               disabled={meta.page >= meta.lastPage}
               style={{ opacity: meta.page >= meta.lastPage ? 0.5 : 1 }}
             >
-              <span>Next</span> <i className="fas fa-chevron-right" />
+              <span>{t.translate.list.next}</span> <i className="fas fa-chevron-right" />
             </button>
           </div>
 

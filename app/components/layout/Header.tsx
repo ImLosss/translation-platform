@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import HamburgerButton from '../client/HamburgerButton';
 import NotifButtonAndModal from '../client/NotifButtonModal';
+import LanguageSwitcher from '../client/LanguageSwitcher';
 import { useUser } from '../client/UserProvider';
 import Image from 'next/image';
 
@@ -62,6 +63,7 @@ export default function Header() {
 
       <div className="header-right">
         {/* <NotifButtonAndModal /> */}
+        <LanguageSwitcher />
         <div className="profile-mini">
           <div className="avatar">
             {user.avatar ? (

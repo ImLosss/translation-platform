@@ -6,6 +6,7 @@ import "./panel.css";
 import { redirect } from "next/navigation";
 import ModalProvider from "../components/ui/ModalProvider";
 import LoadingProvider from "../components/ui/LoadingProvider";
+import { LanguageProvider } from "../components/client/LanguageProvider";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -13,18 +14,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <UserProvider user={user}>
-      <SidebarProvider user={user}>
-          <ModalProvider>
-            <LoadingProvider>
-              <div className="main-wrapper">
-                <Header />
-                <main className="content">
-                  {children}
-                </main>
-              </div>
-            </LoadingProvider>
-          </ModalProvider>
-      </SidebarProvider>
+      <LanguageProvider>
+        <SidebarProvider user={user}>
+            <ModalProvider>
+              <LoadingProvider>
+                <div className="main-wrapper">
+                  <Header />
+                  <main className="content">
+                    {children}
+                  </main>
+                </div>
+              </LoadingProvider>
+            </ModalProvider>
+        </SidebarProvider>
+      </LanguageProvider>
     </UserProvider>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { useAlert } from '../ui/Alert';
 import { updateRowAction } from '@/app/actions/translate/updateRowAction';
+import { useLanguage } from '../client/LanguageProvider';
 
 export interface SubtitleLine {
     id: number;
@@ -26,6 +27,7 @@ const SubtitleRow = memo(({
     isActive,
     showPreview,
     driveId,
+    t,
     handleTimeChange,
     handleTimeBlur,
     handleUpdateLine,
@@ -44,7 +46,7 @@ const SubtitleRow = memo(({
                 <input
                     type="text"
                     className="sub-start"
-                    title="Start Time"
+                    title={t.translate.editor.startTime}
                     value={line.start}
                     onChange={(e) => handleTimeChange(e, index, 'start')}
                     onBlur={() => handleTimeBlur(index, 'start')}
@@ -53,7 +55,7 @@ const SubtitleRow = memo(({
                 <input
                     type="text"
                     className="sub-end"
-                    title="End Time"
+                    title={t.translate.editor.endTime}
                     value={line.end}
                     onChange={(e) => handleTimeChange(e, index, 'end')}
                     onBlur={() => handleTimeBlur(index, 'end')}
@@ -63,7 +65,7 @@ const SubtitleRow = memo(({
 
             {/* KOLOM SOURCE */}
             <div className="sub-field" style={{ flex: 1, borderBottom: '1px solid var(--border-color)' }}>
-                <label>Source</label>
+                <label>{t.translate.editor.source}</label>
                 <textarea
                     ref={resizeTextarea}
                     className="sub-source"
@@ -75,7 +77,7 @@ const SubtitleRow = memo(({
 
             {/* KOLOM TRANSLATION */}
             <div className="sub-field" style={{ flex: 1, borderBottom: '1px solid var(--border-color)' }}>
-                <label>Translation</label>
+                <label>{t.translate.editor.translation}</label>
                 <textarea
                     ref={resizeTextarea}
                     className="sub-translated"
@@ -90,7 +92,7 @@ const SubtitleRow = memo(({
                 {driveId && (
                     <button
                         className="btn-play-line"
-                        title={showPreview ? "Seek video to this timestamp" : "Buka Preview terlebih dahulu"}
+                        title={showPreview ? t.translate.editor.seekVideo : t.translate.editor.openPreviewFirst}
                         onClick={() => seekToTimestamp(line.start)}
                         disabled={!showPreview}
                         style={{ opacity: showPreview ? 1 : 0.5, cursor: showPreview ? 'pointer' : 'not-allowed' }}
@@ -98,10 +100,10 @@ const SubtitleRow = memo(({
                         <i className="fas fa-play" />
                     </button>
                 )}
-                <button className="btn-add-line" title="Add Line" onClick={() => handleAddLine(index)}>
+                <button className="btn-add-line" title={t.translate.editor.addLine} onClick={() => handleAddLine(index)}>
                     <i className="fas fa-plus-circle" />
                 </button>
-                <button className="btn-del-line" title="Delete Line" onClick={() => handleDeleteLine(index)}>
+                <button className="btn-del-line" title={t.translate.editor.deleteLine} onClick={() => handleDeleteLine(index)}>
                     <i className="fas fa-trash-alt" />
                 </button>
             </div>
@@ -113,7 +115,8 @@ const SubtitleRow = memo(({
         prevProps.line === nextProps.line &&
         prevProps.isActive === nextProps.isActive &&
         prevProps.showPreview === nextProps.showPreview &&
-        prevProps.index === nextProps.index
+        prevProps.index === nextProps.index &&
+        prevProps.t === nextProps.t
     );
 });
 
@@ -125,6 +128,7 @@ export default function SubtitleEditor({
     videoUrl: initialVideoUrl = '',
 }: SubtitleEditorProps) {
     const { showAlert } = useAlert();
+    const { t } = useLanguage();
     const initialSortedLines = [...initialLines].sort((a, b) => a.sequence - b.sequence);
 
     const [lines, setLines] = useState<SubtitleLine[]>(initialSortedLines);
@@ -184,8 +188,8 @@ export default function SubtitleEditor({
 
     const handleReset = useCallback(() => {
         setLines([...lastSavedLines]);
-        showAlert('Successfully reset to last saved state.', 'info');
-    }, [lastSavedLines, showAlert]);
+        showAlert(t.translate.editor.alertReset, 'info');
+    }, [lastSavedLines, showAlert, t]);
 
     useEffect(() => {
         if (!driveId || !showPreview) setActiveLineIndex(null);
@@ -204,14 +208,14 @@ export default function SubtitleEditor({
             }
             return [...prev, newLine];
         });
-        if (afterIndex === undefined) showAlert('New subtitle line added.', 'success');
-    }, [showAlert]);
+        if (afterIndex === undefined) showAlert(t.translate.editor.alertNewLine, 'success');
+    }, [showAlert, t]);
 
     const handleDeleteLine = useCallback((index: number) => {
-        if (lines.length <= 1) { showAlert('At least one subtitle line is required.', 'warning'); return; }
+        if (lines.length <= 1) { showAlert(t.translate.editor.alertAtLeastOne, 'warning'); return; }
         setLines((prev) => prev.filter((_, i) => i !== index));
-        showAlert('Subtitle line deleted.', 'warning');
-    }, [lines, showAlert]);
+        showAlert(t.translate.editor.alertDeleted, 'warning');
+    }, [lines, showAlert, t]);
 
     const handleUpdateLine = useCallback((index: number, field: keyof SubtitleLine, value: string) => {
         setLines((prev) => prev.map((line, i) => (i === index ? { ...line, [field]: value } : line)));
@@ -259,14 +263,14 @@ export default function SubtitleEditor({
 
             // Validasi: jika tidak ada perubahan sama sekali, jangan hit API
             if (creates.length === 0 && updates.length === 0 && deletes.length === 0) {
-                showAlert('Tidak ada perubahan untuk disimpan.', 'info');
+                showAlert(t.translate.editor.alertNoChanges, 'info');
                 return;
             }
 
             const result = await updateRowAction(translationId, { creates, updates, deletes });
             
             if (result.success) {
-                showAlert('Saved.', 'success');
+                showAlert(t.translate.editor.alertSaved, 'success');
 
                 let finalLines = [...sequencedLines];
 
@@ -519,26 +523,26 @@ export default function SubtitleEditor({
             <div className="card-header">
                 <h2>
                     <i className="fas fa-closed-captioning" style={{ color: 'var(--accent)', marginRight: 10 }} />
-                    Subtitle Preview (SRT)
+                    {t.translate.editor.title}
                 </h2>
                 <div className="card-actions">
-                    <button className="btn btn-outline btn-sm" onClick={handleReset}><i className="fas fa-undo" /> Reset</button>
-                    <button className="btn btn-primary btn-sm" onClick={handleExport} disabled={isSaving}><i className="fas fa-save" /> Save & Export</button>
+                    <button className="btn btn-outline btn-sm" onClick={handleReset}><i className="fas fa-undo" /> {t.translate.editor.reset}</button>
+                    <button className="btn btn-primary btn-sm" onClick={handleExport} disabled={isSaving}><i className="fas fa-save" /> {t.translate.editor.saveExport}</button>
                 </div>
             </div>
 
             <div className="form-group" style={{ marginBottom: 16 }}>
-                <label htmlFor="videoUrl">Google Drive Video URL (PUBLIC)</label>
+                <label htmlFor="videoUrl">{t.translate.editor.driveUrlPublic}</label>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <input
                         type="text" id="videoUrl" className="form-control"
-                        placeholder="https://drive.google.com/file/d/ID_VIDEO/view"
+                        placeholder={t.translate.editor.driveUrlPlaceholder}
                         value={videoUrl} onChange={(e) => { setVideoUrl(e.target.value); if (!e.target.value) setShowPreview(false); }}
                         style={{ flex: 1, minWidth: '200px' }}
                     />
                     {driveId && (
                         <button className={`btn ${showPreview ? 'btn-outline' : 'btn-primary'}`} onClick={() => setShowPreview(!showPreview)} style={{ whiteSpace: 'nowrap' }}>
-                            <i className={`fas ${showPreview ? 'fa-eye-slash' : 'fa-eye'}`} /> {showPreview ? 'Sembunyikan Preview' : 'Tampilkan Preview'}
+                            <i className={`fas ${showPreview ? 'fa-eye-slash' : 'fa-eye'}`} /> {showPreview ? t.translate.editor.hidePreview : t.translate.editor.showPreview}
                         </button>
                     )}
                 </div>
@@ -554,6 +558,7 @@ export default function SubtitleEditor({
                         isActive={activeLineIndex === index}
                         showPreview={showPreview}
                         driveId={driveId}
+                        t={t}
                         handleTimeChange={handleTimeChange}
                         handleTimeBlur={handleTimeBlur}
                         handleUpdateLine={handleUpdateLine}
@@ -571,7 +576,7 @@ export default function SubtitleEditor({
                 style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 12, justifyContent: 'end' }}
             >
                 <button className="btn btn-outline btn-sm" onClick={handleSave} disabled={isSaving}>
-                    <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} /> {isSaving ? 'Saving...' : 'Save Changes'}
+                    <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} /> {isSaving ? t.translate.editor.saving : t.translate.editor.saveChanges}
                 </button>
             </div>
 
@@ -595,7 +600,7 @@ export default function SubtitleEditor({
                     }}
                 >
                     <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} /> 
-                    {isSaving ? 'Saving...' : 'Save Changes'}
+                    {isSaving ? t.translate.editor.saving : t.translate.editor.saveChanges}
                 </button>
             )}
 
@@ -624,7 +629,7 @@ export default function SubtitleEditor({
                         onMouseDown={onDragStart}
                         onTouchStart={onDragStart}
                     >
-                        <span>🎥 Preview (drag me)</span>
+                        <span>🎥 {t.translate.editor.previewDragMe}</span>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                             <select
                                 value={playbackSpeed}
@@ -697,11 +702,11 @@ export default function SubtitleEditor({
                             onPause={() => setIsPaused(true)}
                             onError={() => {
                                 setIsVideoLoading(false);
-                                showAlert("Failed to load video preview. Check the URL or Google Drive sharing settings.", "error");
+                                showAlert(t.translate.editor.alertVideoFailed, "error");
                             }}
                             style={{ width: '100%', height: '100%', objectFit: 'contain', cursor: 'pointer', display: 'block' }}
                         >
-                            {subtitleTrackUrl && <track kind="subtitles" src={subtitleTrackUrl} srcLang="id" label="Translated" default />}
+                            {subtitleTrackUrl && <track kind="subtitles" src={subtitleTrackUrl} srcLang="id" label={t.translate.editor.translated} default />}
                         </video>
                     </div>
 

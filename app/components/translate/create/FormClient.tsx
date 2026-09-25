@@ -7,6 +7,8 @@ import { redirect } from 'next/navigation';
 import SelectSearch from '../../client/SelectSearch';
 import { createFromUrlAction } from '@/app/actions/translate/createFromUrlAction';
 import { AiModelOption } from '@/app/(panel)/translate/create/page';
+import { useLanguage } from '../../client/LanguageProvider';
+import { interpolate } from '@/app/lib/i18n/format';
 
 
 const languageOptions = [
@@ -22,6 +24,7 @@ const languageOptions = [
 
 export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; aiModels: AiModelOption[] }) {
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
 
   const [fileName, setFileName] = useState('');
   const [model, setModel] = useState<string>('');
@@ -41,7 +44,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
 
   // ===================== LOGIKA GLOSARIUM =====================
   const filteredGlossaryOptions = useMemo(() => {
-    if (!glosaries) return [{ value: '', label: '-- No Glossary Available --' }];
+    if (!glosaries) return [{ value: '', label: t.translate.create.noGlossaryAvailable }];
     
     const filtered = glosaries.filter((g) => 
       (g.sourceLanguage === sourceLang && g.targetLanguage === targetLang) ||
@@ -53,9 +56,9 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
       label: g.name
     }));
 
-    if (options.length === 0) return [{ value: '', label: '-- No matching Glossary --' }];
-    return [{ value: '', label: '-- Select Glosary --' }, ...options];
-  }, [glosaries, sourceLang, targetLang]);
+    if (options.length === 0) return [{ value: '', label: t.translate.create.noMatchingGlossary }];
+    return [{ value: '', label: t.translate.create.selectGlossary }, ...options];
+  }, [glosaries, sourceLang, targetLang, t]);
 
   useEffect(() => {
     setGlossaryId('');
@@ -66,11 +69,11 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
     (file: File) => {
       const ext = file.name.split('.').pop()?.toLowerCase();
       if (!['srt'].includes(ext || '')) {
-        showAlert('Unsupported file format. Please upload an .srt file.', 'error');
+        showAlert(t.translate.create.alertUnsupportedFormat, 'error');
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        showAlert('File size too large. Maximum 10MB.', 'error');
+        showAlert(t.translate.create.alertFileTooLarge, 'error');
         return;
       }
 
@@ -84,9 +87,9 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
         setSrtContent(text);
       };
       reader.readAsText(file);
-      showAlert(`File "${file.name}" berhasil diunggah`, 'success');
+      showAlert(interpolate(t.translate.create.alertFileUploaded, { name: file.name }), 'success');
     },
-    [showAlert]
+    [showAlert, t]
   );
 
   const handleDrop = (e: React.DragEvent) => {
@@ -102,7 +105,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
     
     // Validasi Umum
     if (!fileName || !sourceLang || !targetLang) {
-      showAlert('Harap isi Nama Job, Source, dan Target Language', 'error');
+      showAlert(t.translate.create.alertValidation, 'error');
       return;
     }
 
@@ -124,9 +127,9 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
     } else result = await createFromUrlAction(payload);
 
     if (!result.success) {
-      showAlert(result.message || 'Gagal membuat job.', 'error');
+      showAlert(result.message || t.translate.create.alertCreateFailed, 'error');
     } else {
-      showAlert(result.message || 'Job terbuat sukses!', 'success');
+      showAlert(result.message || t.translate.create.alertCreateSuccess, 'success');
       redirect('/translate');
     }
   };
@@ -136,7 +139,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
       <div className="card-header">
         <h2>
           <i className="fas fa-pen-fancy" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
-          New Translation Job
+          {t.translate.create.title}
         </h2>
         <div className="card-actions">
           <button
@@ -155,7 +158,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
               setInputMethod('file');
             }}
           >
-            <i className="fas fa-undo-alt"></i> Reset
+            <i className="fas fa-undo-alt"></i> {t.translate.create.reset}
           </button>
         </div>
       </div>
@@ -163,55 +166,55 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
       <form onSubmit={handleSubmit}>
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="fileName">Job Name</label>
+            <label htmlFor="fileName">{t.translate.create.jobName}</label>
             <input
               type="text"
               className="form-control"
               id="fileName"
-              placeholder="e.g. Episode 12 - Subtitle"
+              placeholder={t.translate.create.jobNamePlaceholder}
               value={fileName}
               onChange={(e) => setFileName(e.target.value)}
               required
             />
           </div>
           <div className="form-group">
-            <label htmlFor="sourceLang">Source Language</label>
+            <label htmlFor="sourceLang">{t.translate.create.sourceLanguage}</label>
             <SelectSearch
               id="sourceLang"
               options={languageOptions}
               value={sourceLang}
               onChange={setSourceLang}
-              placeholder="Select source language"
+              placeholder={t.translate.create.selectSource}
             />
           </div>
         </div>
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="targetLang">Target Language</label>
+            <label htmlFor="targetLang">{t.translate.create.targetLanguage}</label>
             <SelectSearch
               id="targetLang"
               options={languageOptions}
               value={targetLang}
               onChange={setTargetLang}
-              placeholder="Select target language"
+              placeholder={t.translate.create.selectTarget}
             />
           </div>
           <div className="form-group">
-            <label htmlFor="model">LLM Model</label>
+            <label htmlFor="model">{t.translate.create.llmModel}</label>
             <SelectSearch
               id="model"
               options={aiModels}
               value={model}
               onChange={setModel}
-              placeholder="Select LLM Model"
+              placeholder={t.translate.create.selectModel}
             />
           </div>
         </div>
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="batchSize">Batch Processing Size</label>
+            <label htmlFor="batchSize">{t.translate.create.batchSize}</label>
             <input
               type="number"
               className="form-control"
@@ -221,13 +224,13 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
             />
           </div>
           <div className="form-group">
-            <label htmlFor="glossaryId">Glossary (Optional)</label>
+            <label htmlFor="glossaryId">{t.translate.create.glossaryOptional}</label>
             <SelectSearch
               id="glossaryId"
               options={filteredGlossaryOptions}
               value={glossaryId}
               onChange={setGlossaryId}
-              placeholder={filteredGlossaryOptions.length > 1 ? "Pilih Glosarium..." : "Glosarium tidak tersedia"}
+              placeholder={filteredGlossaryOptions.length > 1 ? t.translate.create.selectGlossary : t.translate.create.glossaryUnavailable}
             />
           </div>
         </div>
@@ -236,7 +239,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
 
         {/* ================= PILIHAN METODE INPUT ================= */}
         <div className="form-group" style={{ marginBottom: '20px' }}>
-          <label style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Subtitle Source Method</label>
+          <label style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{t.translate.create.subtitleSourceMethod}</label>
           <div style={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
               <input 
@@ -246,7 +249,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
                 checked={inputMethod === 'file'} 
                 onChange={() => setInputMethod('file')} 
               />
-              <span>Upload / Paste SRT</span>
+              <span>{t.translate.create.uploadPasteSrt}</span>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
               <input 
@@ -256,7 +259,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
                 checked={inputMethod === 'video'} 
                 onChange={() => setInputMethod('video')} 
               />
-              <span>Extract from Video</span>
+              <span>{t.translate.create.extractFromVideo}</span>
             </label>
           </div>
         </div>
@@ -264,9 +267,9 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
         {/* ================= SELALU TAMPILKAN VIDEO URL (Dinamis Required/Opsional) ================= */}
         <div className="form-group" style={{ backgroundColor: 'var(--bg-input)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '20px' }}>
           <label htmlFor="videoUrl">
-            Google Drive Video URL 
+            {t.translate.create.driveUrl}{' '}
             {inputMethod === 'file' ? (
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.85em', marginLeft: 6 }}>(Optional)</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.85em', marginLeft: 6 }}>{t.translate.create.optional}</span>
             ) : (
               <span style={{ color: 'var(--accent-red)', marginLeft: 4 }}>*</span>
             )}
@@ -281,14 +284,14 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
             style={{ marginTop: '8px' }}
           />
           <small style={{ color: 'var(--text-muted)', display: 'block', marginTop: '8px' }}>
-            <i className="fas fa-info-circle"></i> Ensure the Google Drive video link access is set to <strong>"Anyone with the link" (Public)</strong>.
+            <i className="fas fa-info-circle"></i> {t.translate.create.driveUrlHint}<strong>{t.translate.create.driveUrlHintPublic}</strong>.
           </small>
         </div>
 
         {/* ================= HANYA TAMPILKAN SRT INPUT JIKA METODE = FILE ================= */}
         {inputMethod === 'file' && (
           <div className="form-group">
-            <label>Subtitle Content (SRT) <span style={{ color: 'var(--accent-red)' }}>*</span></label>
+            <label>{t.translate.create.subtitleContent} <span style={{ color: 'var(--accent-red)' }}>*</span></label>
             
             <div
               className={`dropzone ${isDragOver ? 'dragover' : ''}`}
@@ -303,7 +306,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
               <div className="dz-icon">
                 <i className="fas fa-cloud-upload-alt"></i>
               </div>
-              <p>Drag & drop your .srt file here, or click to browse</p>
+              <p>{t.translate.create.dropzoneText}</p>
               <input
                 type="file"
                 id="fileInput"
@@ -324,7 +327,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
             <textarea
               className="form-control"
               rows={6}
-              placeholder="Atau tempel konten SRT di sini..."
+              placeholder={t.translate.create.pasteSrtPlaceholder}
               value={srtContent}
               onChange={(e) => setSrtContent(e.target.value)}
               style={{ marginTop: 12, resize: 'vertical' }}
@@ -334,7 +337,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
 
         <div style={{ marginTop: '30px' }}>
           <button type="submit" className="btn btn-primary">
-            <i className="fas fa-rocket"></i> Submit Job
+            <i className="fas fa-rocket"></i> {t.translate.create.submitJob}
           </button>
         </div>
       </form>

@@ -5,6 +5,8 @@ import { useModal } from "../ui/ModalProvider";
 import { useLoading } from "../ui/LoadingProvider";
 import { useAlert } from "../ui/Alert";
 import { generateGlossaryAction, checkGlossaryAction } from "@/app/actions/translate/generateGlosaryAction";
+import { useLanguage } from "../client/LanguageProvider";
+import { interpolate } from "@/app/lib/i18n/format";
 
 interface ButtonGenerateGlosaryProps {
   jobId: number;
@@ -16,6 +18,7 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
   const { showModal } = useModal();
   const { showLoading, updateMessage, hideLoading } = useLoading();
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
   const router = useRouter();
 
   // Fungsi helper untuk menyimpan ke session & redirect
@@ -33,7 +36,7 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
 
   // Fungsi untuk memulai Polling ke Backend
   const startPolling = () => {
-    showLoading("Generating glossary in background... Please wait.");
+    showLoading(t.translate.generate.loadingGenerating);
     
     let attempts = 0;
     const maxAttempts = 36; // Misal maks 36 kali cek (3 menit jika interval 5 detik)
@@ -50,7 +53,7 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
           if (recs.error) {
             clearInterval(interval);
             hideLoading();
-            showAlert(`Failed: ${recs.message}`, 'error');
+            showAlert(interpolate(t.translate.generate.failedPrefix, { message: recs.message }), 'error');
             return;
           }
           
@@ -58,21 +61,21 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
           if (Array.isArray(recs) && recs.length > 0) {
             clearInterval(interval);
             hideLoading();
-            showAlert("Glossary successfully generated!", 'success');
+            showAlert(t.translate.generate.successGenerated, 'success');
             saveAndRedirect(res.data);
             return;
           }
         }
         
         // Ubah teks loading sesekali agar user tahu sistem tidak freeze
-        if (attempts === 6) updateMessage("Analyzing terms with LLM...");
-        if (attempts === 15) updateMessage("Almost there, still processing...");
+        if (attempts === 6) updateMessage(t.translate.generate.loadingAnalyzing);
+        if (attempts === 15) updateMessage(t.translate.generate.loadingAlmost);
 
         // Timeout fallback
         if (attempts >= maxAttempts) {
           clearInterval(interval);
           hideLoading();
-          showAlert("Process is taking too long. Please check again later.", 'warning');
+          showAlert(t.translate.generate.timeout, 'warning');
         }
 
       } catch (error) {
@@ -83,25 +86,25 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
 
   // Fungsi yang men-trigger proses pembuatan baru
   const handleTriggerGenerate = async () => {
-    showLoading("Making request...");
+    showLoading(t.translate.generate.loadingRequest);
     try {
       const response = await generateGlossaryAction(jobId);
       if (!response.success) {
         hideLoading();
-        showAlert(`Failed to start job: ${response.message}`, 'error');
+        showAlert(interpolate(t.translate.generate.failedStart, { message: response.message }), 'error');
         return;
       }
       // Mulai polling karena respons awal hanya konfirmasi background job jalan
       startPolling();
     } catch (error: any) {
       hideLoading();
-      showAlert(`Error: ${error.message}`, 'error');
+      showAlert(interpolate(t.translate.generate.errorPrefix, { message: error.message }), 'error');
     }
   };
 
   // Fungsi utama saat tombol Generate diklik
   const handleInitialClick = async () => {
-    showLoading("Checking existing data...");
+    showLoading(t.translate.generate.loadingChecking);
     
     try {
       // 1. Cek dulu apakah rekomendasi sudah ada di database
@@ -115,23 +118,23 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
       if (isExistAndValid) {
         // 2. Jika SUDAH ADA, tampilkan modal dengan 3 Tombol
         showModal({
-          title: "Glossary Found",
-          message: "Glossary recommendations already exist for this translation job " + jobName + ". What would you like to do?",
+          title: t.translate.generate.modalFoundTitle,
+          message: interpolate(t.translate.generate.modalFoundMessage, { name: jobName }),
           buttons: [
             {
-              label: "Cancel",
+              label: t.common.cancel,
               variant: "outline",
               onClick: () => {}
             },
             {
-              label: "Regenerate",
+              label: t.translate.generate.regenerate,
               variant: "danger", 
               onClick: () => {
                 handleTriggerGenerate();
               }
             },
             {
-              label: "View Existing",
+              label: t.translate.generate.viewExisting,
               variant: "primary",
               onClick: () => saveAndRedirect(checkRes.data)
             }
@@ -139,16 +142,16 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
         });
       } else if (isExistAndSubmitted) {
         showModal({
-          title: "Generate Glossary",
-          message: "You have already submitted a glossary for this translation job " + jobName + ". Would you like to regenerate it?\n\nThis action will consume balance.",
+          title: t.translate.generate.modalGenerateTitle,
+          message: interpolate(t.translate.generate.modalSubmittedMessage, { name: jobName }),
           buttons: [
             {
-              label: "Cancel",
+              label: t.common.cancel,
               variant: "outline",
               onClick: () => { }
             },
             {
-              label: "Generate",
+              label: t.translate.generate.generate,
               variant: "primary",
               onClick: handleTriggerGenerate,
             }
@@ -157,16 +160,16 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
       } else {
         // 3. Jika BELUM ADA, tampilkan modal default (2 tombol)
         showModal({
-          title: "Generate Glossary",
-          message: "Are you sure you want to generate a glossary for this translation job " + jobName + "?\n\nThis action will consume balance.",
+          title: t.translate.generate.modalGenerateTitle,
+          message: interpolate(t.translate.generate.modalGenerateMessage, { name: jobName }),
           buttons: [
             {
-              label: "Cancel",
+              label: t.common.cancel,
               variant: "outline",
               onClick: () => { }
             },
             {
-              label: "Generate",
+              label: t.translate.generate.generate,
               variant: "primary",
               onClick: handleTriggerGenerate,
             }
@@ -175,7 +178,7 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
       }
     } catch (error: any) {
       hideLoading();
-      showAlert("Failed to check status", "error");
+      showAlert(t.translate.generate.failedCheck, "error");
     }
   };
 
@@ -186,7 +189,7 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
       disabled={jobStatus !== "COMPLETED"}
       onClick={handleInitialClick}
     >
-      <i className="fas fa-book"></i> Generate Glosary
+      <i className="fas fa-book"></i> {t.translate.generate.button}
     </button>
   );
 }
