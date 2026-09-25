@@ -34,6 +34,42 @@ export interface Dictionary {
     };
     empty: string;
   };
+  topup: {
+    title: string;
+    amountLabel: string;
+    customAmountPlaceholder: string;
+    methodLabel: string;
+    qrisDesc: string;
+    creditCardDesc: string;
+    notesTitle: string;
+    note1: string;
+    note2: string;
+    note3: string;
+    contactTitle: string;
+    topupAmount: string;
+    feeNotIncluded: string;
+    payNow: string;
+    processing: string;
+    scanTitle: string;
+    orderId: string;
+    expiresIn: string;
+    totalPayment: string;
+    scanInstruction: string;
+    waitingPayment: string;
+    cancel: string;
+    goToHistory: string;
+    alertMinAmount: string;
+    alertPaymentSuccess: string;
+    alertTransactionCancelled: string;
+    alertQrisExpired: string;
+    alertSnapNotReady: string;
+    alertCcSuccess: string;
+    alertCcPending: string;
+    alertCcError: string;
+    alertCcClosed: string;
+    alertQrisCreated: string;
+    alertPaymentError: string;
+  };
   translate: {
     list: {
       tipTitle: string;
@@ -297,6 +333,42 @@ const id: Dictionary = {
     },
     empty: 'Belum ada transaksi.',
   },
+  topup: {
+    title: 'Isi Saldo',
+    amountLabel: '1. Masukkan Jumlah (IDR)',
+    customAmountPlaceholder: 'Jumlah kustom (Min. 10.000)',
+    methodLabel: '2. Pilih Metode Pembayaran',
+    qrisDesc: 'Gopay, OVO, Dana, ShopeePay',
+    creditCardDesc: 'Visa, Mastercard, JCB',
+    notesTitle: 'Catatan Pembayaran',
+    note1: 'Total pembayaran akhir akan mencakup <strong>Biaya Platform</strong> sesuai penyedia pembayaran yang Anda pilih.',
+    note2: 'Pembayaran Kartu Kredit diamankan dengan 3D Secure (OTP).',
+    note3: 'Setelah pembayaran berhasil, saldo tidak dapat dikembalikan.',
+    contactTitle: 'Butuh bantuan? Hubungi kami:',
+    topupAmount: 'Jumlah Isi Saldo',
+    feeNotIncluded: '*belum termasuk biaya',
+    payNow: 'Bayar Sekarang',
+    processing: 'Memproses...',
+    scanTitle: 'Scan QRIS untuk Membayar',
+    orderId: 'Order ID',
+    expiresIn: 'Kadaluarsa dalam:',
+    totalPayment: 'Total Pembayaran',
+    scanInstruction: 'Buka aplikasi <strong>Gopay, OVO, DANA, ShopeePay</strong>, atau m-Banking Anda,<br/> lalu scan kode QR di atas.',
+    waitingPayment: 'Menunggu pembayaran Anda terkonfirmasi...',
+    cancel: 'Batalkan',
+    goToHistory: 'Ke Halaman Riwayat',
+    alertMinAmount: 'Jumlah top-up minimum adalah IDR 10.000',
+    alertPaymentSuccess: 'Pembayaran berhasil! Saldo telah ditambahkan.',
+    alertTransactionCancelled: 'Transaksi dibatalkan atau kedaluwarsa.',
+    alertQrisExpired: 'Waktu pembayaran QRIS telah habis.',
+    alertSnapNotReady: 'Sistem pembayaran belum siap. Silakan muat ulang halaman.',
+    alertCcSuccess: 'Pembayaran Kartu Kredit berhasil!',
+    alertCcPending: 'Menunggu konfirmasi Bank. Saldo akan masuk setelah terverifikasi.',
+    alertCcError: 'Pembayaran gagal diproses oleh Bank.',
+    alertCcClosed: 'Anda menutup popup sebelum pembayaran selesai.',
+    alertQrisCreated: 'QRIS berhasil dibuat! Silakan scan.',
+    alertPaymentError: 'Terjadi kesalahan saat memproses pembayaran.',
+  },
   translate: {
     list: {
       tipTitle: 'Pro Tip: Tingkatkan Terjemahan Berikutnya',
@@ -558,6 +630,42 @@ const en: Dictionary = {
       failed: 'Failed',
     },
     empty: 'No transactions found.',
+  },
+  topup: {
+    title: 'Top Up Balance',
+    amountLabel: '1. Enter Amount (IDR)',
+    customAmountPlaceholder: 'Custom amount (Min. 10,000)',
+    methodLabel: '2. Select Payment Method',
+    qrisDesc: 'Gopay, OVO, Dana, ShopeePay',
+    creditCardDesc: 'Visa, Mastercard, JCB',
+    notesTitle: 'Payment Notes',
+    note1: 'Final payment tag will include a <strong>Platform Fee</strong> based on your selected payment provider.',
+    note2: 'Credit Card payments are secured with 3D Secure (OTP).',
+    note3: 'Once the payment is successful, the balance is non-refundable.',
+    contactTitle: 'Need help? Contact us:',
+    topupAmount: 'Top-up Amount',
+    feeNotIncluded: '*fee not included',
+    payNow: 'Pay Now',
+    processing: 'Processing...',
+    scanTitle: 'Scan QRIS to Pay',
+    orderId: 'Order ID',
+    expiresIn: 'Expires in:',
+    totalPayment: 'Total Payment',
+    scanInstruction: 'Open your <strong>Gopay, OVO, DANA, ShopeePay</strong> app, or m-Banking,<br/> then scan the QR code above.',
+    waitingPayment: 'Waiting for your payment to be confirmed...',
+    cancel: 'Cancel',
+    goToHistory: 'Go to History Page',
+    alertMinAmount: 'Minimum top-up amount is IDR 10,000',
+    alertPaymentSuccess: 'Payment successful! Balance has been added.',
+    alertTransactionCancelled: 'Transaction cancelled or expired.',
+    alertQrisExpired: 'QRIS payment time has expired.',
+    alertSnapNotReady: 'Payment system is not ready. Please reload the page.',
+    alertCcSuccess: 'Credit Card payment successful!',
+    alertCcPending: 'Waiting for Bank confirmation. Balance will be added once verified.',
+    alertCcError: 'Payment failed to process by the Bank.',
+    alertCcClosed: 'You closed the popup before payment completed.',
+    alertQrisCreated: 'QRIS created successfully! Please scan.',
+    alertPaymentError: 'An error occurred while processing the payment.',
   },
   translate: {
     list: {

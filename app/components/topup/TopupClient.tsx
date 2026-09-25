@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { useAlert } from '@/app/components/ui/Alert'; 
 import { checkPaymentStatusAction, createPaymentAction } from '@/app/actions/payment/paymentAction';
+import { useLanguage } from '../client/LanguageProvider';
 
 export default function TopupClient() {
     const router = useRouter();
     const { showAlert } = useAlert();
+    const { t, intlLocale } = useLanguage();
 
     const [amount, setAmount] = useState<number | ''>('');
     const [paymentMethod, setPaymentMethod] = useState<'qris' | 'credit_card' | ''>('qris');
@@ -29,19 +31,19 @@ export default function TopupClient() {
                 const status = result.data.status;
                 if (status === 'SUCCESS' || status === 'SETTLEMENT') {
                     clearInterval(intervalId);
-                    showAlert('Pembayaran berhasil! Saldo telah ditambahkan.', 'success');
+                    showAlert(t.topup.alertPaymentSuccess, 'success');
                     router.push('/billing'); 
                 } 
                 else if (status === 'FAILED' || status === 'EXPIRE' || status === 'CANCEL') {
                     clearInterval(intervalId);
-                    showAlert('Transaksi dibatalkan atau kedaluwarsa.', 'error');
+                    showAlert(t.topup.alertTransactionCancelled, 'error');
                     setQrisData(null); 
                 }
             }
         }, 5000); 
 
         return () => clearInterval(intervalId);
-    }, [qrisData, router, showAlert]);
+    }, [qrisData, router, showAlert, t]);
 
     // =========================================================================
     // EFEK 2: COUNTDOWN TIMER (Khusus QRIS)
@@ -56,7 +58,7 @@ export default function TopupClient() {
                 if (prev <= 1) {
                     clearInterval(timerId);
                     setQrisData(null);
-                    showAlert('Waktu pembayaran QRIS telah habis.', 'error');
+                    showAlert(t.topup.alertQrisExpired, 'error');
                     return 0;
                 }
                 return prev - 1;
@@ -64,12 +66,12 @@ export default function TopupClient() {
         }, 1000);
 
         return () => clearInterval(timerId);
-    }, [qrisData, showAlert]);
+    }, [qrisData, showAlert, t]);
 
     const quickAmounts = [50000, 100000, 250000, 500000];
     const subtotal = Number(amount) || 0;
 
-    const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID').format(val);
+    const formatCurrency = (val: number) => new Intl.NumberFormat(intlLocale).format(val);
     const formatCountdown = (seconds: number) => {
         const m = Math.floor(seconds / 60).toString().padStart(2, '0');
         const s = (seconds % 60).toString().padStart(2, '0');
@@ -83,7 +85,7 @@ export default function TopupClient() {
         e.preventDefault();
         
         if (!amount || amount < 10000) {
-            showAlert('Minimum top-up amount is IDR 10,000', 'error');
+            showAlert(t.topup.alertMinAmount, 'error');
             return;
         }
 
@@ -96,31 +98,31 @@ export default function TopupClient() {
                 if (backendMethod === 'cc' && result.data.snapToken) {
                     const snap = (window as any).snap;
                     if (!snap) {
-                        showAlert('Sistem pembayaran belum siap. Silakan muat ulang halaman.', 'error');
+                        showAlert(t.topup.alertSnapNotReady, 'error');
                         return;
                     }
                     snap.pay(result.data.snapToken, {
                         onSuccess: function(snapResult: any) {
                             console.log('Success:', snapResult);
-                            showAlert('Pembayaran Kartu Kredit berhasil!', 'success');
+                            showAlert(t.topup.alertCcSuccess, 'success');
                             router.push('/billing');
                         },
                         onPending: function(snapResult: any) {
                             console.log('Pending:', snapResult);
-                            showAlert('Menunggu konfirmasi Bank. Saldo akan masuk setelah terverifikasi.', 'warning');
+                            showAlert(t.topup.alertCcPending, 'warning');
                             router.push('/billing');
                         },
                         onError: function(snapResult: any) {
                             console.log('Error:', snapResult);
-                            showAlert('Pembayaran gagal diproses oleh Bank.', 'error');
+                            showAlert(t.topup.alertCcError, 'error');
                         },
                         onClose: function() {
-                            showAlert('Anda menutup popup sebelum pembayaran selesai.', 'warning');
+                            showAlert(t.topup.alertCcClosed, 'warning');
                         }
                     });
                 } 
                 else if (backendMethod === 'qris' && result.data.qrImageUrl) {
-                    showAlert('QRIS berhasil dibuat! Silakan scan.', 'success');
+                    showAlert(t.topup.alertQrisCreated, 'success');
                     setCountdown(900);
                     setQrisData({
                         qrImageUrl: result.data.qrImageUrl,
@@ -133,7 +135,7 @@ export default function TopupClient() {
                 showAlert(result.message, 'error');
             }
         } catch (error) {
-            showAlert('Terjadi kesalahan saat memproses pembayaran.', 'error');
+            showAlert(t.topup.alertPaymentError, 'error');
         } finally {
             setIsProcessing(false);
         }
@@ -147,20 +149,20 @@ export default function TopupClient() {
             <section className="card" style={{ textAlign: 'center', padding: '40px 20px' }}>
                 <h2 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>
                     <i className="fas fa-qrcode" style={{ color: 'var(--accent)', marginRight: '10px' }}></i>
-                    Scan QRIS untuk Membayar
+                    {t.topup.scanTitle}
                 </h2>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
-                    Order ID: <strong>{qrisData.orderId}</strong>
+                    {t.topup.orderId}: <strong>{qrisData.orderId}</strong>
                 </p>
 
                 <div style={{ marginBottom: '25px', padding: '8px 20px', backgroundColor: 'rgba(220, 53, 69, 0.1)', color: 'var(--accent-red, #dc3545)', borderRadius: '30px', display: 'inline-block', fontWeight: 'bold', fontSize: '1.1rem' }}>
                     <i className="fas fa-clock" style={{ marginRight: '8px' }}></i>
-                    Kadaluarsa dalam: {formatCountdown(countdown)}
+                    {t.topup.expiresIn} {formatCountdown(countdown)}
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '25px', marginBottom: '30px' }}>
                     <div style={{ backgroundColor: 'var(--bg-input)', padding: '20px 40px', borderRadius: '12px', border: '2px dashed var(--border-color)', width: '100%', maxWidth: '350px' }}>
-                        <p style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: 'var(--text-muted)' }}>Total Pembayaran</p>
+                        <p style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: 'var(--text-muted)' }}>{t.topup.totalPayment}</p>
                         <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '2rem' }}>
                             IDR {formatCurrency(qrisData.total)}
                         </h3>
@@ -171,28 +173,26 @@ export default function TopupClient() {
                     </div>
                 </div>
                 
-                <p style={{ color: 'var(--text-primary)', marginBottom: '20px', lineHeight: '1.6' }}>
-                    Buka aplikasi <strong>Gopay, OVO, DANA, ShopeePay</strong>, atau m-Banking Anda,<br/> lalu scan kode QR di atas.
-                </p>
+                <p style={{ color: 'var(--text-primary)', marginBottom: '20px', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: t.topup.scanInstruction }} />
                 
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', color: 'var(--accent-blue)', marginBottom: '35px', fontSize: '1rem', fontWeight: '500' }}>
                     <i className="fas fa-circle-notch fa-spin"></i>
-                    <span>Menunggu pembayaran Anda terkonfirmasi...</span>
+                    <span>{t.topup.waitingPayment}</span>
                 </div>
 
                 <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '30px' }}>
                     <button className="btn btn-outline" onClick={() => setQrisData(null)} style={{ padding: '10px 25px' }}>
-                        Batalkan
+                        {t.topup.cancel}
                     </button>
                     <button className="btn btn-primary" onClick={() => router.push('/billing')} style={{ padding: '10px 25px' }}>
-                        Ke Halaman Riwayat
+                        {t.topup.goToHistory}
                     </button>
                 </div>
 
                 {/* SYARAT MIDTRANS: KONTAK CS DI HALAMAN QRIS */}
                 <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px dashed var(--border-color)', textAlign: 'center', maxWidth: '400px', margin: '0 auto' }}>
                     <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
-                        need help? Contact us:
+                        {t.topup.contactTitle}
                     </p>
                     <p style={{ margin: '3px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                         <i className="fas fa-envelope" style={{ width: '20px' }}></i> dongworldid@gmail.com
@@ -223,14 +223,14 @@ export default function TopupClient() {
                 <div className="card-header">
                     <h2>
                         <i className="fas fa-wallet" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
-                        Top Up Balance
+                        {t.topup.title}
                     </h2>
                 </div>
 
                 <form onSubmit={handleCheckout}>
                     <div className="form-group" style={{ marginBottom: '30px', marginTop: '30px' }}>
                         <label style={{ fontWeight: 'bold', fontSize: '1rem', marginBottom: '12px', display: 'block', color: 'var(--text-primary)' }}>
-                            1. Enter Amount (IDR) <span style={{ color: 'var(--accent-red)' }}>*</span>
+                            {t.topup.amountLabel} <span style={{ color: 'var(--accent-red)' }}>*</span>
                         </label>
                         
                         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '15px' }}>
@@ -254,7 +254,7 @@ export default function TopupClient() {
                                 className="form-control"
                                 value={amount}
                                 onChange={(e) => setAmount(Number(e.target.value) || '')}
-                                placeholder="Custom amount (Min. 10,000)"
+                                placeholder={t.topup.customAmountPlaceholder}
                                 style={{ paddingLeft: '55px', fontSize: '1.1rem' }}
                                 min="10000"
                                 required
@@ -266,7 +266,7 @@ export default function TopupClient() {
 
                     <div className="form-group" style={{ marginBottom: '30px' }}>
                         <label style={{ fontWeight: 'bold', fontSize: '1rem', marginBottom: '15px', display: 'block', color: 'var(--text-primary)' }}>
-                            2. Select Payment Method <span style={{ color: 'var(--accent-red)' }}>*</span>
+                            {t.topup.methodLabel} <span style={{ color: 'var(--accent-red)' }}>*</span>
                         </label>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
@@ -281,7 +281,7 @@ export default function TopupClient() {
                             >
                                 <i className="fas fa-qrcode" style={{ fontSize: '3rem', color: paymentMethod === 'qris' ? 'var(--accent, #007bff)' : 'var(--text-muted)', marginBottom: '15px' }}></i>
                                 <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>QRIS</h4>
-                                <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Gopay, OVO, Dana, ShopeePay</p>
+                                <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t.topup.qrisDesc}</p>
                             </div>
                             
                             <div 
@@ -295,7 +295,7 @@ export default function TopupClient() {
                             >
                                 <i className="fas fa-credit-card" style={{ fontSize: '3rem', color: paymentMethod === 'credit_card' ? 'var(--accent, #007bff)' : 'var(--text-muted)', marginBottom: '15px' }}></i>
                                 <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>Credit Card</h4>
-                                <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Visa, Mastercard, JCB</p>
+                                <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t.topup.creditCardDesc}</p>
                             </div>
                         </div>
                     </div>
@@ -306,18 +306,18 @@ export default function TopupClient() {
                         <div style={{ flex: '1 1 300px', backgroundColor: 'var(--bg-input)', padding: '15px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                             <h4 style={{ margin: '0 0 10px 0', color: 'var(--text-primary)', fontSize: '0.95rem' }}>
                                 <i className="fas fa-info-circle" style={{ color: 'var(--accent-blue)', marginRight: '6px' }}></i>
-                                Payment Notes
+                                {t.topup.notesTitle}
                             </h4>
                             <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                                <li>Final payment tag will include a <strong>Platform Fee</strong> based on your selected payment provider.</li>
-                                <li>Credit Card payments are secured with 3D Secure (OTP).</li>
-                                <li>Once the payment is successful, the balance is non-refundable.</li>
+                                <li dangerouslySetInnerHTML={{ __html: t.topup.note1 }} />
+                                <li>{t.topup.note2}</li>
+                                <li>{t.topup.note3}</li>
                             </ul>
 
                             {/* SYARAT MIDTRANS: KONTAK CS DI HALAMAN CHECKOUT */}
                             <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px dashed var(--border-color)' }}>
                                 <p style={{ margin: '0 0 5px 0', fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
-                                    Need help? Contact us:
+                                    {t.topup.contactTitle}
                                 </p>
                                 <ul style={{ margin: 0, paddingLeft: '0', listStyleType: 'none', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                     <li style={{ marginBottom: '4px' }}><i className="fas fa-envelope" style={{ width: '20px' }}></i> dongworldid@gmail.com</li>
@@ -329,12 +329,12 @@ export default function TopupClient() {
 
                         <div style={{ flex: '1 1 300px', backgroundColor: 'var(--bg-input)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
-                                <span>Top-up Amount</span>
+                                <span>{t.topup.topupAmount}</span>
                                 <span>IDR {formatCurrency(subtotal)}</span>
                             </div>
 
                             <div style={{ textAlign: 'right', marginBottom: '20px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                *fee not included
+                                {t.topup.feeNotIncluded}
                             </div>
                             
                             {/* <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', color: 'var(--text-muted)' }}>
@@ -356,7 +356,7 @@ export default function TopupClient() {
                                 style={{ padding: '12px 30px', fontSize: '1.1rem', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                             >
                                 <i className={`fas ${isProcessing ? 'fa-spinner fa-spin' : 'fa-lock'}`} style={{ marginRight: '8px' }}></i>
-                                {isProcessing ? 'Processing...' : 'Pay Now'}
+                                {isProcessing ? t.topup.processing : t.topup.payNow}
                             </button>
                         </div>
                     </div>
