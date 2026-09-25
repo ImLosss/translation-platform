@@ -346,6 +346,29 @@ export interface Dictionary {
     cancel: string;
     errorGeneric: string;
   };
+  status: {
+    PROCESSING: string;
+    TRANSCRIBING: string;
+    COMPLETED: string;
+    ERROR: string;
+  };
+  nav: {
+    main: string;
+    management: string;
+    dashboard: string;
+    translations: string;
+    glosary: string;
+    topUp: string;
+    billing: string;
+    pricing: string;
+    profile: string;
+    users: string;
+    provider: string;
+    logs: string;
+    logout: string;
+    view: string;
+    translationPlatform: string;
+  };
 }
 
 const id: Dictionary = {
@@ -685,6 +708,29 @@ const id: Dictionary = {
     cancel: 'Batal',
     errorGeneric: 'Terjadi kesalahan.',
   },
+  status: {
+    PROCESSING: 'Diproses',
+    TRANSCRIBING: 'Transkripsi',
+    COMPLETED: 'Selesai',
+    ERROR: 'Gagal',
+  },
+  nav: {
+    main: 'Utama',
+    management: 'Manajemen',
+    dashboard: 'Dashboard',
+    translations: 'Terjemahan',
+    glosary: 'Glosarium',
+    topUp: 'Top Up',
+    billing: 'Billing',
+    pricing: 'Harga',
+    profile: 'Profil',
+    users: 'Users',
+    provider: 'Provider',
+    logs: 'Logs',
+    logout: 'Keluar',
+    view: 'Lihat',
+    translationPlatform: 'Platform Terjemahan',
+  },
 };
 
 const en: Dictionary = {
@@ -1023,6 +1069,29 @@ const en: Dictionary = {
     save: 'Save',
     cancel: 'Cancel',
     errorGeneric: 'An error occurred.',
+  },
+  status: {
+    PROCESSING: 'Processing',
+    TRANSCRIBING: 'Transcribing',
+    COMPLETED: 'Completed',
+    ERROR: 'Error',
+  },
+  nav: {
+    main: 'Main',
+    management: 'Management',
+    dashboard: 'Dashboard',
+    translations: 'Translations',
+    glosary: 'Glossary',
+    topUp: 'Top Up',
+    billing: 'Billing',
+    pricing: 'Pricing',
+    profile: 'Profile',
+    users: 'Users',
+    provider: 'Provider',
+    logs: 'Logs',
+    logout: 'Logout',
+    view: 'View',
+    translationPlatform: 'Translation Platform',
   },
 };
 

@@ -185,7 +185,7 @@ export default function TableData() {
                   </td>
                   <td style={{ whiteSpace: "nowrap" }}>
                     <span className={`status-badge ${statusClass[job.status]}`}>
-                      {job.status}
+                      {t.status[job.status]}
                       {!["ERROR", "COMPLETED"].includes(job.status) ? `: ${job.progress}` : ""}
                     </span>
                   </td>

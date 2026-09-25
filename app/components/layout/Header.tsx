@@ -6,11 +6,13 @@ import HamburgerButton from '../client/HamburgerButton';
 import NotifButtonAndModal from '../client/NotifButtonModal';
 import LanguageSwitcher from '../client/LanguageSwitcher';
 import { useUser } from '../client/UserProvider';
+import { useLanguage } from '../client/LanguageProvider';
 import Image from 'next/image';
 
 export default function Header() {
   const user = useUser();
   const pathname = usePathname(); 
+  const { t } = useLanguage();
 
   // Fungsi untuk mengubah segmen path menjadi label yang rapi
   const formatSegment = (segment: string) =>
@@ -19,19 +21,32 @@ export default function Header() {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 
+  // Peta segmen path ke label terjemahan
+  const segmentLabels: Record<string, string> = {
+    translate: t.nav.translations,
+    glosary: t.nav.glosary,
+    topup: t.nav.topUp,
+    billing: t.nav.billing,
+    pricing: t.nav.pricing,
+    profile: t.nav.profile,
+    users: t.nav.users,
+    providers: t.nav.provider,
+    logs: t.nav.logs,
+  };
+
   // Buat breadcrumb dari pathname
   const pathSegments = pathname.split('/').filter(Boolean);
   const breadcrumbItems =
   pathSegments.length === 0
-    ? [{ label: "Dashboard", href: "/" }]
+    ? [{ label: t.nav.dashboard, href: "/" }]
     : pathSegments.map((seg, index) => {
         const href = "/" + pathSegments.slice(0, index + 1).join("/");
 
         return {
           label:
             /^\d+$/.test(seg) && index === pathSegments.length - 1
-              ? "View"
-              : formatSegment(seg),
+              ? t.nav.view
+              : segmentLabels[seg] ?? formatSegment(seg),
           href,
         };
       });

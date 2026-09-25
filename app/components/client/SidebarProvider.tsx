@@ -13,6 +13,7 @@ import { useAlert } from '../ui/Alert';
 import { logoutAction } from '@/app/actions/logout';
 import { usePathname, useRouter } from 'next/navigation';
 import { CurrentUser } from './UserProvider';
+import { useLanguage } from './LanguageProvider';
 import Image from "next/image";
 
 // Definisikan tipe untuk context
@@ -33,6 +34,7 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -95,52 +97,52 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
 
           <div>
             <h1>SubNova</h1>
-            <span>Translation Platform</span>
+            <span>{t.nav.translationPlatform}</span>
           </div>
         </div>
 
         <nav className="sidebar-nav">
-          <div className="nav-label">Main</div>
+          <div className="nav-label">{t.nav.main}</div>
           <Link href="/" className={isActive('/') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-th-large"></i> Dashboard
+            <i className="fas fa-th-large"></i> {t.nav.dashboard}
           </Link>
           <Link href="/translate" className={isActive('/translate') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-film"></i> Translations
+            <i className="fas fa-film"></i> {t.nav.translations}
           </Link>
           {/* <Link href="/translate-doc" className={isActive('/translate-doc') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-file"></i> Translation Doc
           </Link> */}
           <Link href="/glosary" className={isActive('/glosary') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-file-alt"></i> Glosary
+            <i className="fas fa-file-alt"></i> {t.nav.glosary}
           </Link>
 
           <div className="nav-label" style={{ marginTop: 12 }}>
-            Management
+            {t.nav.management}
           </div>
           <Link href="/topup" className={isActive('/topup') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-wallet"></i> Top Up
+            <i className="fas fa-wallet"></i> {t.nav.topUp}
           </Link>
           <Link href="/billing" className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-file-invoice-dollar"></i> Billing
+            <i className="fas fa-file-invoice-dollar"></i> {t.nav.billing}
             {/* <span className="badge">Pro</span> */}
           </Link>
           <Link href="/pricing" className={isActive('/pricing') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-dollar-sign"></i> Pricing
+            <i className="fas fa-dollar-sign"></i> {t.nav.pricing}
             {/* <span className="badge">Pro</span> */}
           </Link>
           <Link href="/profile" className={isActive('/profile') ? 'active' : ''} onClick={closeSidebar}>
-            <i className="fas fa-user"></i> Profile
+            <i className="fas fa-user"></i> {t.nav.profile}
           </Link>
           {user?.role === 'ADMIN' && (
             <>
               <Link href="/users" className={isActive('/users') ? 'active' : ''} onClick={closeSidebar}>
-                <i className="fas fa-users"></i> Users
+                <i className="fas fa-users"></i> {t.nav.users}
               </Link>
               <Link href="/providers" className={isActive('/providers') ? 'active' : ''} onClick={closeSidebar}>
-                <i className="fas fa-server"></i> Provider
+                <i className="fas fa-server"></i> {t.nav.provider}
               </Link>
               <Link href="/logs" className={isActive('/logs') ? 'active' : ''} onClick={closeSidebar}>
-                <i className="fas fa-history"></i> Logs
+                <i className="fas fa-history"></i> {t.nav.logs}
               </Link>
               {/* <Link href="/settings" className={isActive('/settings') ? 'active' : ''} onClick={closeSidebar}>
                 <i className="fas fa-cog"></i> Settings
@@ -151,7 +153,7 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
 
         <div className="sidebar-footer">
           <button className="logout-btn" id="logoutBtn" onClick={logout}>
-            <i className="fas fa-sign-out-alt"></i> Logout
+            <i className="fas fa-sign-out-alt"></i> {t.nav.logout}
           </button>
         </div>
       </aside>
