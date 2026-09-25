@@ -4,6 +4,8 @@ import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { useAlert } from '../ui/Alert';
 import { updateGlosaryEntriesAction } from '@/app/actions/glosary/updateGlosaryEntriesAction';
 import { GlosaryData } from '@/app/(panel)/glosary/[id]/page';
+import { useLanguage } from '../client/LanguageProvider';
+import { interpolate } from '@/app/lib/i18n/format';
 
 export interface GlosaryEntry {
     id: number;
@@ -23,6 +25,7 @@ const GlosaryRow = memo(({
     entry,
     index,
     isDuplicate,
+    t,
     handleUpdateEntry,
     handleAddEntry,
     handleDeleteEntry,
@@ -32,10 +35,10 @@ const GlosaryRow = memo(({
         <div className={`glosary-line ${isDuplicate ? 'duplicated-line' : ''}`}>
             <div className="sub-field">
                 <label>
-                    Source Term <span style={{ color: 'red' }}>*</span>
+                    {t.glossary.sourceTerm} <span style={{ color: 'red' }}>*</span>
                     {isDuplicate && (
                         <span style={{ color: '#dc3545', marginLeft: '6px', textTransform: 'none', fontWeight: 'bold' }}>
-                            <i className="fas fa-exclamation-triangle"></i> Duplicate
+                            <i className="fas fa-exclamation-triangle"></i> {t.glossary.duplicate}
                         </span>
                     )}
                 </label>
@@ -43,31 +46,31 @@ const GlosaryRow = memo(({
                     ref={resizeTextarea}
                     className="sub-source"
                     rows={1}
-                    placeholder="Kata/Frasa Asli"
+                    placeholder={t.glossary.sourcePlaceholder}
                     value={entry.source}
                     onChange={(e) => handleUpdateEntry(index, 'source', e.target.value)}
                 />
             </div>
             
             <div className="sub-field">
-                <label>Target Translation <span style={{ color: 'red' }}>*</span></label>
+                <label>{t.glossary.targetTranslation} <span style={{ color: 'red' }}>*</span></label>
                 <textarea
                     ref={resizeTextarea}
                     className="sub-translated"
                     rows={1}
-                    placeholder="Terjemahan"
+                    placeholder={t.glossary.targetPlaceholder}
                     value={entry.target}
                     onChange={(e) => handleUpdateEntry(index, 'target', e.target.value)}
                 />
             </div>
 
             <div className="sub-field">
-                <label>Detail / Context (Opsional)</label>
+                <label>{t.glossary.detailContext} {t.glossary.optional}</label>
                 <textarea
                     ref={resizeTextarea}
                     className="sub-detail"
                     rows={1}
-                    placeholder="Catatan tambahan..."
+                    placeholder={t.glossary.detailPlaceholder}
                     value={entry.detail || ''}
                     onChange={(e) => handleUpdateEntry(index, 'detail', e.target.value)}
                 />
@@ -76,14 +79,14 @@ const GlosaryRow = memo(({
             <div className="sub-actions">
                 <button
                     className="btn-add-line"
-                    title="Tambahkan entri di bawah ini"
+                    title={t.glossary.addEntry}
                     onClick={() => handleAddEntry(index)}
                 >
                     <i className="fas fa-plus-circle" />
                 </button>
                 <button
                     className="btn-del-line"
-                    title="Hapus entri ini"
+                    title={t.glossary.deleteEntry}
                     onClick={() => handleDeleteEntry(index)}
                 >
                     <i className="fas fa-trash-alt" />
@@ -96,7 +99,8 @@ const GlosaryRow = memo(({
     return (
         prevProps.entry === nextProps.entry &&
         prevProps.isDuplicate === nextProps.isDuplicate &&
-        prevProps.index === nextProps.index
+        prevProps.index === nextProps.index &&
+        prevProps.t === nextProps.t
     );
 });
 
@@ -107,6 +111,7 @@ export default function GlosaryEditor({
     glosary,
 }: GlosaryEditorProps) {
     const { showAlert } = useAlert();
+    const { t } = useLanguage();
     
     // Inisialisasi state
     const [entries, setEntries] = useState<GlosaryEntry[]>(initialEntries);
@@ -132,11 +137,11 @@ export default function GlosaryEditor({
 
     // ===================== FUNGSI RESET =====================
     const handleReset = useCallback(() => {
-        if (window.confirm('Are you sure you want to revert to the last saved state? All unsaved changes will be lost.')) {
+        if (window.confirm(t.glossary.alertConfirmReset)) {
             setEntries([...lastSavedEntries]);
-            showAlert('Reverted to last saved state.', 'warning');
+            showAlert(t.glossary.alertReverted, 'warning');
         }
-    }, [lastSavedEntries, showAlert]);
+    }, [lastSavedEntries, showAlert, t]);
 
     // ===================== OBSERVER FLOATING BUTTON =====================
     const saveContainerRef = useCallback((node: HTMLDivElement | null) => {
@@ -170,21 +175,21 @@ export default function GlosaryEditor({
                 }
                 return [...prev, newEntry];
             });
-            if (afterIndex === undefined) showAlert('New glosary entry added.', 'success');
+            if (afterIndex === undefined) showAlert(t.glossary.alertNewEntry, 'success');
         },
-        [showAlert]
+        [showAlert, t]
     );
 
     const handleDeleteEntry = useCallback(
         (index: number) => {
             if (entries.length <= 1) {
-                showAlert('At least one glosary entry is required.', 'warning');
+                showAlert(t.glossary.alertAtLeastOne, 'warning');
                 return;
             }
             setEntries((prev) => prev.filter((_, i) => i !== index));
-            showAlert('Glosary entry deleted.', 'warning');
+            showAlert(t.glossary.alertDeleted, 'warning');
         },
-        [entries, showAlert]
+        [entries, showAlert, t]
     );
 
     const handleUpdateEntry = useCallback(
@@ -208,13 +213,13 @@ export default function GlosaryEditor({
 
         const hasEmptyRequired = entries.some(e => !e.source.trim() || !e.target.trim());
         if (hasEmptyRequired) {
-            showAlert('Source and Target cannot be empty!', 'warning');
+            showAlert(t.glossary.alertEmptyRequired, 'warning');
             return;
         }
 
         const hasDuplicates = Object.values(sourceCounts).some(count => count > 1);
         if (hasDuplicates) {
-            showAlert('There are duplicate Source Terms. Please fix them before saving!', 'error');
+            showAlert(t.glossary.alertDuplicate, 'error');
             return;
         }
 
@@ -241,14 +246,14 @@ export default function GlosaryEditor({
                 .map(old => old.id);
 
             if (creates.length === 0 && updates.length === 0 && deletes.length === 0) {
-                showAlert('Tidak ada perubahan untuk disimpan.', 'info');
+                showAlert(t.glossary.alertNoChanges, 'info');
                 return;
             }
 
             const result = await updateGlosaryEntriesAction(glosary.id, { creates, updates, deletes });
             
             if (result.success) {
-                showAlert('Glosary entries saved successfully.', 'success');
+                showAlert(t.glossary.alertSaved, 'success');
 
                 let finalEntries = [...entries];
                 
@@ -270,7 +275,7 @@ export default function GlosaryEditor({
                 showAlert(result.message, 'error');
             }
         } catch (error) {
-            showAlert('An error occurred while saving.', 'error');
+            showAlert(t.glossary.alertSaveError, 'error');
         } finally {
             setIsSaving(false);
         }
@@ -282,11 +287,11 @@ export default function GlosaryEditor({
             <div className="card-header">
                 <h2>
                     <i className="fas fa-book" style={{ color: 'var(--accent)', marginRight: 10 }} />
-                    Glosarium Editor - {glosary.name} ({glosary.sourceLanguage} → {glosary.targetLanguage})
+                    {interpolate(t.glossary.editorTitle, { name: glosary.name, source: glosary.sourceLanguage, target: glosary.targetLanguage })}
                 </h2>
                 <div className="card-actions">
                     <button className="btn btn-outline btn-sm" onClick={handleReset}>
-                        <i className="fas fa-undo" /> Reset to Last Save
+                        <i className="fas fa-undo" /> {t.glossary.resetToLastSave}
                     </button>
                 </div>
             </div>
@@ -302,6 +307,7 @@ export default function GlosaryEditor({
                             entry={entry}
                             index={index}
                             isDuplicate={isDuplicate}
+                            t={t}
                             handleUpdateEntry={handleUpdateEntry}
                             handleAddEntry={handleAddEntry}
                             handleDeleteEntry={handleDeleteEntry}
@@ -318,7 +324,7 @@ export default function GlosaryEditor({
             >
                 <button className="btn btn-outline btn-sm" onClick={handleSave} disabled={isSaving}>
                     <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} />{' '}
-                    {isSaving ? 'Saving...' : 'Save Changes'}
+                    {isSaving ? t.glossary.saving : t.glossary.saveChanges}
                 </button>
             </div>
 
@@ -342,7 +348,7 @@ export default function GlosaryEditor({
                     }}
                 >
                     <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'}`} /> 
-                    {isSaving ? 'Saving...' : 'Save Changes'}
+                    {isSaving ? t.glossary.saving : t.glossary.saveChanges}
                 </button>
             )}
         </section>

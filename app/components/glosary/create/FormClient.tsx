@@ -5,6 +5,7 @@ import { useAlert } from '../../ui/Alert';
 import { redirect } from 'next/navigation';
 import { createGlosaryAction } from '@/app/actions/glosary/createGlosaryAction';
 import SelectSearch from '../../client/SelectSearch';
+import { useLanguage } from '../../client/LanguageProvider';
 
 const languageOptions = [
     { value: 'en', label: 'English' },
@@ -19,6 +20,7 @@ const languageOptions = [
 
 export default function FormClient() {
     const { showAlert } = useAlert();
+    const { t } = useLanguage();
 
     const [name, setName] = useState('');
     const [sourceLanguage, setSourceLang] = useState<string>('en');
@@ -27,7 +29,7 @@ export default function FormClient() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !sourceLanguage || !targetLanguage) {
-            showAlert('Harap isi semua field wajib', 'error');
+            showAlert(t.glossary.alertRequired, 'error');
             return;
         }
 
@@ -42,9 +44,9 @@ export default function FormClient() {
         console.log('Result from createGlosaryAction:', result);
 
         if (!result.success) {
-            showAlert(result.message || 'Error creating glosary.', 'error');
+            showAlert(result.message || t.glossary.alertCreateFailed, 'error');
         } else {
-            showAlert(result.message || 'Glosary created successfully!', 'success');
+            showAlert(result.message || t.glossary.alertCreateSuccess, 'success');
             redirect('/glosary');
         }
     };
@@ -54,7 +56,7 @@ export default function FormClient() {
             <div className="card-header">
                 <h2>
                     <i className="fas fa-pen-fancy" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
-                    New Glosary
+                    {t.glossary.createTitle}
                 </h2>
                 <div className="card-actions">
                     <button
@@ -66,19 +68,19 @@ export default function FormClient() {
                             setTargetLang('id');
                         }}
                     >
-                        <i className="fas fa-undo-alt"></i> Reset
+                        <i className="fas fa-undo-alt"></i> {t.glossary.reset}
                     </button>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit}>
                     <div className="form-group ">
-                        <label htmlFor="name">Glosary Name</label>
+                        <label htmlFor="name">{t.glossary.name}</label>
                         <input
                             type="text"
                             className="form-control"
                             id="name"
-                            placeholder="e.g. Universal"
+                            placeholder={t.glossary.namePlaceholder}
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
@@ -87,29 +89,29 @@ export default function FormClient() {
 
                 <div className="form-row">
                     <div className="form-group">
-                        <label htmlFor="sourceLang">Source Language</label>
+                        <label htmlFor="sourceLang">{t.glossary.sourceLanguage}</label>
                         <SelectSearch
                             id="sourceLang"
                             options={languageOptions}
                             value={sourceLanguage}
                             onChange={setSourceLang}
-                            placeholder="Select source language"
+                            placeholder={t.glossary.selectSource}
                         />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="targetLang">Target Language</label>
+                        <label htmlFor="targetLang">{t.glossary.targetLanguage}</label>
                         <SelectSearch
                             id="targetLang"
                             options={languageOptions}
                             value={targetLanguage}
                             onChange={setTargetLang}
-                            placeholder="Select target language"
+                            placeholder={t.glossary.selectTarget}
                         />
                     </div>
                 </div>
 
                 <button type="submit" className="btn btn-primary">
-                    <i className="fas fa-paper-plane"></i> Submit
+                    <i className="fas fa-paper-plane"></i> {t.glossary.submit}
                 </button>
             </form>
         </section>

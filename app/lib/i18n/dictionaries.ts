@@ -52,7 +52,14 @@ export interface Dictionary {
       model: string;
       totalTokens: string;
       totalCost: string;
+        
       status: string;
+      statuses: {
+        PROCESSING: string;
+        TRANSCRIBING: string;
+        COMPLETED: string;
+        ERROR: string;
+      };
       date: string;
       actions: string;
       loading: string;
@@ -197,6 +204,77 @@ export interface Dictionary {
       alertUploaded: string;
     };
   };
+  glossary: {
+    tipTitle: string;
+    tipBody: string;
+    listTitle: string;
+    newGlossary: string;
+    table: {
+      name: string;
+      source: string;
+      target: string;
+      createdAt: string;
+      actions: string;
+    };
+    loading: string;
+    empty: string;
+    failedLoad: string;
+    view: string;
+    edit: string;
+    downloadCsv: string;
+    createTitle: string;
+    editTitle: string;
+    reset: string;
+    name: string;
+    namePlaceholder: string;
+    sourceLanguage: string;
+    targetLanguage: string;
+    selectSource: string;
+    selectTarget: string;
+    submit: string;
+    saveChanges: string;
+    alertRequired: string;
+    alertCreateFailed: string;
+    alertCreateSuccess: string;
+    alertUpdateFailed: string;
+    alertUpdateSuccess: string;
+    editorTitle: string;
+    resetToLastSave: string;
+    sourceTerm: string;
+    targetTranslation: string;
+    detailContext: string;
+    optional: string;
+    sourcePlaceholder: string;
+    targetPlaceholder: string;
+    detailPlaceholder: string;
+    addEntry: string;
+    deleteEntry: string;
+    duplicate: string;
+    saving: string;
+    alertConfirmReset: string;
+    alertReverted: string;
+    alertNewEntry: string;
+    alertAtLeastOne: string;
+    alertDeleted: string;
+    alertEmptyRequired: string;
+    alertDuplicate: string;
+    alertNoChanges: string;
+    alertSaved: string;
+    alertSaveError: string;
+    deleteButton: string;
+    deleteTitle: string;
+    deleteMessage: string;
+    deleteConfirm: string;
+    deleting: string;
+    deleteSlow: string;
+    alertDeleteFailed: string;
+    duplicateButton: string;
+    duplicateTitle: string;
+    duplicateMessage: string;
+    duplicateConfirm: string;
+    duplicating: string;
+    alertDuplicateFailed: string;
+  };
 }
 
 const id: Dictionary = {
@@ -244,6 +322,12 @@ const id: Dictionary = {
       totalTokens: 'Total Token',
       totalCost: 'Total Biaya',
       status: 'Status',
+      statuses: {
+        PROCESSING: 'Memproses',
+        TRANSCRIBING: 'Transkripsi',
+        COMPLETED: 'Selesai',
+        ERROR: 'Gagal',
+      },
       date: 'Tanggal',
       actions: 'Aksi',
       loading: 'Memuat job terjemahan...',
@@ -388,6 +472,77 @@ const id: Dictionary = {
       alertUploaded: 'File "{name}" berhasil diunggah! ({size} KB)',
     },
   },
+  glossary: {
+    tipTitle: 'Kuasai Terminologi Anda',
+    tipBody: 'Glosarium berfungsi sebagai kamus khusus Anda, memastikan nama merek dan istilah tertentu selalu diterjemahkan persis seperti yang Anda inginkan. Saat memulai terjemahan baru, cukup pilih glosarium tersimpan untuk menerapkan aturan Anda secara instan.',
+    listTitle: 'Daftar Glosarium',
+    newGlossary: 'Glosarium Baru',
+    table: {
+      name: 'Nama',
+      source: 'Sumber',
+      target: 'Target',
+      createdAt: 'Dibuat Pada',
+      actions: 'Aksi',
+    },
+    loading: 'Memuat data glosarium...',
+    empty: 'Tidak ada glosarium ditemukan.',
+    failedLoad: 'Gagal memuat data glosarium.',
+    view: 'Lihat',
+    edit: 'Edit',
+    downloadCsv: 'Unduh CSV',
+    createTitle: 'Glosarium Baru',
+    editTitle: 'Edit Glosarium',
+    reset: 'Reset',
+    name: 'Nama Glosarium',
+    namePlaceholder: 'mis. Universal',
+    sourceLanguage: 'Bahasa Sumber',
+    targetLanguage: 'Bahasa Target',
+    selectSource: 'Pilih bahasa sumber',
+    selectTarget: 'Pilih bahasa target',
+    submit: 'Kirim',
+    saveChanges: 'Simpan Perubahan',
+    alertRequired: 'Harap isi semua field wajib',
+    alertCreateFailed: 'Gagal membuat glosarium.',
+    alertCreateSuccess: 'Glosarium berhasil dibuat!',
+    alertUpdateFailed: 'Gagal memperbarui glosarium.',
+    alertUpdateSuccess: 'Glosarium berhasil diperbarui!',
+    editorTitle: 'Editor Glosarium - {name} ({source} → {target})',
+    resetToLastSave: 'Reset ke Simpanan Terakhir',
+    sourceTerm: 'Istilah Sumber',
+    targetTranslation: 'Terjemahan Target',
+    detailContext: 'Detail / Konteks',
+    optional: '(Opsional)',
+    sourcePlaceholder: 'Kata/Frasa Asli',
+    targetPlaceholder: 'Terjemahan',
+    detailPlaceholder: 'Catatan tambahan...',
+    addEntry: 'Tambahkan entri di bawah ini',
+    deleteEntry: 'Hapus entri ini',
+    duplicate: 'Duplikat',
+    saving: 'Menyimpan...',
+    alertConfirmReset: 'Apakah Anda yakin ingin mengembalikan ke kondisi tersimpan terakhir? Semua perubahan yang belum disimpan akan hilang.',
+    alertReverted: 'Dikembalikan ke kondisi tersimpan terakhir.',
+    alertNewEntry: 'Entri glosarium baru ditambahkan.',
+    alertAtLeastOne: 'Minimal satu entri glosarium diperlukan.',
+    alertDeleted: 'Entri glosarium dihapus.',
+    alertEmptyRequired: 'Sumber dan Target tidak boleh kosong!',
+    alertDuplicate: 'Terdapat Istilah Sumber yang duplikat. Harap perbaiki sebelum menyimpan!',
+    alertNoChanges: 'Tidak ada perubahan untuk disimpan.',
+    alertSaved: 'Entri glosarium berhasil disimpan.',
+    alertSaveError: 'Terjadi kesalahan saat menyimpan.',
+    deleteButton: 'Hapus Glosarium',
+    deleteTitle: 'Hapus Glosarium',
+    deleteMessage: 'Apakah Anda yakin ingin menghapus glosarium ini?\n\nTindakan ini tidak dapat dibatalkan.',
+    deleteConfirm: 'Hapus',
+    deleting: 'Menghapus glosarium...',
+    deleteSlow: 'Proses memakan waktu lebih lama dari biasanya. Mohon tunggu...',
+    alertDeleteFailed: 'Gagal menghapus glosarium: {message}',
+    duplicateButton: 'Duplikat Glosarium',
+    duplicateTitle: 'Duplikat Glosarium',
+    duplicateMessage: 'Apakah Anda yakin ingin menduplikasi glosarium ini?\n\nTindakan ini akan membuat glosarium baru dengan konten yang sama.',
+    duplicateConfirm: 'Duplikat',
+    duplicating: 'Menduplikasi glosarium...',
+    alertDuplicateFailed: 'Gagal menduplikasi glosarium: {message}',
+  },
 };
 
 const en: Dictionary = {
@@ -435,6 +590,12 @@ const en: Dictionary = {
       totalTokens: 'Total Tokens',
       totalCost: 'Total Cost',
       status: 'Status',
+      statuses: {
+        PROCESSING: 'Processing',
+        TRANSCRIBING: 'Transcribing',
+        COMPLETED: 'Completed',
+        ERROR: 'Error',
+      },
       date: 'Date',
       actions: 'Actions',
       loading: 'Loading translation jobs...',
@@ -578,6 +739,77 @@ const en: Dictionary = {
       alertTooLarge: 'File too large. Max 10MB.',
       alertUploaded: 'File "{name}" uploaded successfully! ({size} KB)',
     },
+  },
+  glossary: {
+    tipTitle: 'Master Your Terminology',
+    tipBody: 'A glossary acts as your custom dictionary, ensuring brand names and specific terms are always translated exactly the way you want. When starting a new translation, simply choose a saved glossary to apply your rules instantly.',
+    listTitle: 'List Glosaries',
+    newGlossary: 'New Glosary',
+    table: {
+      name: 'Name',
+      source: 'Source',
+      target: 'Target',
+      createdAt: 'Created At',
+      actions: 'Actions',
+    },
+    loading: 'Loading glossary data...',
+    empty: 'No Glosary found.',
+    failedLoad: 'Failed to load glosary data.',
+    view: 'View',
+    edit: 'Edit',
+    downloadCsv: 'Download CSV',
+    createTitle: 'New Glosary',
+    editTitle: 'Edit Glosary',
+    reset: 'Reset',
+    name: 'Glosary Name',
+    namePlaceholder: 'e.g. Universal',
+    sourceLanguage: 'Source Language',
+    targetLanguage: 'Target Language',
+    selectSource: 'Select source language',
+    selectTarget: 'Select target language',
+    submit: 'Submit',
+    saveChanges: 'Save Changes',
+    alertRequired: 'Please fill in all required fields',
+    alertCreateFailed: 'Error creating glosary.',
+    alertCreateSuccess: 'Glosary created successfully!',
+    alertUpdateFailed: 'Error updating glosary.',
+    alertUpdateSuccess: 'Glosary updated successfully!',
+    editorTitle: 'Glosarium Editor - {name} ({source} → {target})',
+    resetToLastSave: 'Reset to Last Save',
+    sourceTerm: 'Source Term',
+    targetTranslation: 'Target Translation',
+    detailContext: 'Detail / Context',
+    optional: '(Optional)',
+    sourcePlaceholder: 'Original Word/Phrase',
+    targetPlaceholder: 'Translation',
+    detailPlaceholder: 'Additional notes...',
+    addEntry: 'Add entry below',
+    deleteEntry: 'Delete this entry',
+    duplicate: 'Duplicate',
+    saving: 'Saving...',
+    alertConfirmReset: 'Are you sure you want to revert to the last saved state? All unsaved changes will be lost.',
+    alertReverted: 'Reverted to last saved state.',
+    alertNewEntry: 'New glosary entry added.',
+    alertAtLeastOne: 'At least one glosary entry is required.',
+    alertDeleted: 'Glosary entry deleted.',
+    alertEmptyRequired: 'Source and Target cannot be empty!',
+    alertDuplicate: 'There are duplicate Source Terms. Please fix them before saving!',
+    alertNoChanges: 'No changes to save.',
+    alertSaved: 'Glosary entries saved successfully.',
+    alertSaveError: 'An error occurred while saving.',
+    deleteButton: 'Delete Glosary',
+    deleteTitle: 'Delete Glossary',
+    deleteMessage: 'Are you sure you want to delete this glossary?\n\nThis action cannot be undone.',
+    deleteConfirm: 'Delete',
+    deleting: 'Deleting glossary...',
+    deleteSlow: 'This is taking longer than expected. Please wait...',
+    alertDeleteFailed: 'Failed to delete glossary: {message}',
+    duplicateButton: 'Duplicate Glosary',
+    duplicateTitle: 'Duplicate Glossary',
+    duplicateMessage: 'Are you sure you want to duplicate this glossary?\n\nThis action will create a new glossary with the same content.',
+    duplicateConfirm: 'Duplicate',
+    duplicating: 'Duplicating glossary...',
+    alertDuplicateFailed: 'Failed to duplicate glossary: {message}',
   },
 };
 

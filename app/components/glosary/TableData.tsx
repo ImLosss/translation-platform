@@ -1,8 +1,12 @@
-import { api } from "@/app/lib/api";
-import Link from "next/dist/client/link";
+'use client';
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import EllipsisDropdown from "../client/ElipsisDropdown";
 import DeleteGlossaryButton from "./DeleteGlossaryButton";
 import DuplicateGlossaryButton from "./DuplicateGlossaryButton";
+import { getGlosariesAction } from "@/app/actions/glosary/getGlosariesAction";
+import { useLanguage } from "../client/LanguageProvider";
 
 export interface GlosaryData {
   id: number;
@@ -15,16 +19,40 @@ export interface GlosaryData {
   updatedAt: string;
 }
 
-export default async function TableData() {
-  let glosary = [];
-  try {
-    glosary = await api<GlosaryData[]>("/glosary")
-    console.log("glosary", glosary)
-  } catch (error) {
+export default function TableData() {
+  const { t, intlLocale } = useLanguage();
+  const [glosary, setGlosary] = useState<GlosaryData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      const result = await getGlosariesAction();
+
+      if (!isMounted) return;
+
+      if (result.success && result.data) {
+        setGlosary(result.data);
+        setHasError(false);
+      } else {
+        setHasError(true);
+      }
+      setIsLoading(false);
+    };
+
+    fetchData();
+
+    return () => { isMounted = false; };
+  }, []);
+
+  if (hasError) {
     return (
       <section className="card">
         <div className="card-header">
-          <h2>List Glosaries</h2>
+          <h2>{t.glossary.listTitle}</h2>
         </div>
 
         <div style={{ padding: "40px", textAlign: "center" }}>
@@ -32,7 +60,7 @@ export default async function TableData() {
             className="fas fa-triangle-exclamation"
             style={{ fontSize: 40, color: "#dc3545" }}
           />
-          <p>Failed to load glosary data.</p>
+          <p>{t.glossary.failedLoad}</p>
         </div>
       </section>
     );
@@ -46,12 +74,12 @@ export default async function TableData() {
             className="fas fa-table"
             style={{ color: "var(--accent)", marginRight: 10 }}
           />
-          List Glosaries
+          {t.glossary.listTitle}
         </h2>
 
         <div className="card-actions">
           <Link href="/glosary/create" className="btn btn-primary btn-sm">
-            <i className="fas fa-plus"></i> New Glosary
+            <i className="fas fa-plus"></i> {t.glossary.newGlossary}
           </Link>
         </div>
       </div>
@@ -60,18 +88,28 @@ export default async function TableData() {
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Source</th>
-              <th>Target</th>
-              <th>Created At</th>
-              <th style={{ textAlign: "right" }}>Actions</th>
+              <th>{t.glossary.table.name}</th>
+              <th>{t.glossary.table.source}</th>
+              <th>{t.glossary.table.target}</th>
+              <th>{t.glossary.table.createdAt}</th>
+              <th style={{ textAlign: "right" }}>{t.glossary.table.actions}</th>
             </tr>
           </thead>
 
           <tbody>
-            {glosary.length === 0 ? (
+            {isLoading ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: "center", padding: "40px" }}>
+                <td colSpan={5} style={{ textAlign: "center", padding: "40px" }}>
+                  <i
+                    className="fas fa-spinner fa-spin"
+                    style={{ fontSize: 30, color: "var(--accent)", marginBottom: 12, display: "block" }}
+                  />
+                  {t.glossary.loading}
+                </td>
+              </tr>
+            ) : glosary.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ textAlign: "center", padding: "40px" }}>
                   <i
                     className="fas fa-inbox"
                     style={{
@@ -81,7 +119,7 @@ export default async function TableData() {
                       color: "#999",
                     }}
                   />
-                  No Glosary found.
+                  {t.glossary.empty}
                 </td>
               </tr>
             ) : (
@@ -90,18 +128,18 @@ export default async function TableData() {
                   <td>{g.name}</td>
                   <td>{g.sourceLanguage}</td>
                   <td>{g.targetLanguage}</td>
-                  <td>{new Date(g.createdAt).toLocaleString()}</td>
-                  <td style={{  textAlign: "right" }}>
+                  <td>{new Date(g.createdAt).toLocaleString(intlLocale)}</td>
+                  <td style={{ textAlign: "right" }}>
                     <EllipsisDropdown>
                       <Link href={`/glosary/${g.id}`} className="dropdown-item">
-                        <i className="fas fa-eye"></i> View
+                        <i className="fas fa-eye"></i> {t.glossary.view}
                       </Link>
                       <Link href={`/glosary/${g.id}/edit`} className="dropdown-item">
-                        <i className="fas fa-edit"></i> Edit
+                        <i className="fas fa-edit"></i> {t.glossary.edit}
                       </Link>
                       <DuplicateGlossaryButton glossaryId={g.id} />
                       <Link href={`api/glosary/${g.id}/download`} className={`dropdown-item`}>
-                        <i className="fas fa-download"></i> Download CSV
+                        <i className="fas fa-download"></i> {t.glossary.downloadCsv}
                       </Link>
                       <DeleteGlossaryButton glossaryId={g.id} />
                     </EllipsisDropdown>

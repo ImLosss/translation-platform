@@ -1,14 +1,19 @@
+'use client';
+
 import TableData from "@/app/components/glosary/TableData";
 import TipCard from "@/app/components/ui/TipCard";
+import { useTranslation } from "@/app/components/client/LanguageProvider";
 
 export default function AdminPage() {
+  const t = useTranslation();
+
   return (
     <>
       <TipCard 
-        title="Master Your Terminology" 
+        title={t.glossary.tipTitle} 
         icon="info"
       >
-        A glossary acts as your custom dictionary, ensuring brand names and specific terms are always translated exactly the way you want. When starting a new translation, simply choose a saved glossary to apply your rules instantly.
+        {t.glossary.tipBody}
       </TipCard>
       <TableData />
     </>

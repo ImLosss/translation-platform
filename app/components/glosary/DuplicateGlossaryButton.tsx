@@ -9,6 +9,8 @@ import { useAlert } from "../ui/Alert";
 import { useRouter } from "next/navigation";
 import { deleteGlosaryAction } from "@/app/actions/glosary/deleteGlosaryAction";
 import { duplicateGlosaryAction } from "@/app/actions/glosary/duplicateGlosaryAction";
+import { useLanguage } from "../client/LanguageProvider";
+import { interpolate } from "@/app/lib/i18n/format";
 
 interface ButtonDuplicateGlosaryProps {
   glossaryId: number;
@@ -18,36 +20,37 @@ export default function DuplicateGlossaryButton({ glossaryId }: ButtonDuplicateG
   const { showModal } = useModal();
   const { showLoading, updateMessage, hideLoading } = useLoading();
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const handleDuplicateGlossary = () => {
     showModal({
-      title: "Duplicate Glossary",
-      message: "Are you sure you want to duplicate this glossary?\n\nThis action will create a new glossary with the same content.",
+      title: t.glossary.duplicateTitle,
+      message: t.glossary.duplicateMessage,
       buttons: [
         {
-          label: "Cancel",
+          label: t.common.cancel,
           variant: "outline",
           onClick: () => { }
         },
         {
-          label: "Duplicate",
+          label: t.glossary.duplicateConfirm,
           variant: "primary",
           onClick: async () => {
-            showLoading("Duplicating glossary...");
+            showLoading(t.glossary.duplicating);
 
             try {
               const response = await duplicateGlosaryAction(glossaryId);
 
               if(!response.success) {
-                showAlert(`Failed to duplicate glossary: ${response.message}`, 'info');
+                showAlert(interpolate(t.glossary.alertDuplicateFailed, { message: response.message }), 'info');
                 return;
               }
 
               showAlert(response.message, 'success');
               router.refresh();
             } catch (error: any) {
-              showAlert(`Failed to duplicate glossary: ${error.message}`, 'warning');
+              showAlert(interpolate(t.glossary.alertDuplicateFailed, { message: error.message }), 'warning');
             } finally {
               hideLoading();
             }
@@ -59,7 +62,7 @@ export default function DuplicateGlossaryButton({ glossaryId }: ButtonDuplicateG
 
   return (
         <button className="dropdown-item" type="button" onClick={handleDuplicateGlossary}>
-          <i className="fas fa-copy"></i> Duplicate Glosary
+          <i className="fas fa-copy"></i> {t.glossary.duplicateButton}
         </button>
   );
 }

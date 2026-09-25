@@ -5,6 +5,7 @@ import { useAlert } from '../../ui/Alert';
 import { redirect } from 'next/navigation';
 import { updateGlosaryAction } from '@/app/actions/glosary/updateGlosaryAction'; // Pastikan action ini dibuat
 import SelectSearch from '../../client/SelectSearch';
+import { useLanguage } from '../../client/LanguageProvider';
 
 const languageOptions = [
     { value: 'en', label: 'English' },
@@ -26,6 +27,7 @@ export interface GlosaryData {
 
 export default function FormClientEdit({ initialData }: { initialData: GlosaryData }) {
     const { showAlert } = useAlert();
+    const { t } = useLanguage();
 
     const [name, setName] = useState(initialData.name);
     const [sourceLanguage, setSourceLang] = useState<string>(initialData.sourceLanguage);
@@ -34,7 +36,7 @@ export default function FormClientEdit({ initialData }: { initialData: GlosaryDa
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !sourceLanguage || !targetLanguage) {
-            showAlert('Harap isi semua field wajib', 'error');
+            showAlert(t.glossary.alertRequired, 'error');
             return;
         }
 
@@ -50,9 +52,9 @@ export default function FormClientEdit({ initialData }: { initialData: GlosaryDa
         console.log('Result from updateGlosaryAction:', result);
 
         if (!result.success) {
-            showAlert(result.message || 'Error updating glosary.', 'error');
+            showAlert(result.message || t.glossary.alertUpdateFailed, 'error');
         } else {
-            showAlert(result.message || 'Glosary updated successfully!', 'success');
+            showAlert(result.message || t.glossary.alertUpdateSuccess, 'success');
             redirect('/glosary');
         }
     };
@@ -69,7 +71,7 @@ export default function FormClientEdit({ initialData }: { initialData: GlosaryDa
             <div className="card-header">
                 <h2>
                     <i className="fas fa-edit" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
-                    Edit Glosary
+                    {t.glossary.editTitle}
                 </h2>
                 <div className="card-actions">
                     <button
@@ -77,19 +79,19 @@ export default function FormClientEdit({ initialData }: { initialData: GlosaryDa
                         className="btn btn-outline btn-sm"
                         onClick={handleReset}
                     >
-                        <i className="fas fa-undo-alt"></i> Reset
+                        <i className="fas fa-undo-alt"></i> {t.glossary.reset}
                     </button>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label htmlFor="name">Glosary Name</label>
+                    <label htmlFor="name">{t.glossary.name}</label>
                     <input
                         type="text"
                         className="form-control"
                         id="name"
-                        placeholder="e.g. Universal"
+                        placeholder={t.glossary.namePlaceholder}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
@@ -98,29 +100,29 @@ export default function FormClientEdit({ initialData }: { initialData: GlosaryDa
 
                 <div className="form-row">
                     <div className="form-group">
-                        <label htmlFor="sourceLang">Source Language</label>
+                        <label htmlFor="sourceLang">{t.glossary.sourceLanguage}</label>
                         <SelectSearch
                             id="sourceLang"
                             options={languageOptions}
                             value={sourceLanguage}
                             onChange={setSourceLang}
-                            placeholder="Select source language"
+                            placeholder={t.glossary.selectSource}
                         />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="targetLang">Target Language</label>
+                        <label htmlFor="targetLang">{t.glossary.targetLanguage}</label>
                         <SelectSearch
                             id="targetLang"
                             options={languageOptions}
                             value={targetLanguage}
                             onChange={setTargetLang}
-                            placeholder="Select target language"
+                            placeholder={t.glossary.selectTarget}
                         />
                     </div>
                 </div>
 
                 <button type="submit" className="btn btn-primary">
-                    <i className="fas fa-save"></i> Save Changes
+                    <i className="fas fa-save"></i> {t.glossary.saveChanges}
                 </button>
             </form>
         </section>
