@@ -54,12 +54,6 @@ export interface Dictionary {
       totalCost: string;
         
       status: string;
-      statuses: {
-        PROCESSING: string;
-        TRANSCRIBING: string;
-        COMPLETED: string;
-        ERROR: string;
-      };
       date: string;
       actions: string;
       loading: string;
@@ -322,12 +316,6 @@ const id: Dictionary = {
       totalTokens: 'Total Token',
       totalCost: 'Total Biaya',
       status: 'Status',
-      statuses: {
-        PROCESSING: 'Memproses',
-        TRANSCRIBING: 'Transkripsi',
-        COMPLETED: 'Selesai',
-        ERROR: 'Gagal',
-      },
       date: 'Tanggal',
       actions: 'Aksi',
       loading: 'Memuat job terjemahan...',
@@ -590,12 +578,6 @@ const en: Dictionary = {
       totalTokens: 'Total Tokens',
       totalCost: 'Total Cost',
       status: 'Status',
-      statuses: {
-        PROCESSING: 'Processing',
-        TRANSCRIBING: 'Transcribing',
-        COMPLETED: 'Completed',
-        ERROR: 'Error',
-      },
       date: 'Date',
       actions: 'Actions',
       loading: 'Loading translation jobs...',
