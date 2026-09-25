@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import EditProfileForm from './EditProfileForm';
+import { useLanguage } from '@/app/components/client/LanguageProvider';
 
 interface UserProfile {
   // ... sesuaikan dengan interface di atas
@@ -24,6 +25,7 @@ export default function ProfileContainer({
   children: React.ReactNode;
 }) {
   const [isEditing, setIsEditing] = useState(false);
+  const { t } = useLanguage();
 
   if (isEditing) {
     return (
@@ -43,7 +45,7 @@ export default function ProfileContainer({
             className="fas fa-user-circle"
             style={{ color: 'var(--accent)', marginRight: '10px' }}
           ></i>
-          Profile
+          {t.profile.title}
         </h2>
         {/* <div className="card-actions">
           <button

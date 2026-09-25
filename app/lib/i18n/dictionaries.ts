@@ -327,6 +327,25 @@ export interface Dictionary {
     translationsCount: string;
     errorLoad: string;
   };
+  profile: {
+    title: string;
+    editTitle: string;
+    defaultUser: string;
+    roleAdmin: string;
+    roleTranslator: string;
+    email: string;
+    memberSince: string;
+    translations: string;
+    balance: string;
+    emailLocked: string;
+    username: string;
+    usernamePlaceholder: string;
+    usernameMinLength: string;
+    saving: string;
+    save: string;
+    cancel: string;
+    errorGeneric: string;
+  };
 }
 
 const id: Dictionary = {
@@ -647,6 +666,25 @@ const id: Dictionary = {
     translationsCount: '{count} terjemahan',
     errorLoad: 'Gagal memuat data penggunaan.',
   },
+  profile: {
+    title: 'Profil',
+    editTitle: 'Edit Profil',
+    defaultUser: 'Pengguna',
+    roleAdmin: 'Administrator',
+    roleTranslator: 'Penerjemah',
+    email: 'Email',
+    memberSince: 'Bergabung Sejak',
+    translations: 'Terjemahan',
+    balance: 'Saldo',
+    emailLocked: 'Email tidak dapat diubah.',
+    username: 'Username',
+    usernamePlaceholder: 'Masukkan username baru',
+    usernameMinLength: 'Username minimal 2 karakter.',
+    saving: 'Menyimpan...',
+    save: 'Simpan',
+    cancel: 'Batal',
+    errorGeneric: 'Terjadi kesalahan.',
+  },
 };
 
 const en: Dictionary = {
@@ -966,6 +1004,25 @@ const en: Dictionary = {
     chartAria: 'Chart of {metric} over the last {days} days',
     translationsCount: '{count} translations',
     errorLoad: 'Failed to load usage data.',
+  },
+  profile: {
+    title: 'Profile',
+    editTitle: 'Edit Profile',
+    defaultUser: 'User',
+    roleAdmin: 'Administrator',
+    roleTranslator: 'Translator',
+    email: 'Email',
+    memberSince: 'Member Since',
+    translations: 'Translations',
+    balance: 'Balance',
+    emailLocked: 'Email cannot be changed.',
+    username: 'Username',
+    usernamePlaceholder: 'Enter a new username',
+    usernameMinLength: 'Username must be at least 2 characters.',
+    saving: 'Saving...',
+    save: 'Save',
+    cancel: 'Cancel',
+    errorGeneric: 'An error occurred.',
   },
 };
 

@@ -1,4 +1,7 @@
+'use client';
+
 import Image from "next/image";
+import { useLanguage } from "@/app/components/client/LanguageProvider";
 
 interface UserProfile {
   email: string;
@@ -11,6 +14,8 @@ interface UserProfile {
 }
 
 export default function ProfileCard({ user }: { user: UserProfile }) {
+  const { t, intlLocale } = useLanguage();
+
   // Inisial dari username, fallback "??"
   const initials = user.username
     ? user.username
@@ -21,13 +26,13 @@ export default function ProfileCard({ user }: { user: UserProfile }) {
         .substring(0, 2)
     : '??';
 
-  const memberSince = new Date(user.createdAt).toLocaleDateString('id-ID', {
+  const memberSince = new Date(user.createdAt).toLocaleDateString(intlLocale, {
     year: 'numeric',
     month: 'long',
   });
 
   const projectsCount = user._count?.translations ?? '-';
-  const balanceFormatted = user.balance.toLocaleString('id-ID', {
+  const balanceFormatted = user.balance.toLocaleString(intlLocale, {
     style: 'currency',
     currency: 'IDR',
   });
@@ -48,28 +53,28 @@ export default function ProfileCard({ user }: { user: UserProfile }) {
         )}
       </div>
       <div className="profile-info">
-        <div className="name">{user.username || 'Pengguna'}</div>
+        <div className="name">{user.username || t.profile.defaultUser}</div>
         <div className="role">
-          {user.role === 'ADMIN' ? 'Administrator' : 'Translator'}
+          {user.role === 'ADMIN' ? t.profile.roleAdmin : t.profile.roleTranslator}
         </div>
         <div className="details">
           <div className="detail-item">
-            <strong>Email</strong>
+            <strong>{t.profile.email}</strong>
             <br />
             {user.email}
           </div>
           <div className="detail-item">
-            <strong>Member Since</strong>
+            <strong>{t.profile.memberSince}</strong>
             <br />
             {memberSince}
           </div>
           <div className="detail-item">
-            <strong>Translations</strong>
+            <strong>{t.profile.translations}</strong>
             <br />
             {projectsCount}
           </div>
           <div className="detail-item">
-            <strong>Balance</strong>
+            <strong>{t.profile.balance}</strong>
             <br />
             {balanceFormatted}
           </div>

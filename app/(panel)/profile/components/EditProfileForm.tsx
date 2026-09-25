@@ -2,6 +2,7 @@
 
 import { updateProfileAction } from '@/app/actions/profile/action';
 import { useState, type FormEvent } from 'react';
+import { useLanguage } from '@/app/components/client/LanguageProvider';
 
 interface UserProfile {
   username: string | null;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function EditProfileForm({ user, onCancel, onSuccess }: Props) {
+  const { t } = useLanguage();
   const [username, setUsername] = useState(user.username ?? '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,7 @@ export default function EditProfileForm({ user, onCancel, onSuccess }: Props) {
     setSuccessMsg('');
 
     if (!username.trim() || username.trim().length < 2) {
-      setError('Username minimal 2 karakter.');
+      setError(t.profile.usernameMinLength);
       return;
     }
 
@@ -40,7 +42,7 @@ export default function EditProfileForm({ user, onCancel, onSuccess }: Props) {
         setError(result.message);
       }
     } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan.');
+      setError(err.message || t.profile.errorGeneric);
     } finally {
       setLoading(false);
     }
@@ -51,13 +53,13 @@ export default function EditProfileForm({ user, onCancel, onSuccess }: Props) {
       <div className="card-header">
         <h2>
           <i className="fas fa-user-edit" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
-          Edit Profile
+          {t.profile.editTitle}
         </h2>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t.profile.email}</label>
           <input
             type="email"
             className="form-control"
@@ -66,11 +68,11 @@ export default function EditProfileForm({ user, onCancel, onSuccess }: Props) {
             disabled
             readOnly
           />
-          <small className="text-muted">Email tidak dapat diubah.</small>
+          <small className="text-muted">{t.profile.emailLocked}</small>
         </div>
 
         <div className="form-group">
-          <label htmlFor="username">Username</label>
+          <label htmlFor="username">{t.profile.username}</label>
           <input
             type="text"
             className="form-control"
@@ -78,7 +80,7 @@ export default function EditProfileForm({ user, onCancel, onSuccess }: Props) {
             name="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Masukkan username baru"
+            placeholder={t.profile.usernamePlaceholder}
             required
             minLength={2}
           />
@@ -99,16 +101,16 @@ export default function EditProfileForm({ user, onCancel, onSuccess }: Props) {
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? (
               <>
-                <i className="fas fa-spinner fa-spin"></i> Menyimpan...
+                <i className="fas fa-spinner fa-spin"></i> {t.profile.saving}
               </>
             ) : (
               <>
-                <i className="fas fa-save"></i> Simpan
+                <i className="fas fa-save"></i> {t.profile.save}
               </>
             )}
           </button>
           <button type="button" className="btn btn-outline" onClick={onCancel} disabled={loading}>
-            Batal
+            {t.profile.cancel}
           </button>
         </div>
       </form>
