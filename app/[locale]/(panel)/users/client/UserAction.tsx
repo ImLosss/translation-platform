@@ -1,12 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAlert } from '@/app/components/ui/Alert';
 import { deleteUser } from '@/app/actions/users/UserAction';
 
 export default function UserActions({ userId, userName }: { userId: number, userName: string | null }) {
     const router = useRouter();
+    const params = useParams<{ locale: string }>();
+    const locale = params?.locale ?? 'id';
     const { showAlert } = useAlert();
 
     const handleDelete = async () => {
@@ -29,7 +31,7 @@ export default function UserActions({ userId, userName }: { userId: number, user
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <Link href={`/users/${userId}`} className="btn btn-outline btn-sm" title="Edit User" style={{ padding: '4px 8px' }}>
+            <Link href={`/${locale}/users/${userId}`} className="btn btn-outline btn-sm" title="Edit User" style={{ padding: '4px 8px' }}>
                 <i className="fas fa-edit"></i>
             </Link>
             <button

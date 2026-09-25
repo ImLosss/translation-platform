@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { useAlert } from '@/app/components/ui/Alert'; 
 import { checkPaymentStatusAction, createPaymentAction } from '@/app/actions/payment/paymentAction';
@@ -9,6 +9,9 @@ import { useLanguage } from '../client/LanguageProvider';
 
 export default function TopupClient() {
     const router = useRouter();
+    const params = useParams<{ locale: string }>();
+    const locale = params?.locale ?? 'id';
+    const billingPath = `/${locale}/billing`;
     const { showAlert } = useAlert();
     const { t, intlLocale } = useLanguage();
 
@@ -32,7 +35,7 @@ export default function TopupClient() {
                 if (status === 'SUCCESS' || status === 'SETTLEMENT') {
                     clearInterval(intervalId);
                     showAlert(t.topup.alertPaymentSuccess, 'success');
-                    router.push('/billing'); 
+                    router.push(billingPath); 
                 } 
                 else if (status === 'FAILED' || status === 'EXPIRE' || status === 'CANCEL') {
                     clearInterval(intervalId);
@@ -105,12 +108,12 @@ export default function TopupClient() {
                         onSuccess: function(snapResult: any) {
                             console.log('Success:', snapResult);
                             showAlert(t.topup.alertCcSuccess, 'success');
-                            router.push('/billing');
+                            router.push(billingPath);
                         },
                         onPending: function(snapResult: any) {
                             console.log('Pending:', snapResult);
                             showAlert(t.topup.alertCcPending, 'warning');
-                            router.push('/billing');
+                            router.push(billingPath);
                         },
                         onError: function(snapResult: any) {
                             console.log('Error:', snapResult);
@@ -184,7 +187,7 @@ export default function TopupClient() {
                     <button className="btn btn-outline" onClick={() => setQrisData(null)} style={{ padding: '10px 25px' }}>
                         {t.topup.cancel}
                     </button>
-                    <button className="btn btn-primary" onClick={() => router.push('/billing')} style={{ padding: '10px 25px' }}>
+                    <button className="btn btn-primary" onClick={() => router.push(billingPath)} style={{ padding: '10px 25px' }}>
                         {t.topup.goToHistory}
                     </button>
                 </div>

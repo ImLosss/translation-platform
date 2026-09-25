@@ -1,8 +1,6 @@
-'use client';
-
-import { useState } from 'react';
 import Link from 'next/link';
-import { useLanguage } from '../client/LanguageProvider';
+import { getDictionary } from '@/app/lib/i18n/dictionaries';
+import { intlLocaleOf, type Locale } from '@/app/lib/i18n/locales';
 
 // Sesuaikan dengan skema tabel Transaction di Prisma
 export interface TransactionDB {
@@ -17,11 +15,13 @@ export interface TransactionDB {
 
 interface Props {
     initialTransactions: TransactionDB[];
+    locale: Locale;
 }
 
-export default function BillingHistoryClient({ initialTransactions }: Props) {
-    const [transactions] = useState<TransactionDB[]>(initialTransactions);
-    const { t, intlLocale } = useLanguage();
+export default function BillingHistoryClient({ initialTransactions, locale }: Props) {
+    const transactions = initialTransactions;
+    const t = getDictionary(locale);
+    const intlLocale = intlLocaleOf(locale);
 
     const formatCurrency = (val: number) => {
         return new Intl.NumberFormat(intlLocale).format(val);
@@ -67,7 +67,7 @@ export default function BillingHistoryClient({ initialTransactions }: Props) {
                     <h2 style={{ margin: '0 0 5px 0', color: 'var(--text-primary)' }}>{t.billing.title}</h2>
                     <p style={{ margin: 0, color: 'var(--text-muted)' }}>{t.billing.subtitle}</p>
                 </div>
-                <Link href="/topup" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Link href={`/${locale}/topup`} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <i className="fas fa-coins"></i> {t.billing.topUpBalance}
                 </Link>
             </div>

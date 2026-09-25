@@ -14,6 +14,7 @@ import { logoutAction } from '@/app/actions/logout';
 import { usePathname, useRouter } from 'next/navigation';
 import { CurrentUser } from './UserProvider';
 import { useLanguage } from './LanguageProvider';
+import { localePath, stripLocale } from '@/app/lib/i18n/locales';
 import Image from "next/image";
 
 // Definisikan tipe untuk context
@@ -34,18 +35,21 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const { showAlert } = useAlert();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const router = useRouter();
   const pathname = usePathname();
 
+  // Path tanpa prefix locale, untuk mencocokkan item aktif.
+  const currentPath = stripLocale(pathname);
+  const lp = (path: string) => localePath(locale, path);
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => currentPath === href || currentPath.startsWith(`${href}/`);
 
   async function logout() {
     await logoutAction();
 
-    router.replace("/login");
+    router.replace(lp("/login"));
     router.refresh();
   }
 
@@ -103,48 +107,48 @@ export default function SidebarProvider({ children, user }: { children: ReactNod
 
         <nav className="sidebar-nav">
           <div className="nav-label">{t.nav.main}</div>
-          <Link href="/" className={isActive('/') ? 'active' : ''} onClick={closeSidebar}>
+          <Link href={lp("/")} className={isActive('/') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-th-large"></i> {t.nav.dashboard}
           </Link>
-          <Link href="/translate" className={isActive('/translate') ? 'active' : ''} onClick={closeSidebar}>
+          <Link href={lp("/translate")} className={isActive('/translate') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-film"></i> {t.nav.translations}
           </Link>
-          {/* <Link href="/translate-doc" className={isActive('/translate-doc') ? 'active' : ''} onClick={closeSidebar}>
+          {/* <Link href={lp("/translate-doc")} className={isActive('/translate-doc') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-file"></i> Translation Doc
           </Link> */}
-          <Link href="/glosary" className={isActive('/glosary') ? 'active' : ''} onClick={closeSidebar}>
+          <Link href={lp("/glosary")} className={isActive('/glosary') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-file-alt"></i> {t.nav.glosary}
           </Link>
 
           <div className="nav-label" style={{ marginTop: 12 }}>
             {t.nav.management}
           </div>
-          <Link href="/topup" className={isActive('/topup') ? 'active' : ''} onClick={closeSidebar}>
+          <Link href={lp("/topup")} className={isActive('/topup') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-wallet"></i> {t.nav.topUp}
           </Link>
-          <Link href="/billing" className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
+          <Link href={lp("/billing")} className={isActive('/billing') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-file-invoice-dollar"></i> {t.nav.billing}
             {/* <span className="badge">Pro</span> */}
           </Link>
-          <Link href="/pricing" className={isActive('/pricing') ? 'active' : ''} onClick={closeSidebar}>
+          <Link href={lp("/pricing")} className={isActive('/pricing') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-dollar-sign"></i> {t.nav.pricing}
             {/* <span className="badge">Pro</span> */}
           </Link>
-          <Link href="/profile" className={isActive('/profile') ? 'active' : ''} onClick={closeSidebar}>
+          <Link href={lp("/profile")} className={isActive('/profile') ? 'active' : ''} onClick={closeSidebar}>
             <i className="fas fa-user"></i> {t.nav.profile}
           </Link>
           {user?.role === 'ADMIN' && (
             <>
-              <Link href="/users" className={isActive('/users') ? 'active' : ''} onClick={closeSidebar}>
+              <Link href={lp("/users")} className={isActive('/users') ? 'active' : ''} onClick={closeSidebar}>
                 <i className="fas fa-users"></i> {t.nav.users}
               </Link>
-              <Link href="/providers" className={isActive('/providers') ? 'active' : ''} onClick={closeSidebar}>
+              <Link href={lp("/providers")} className={isActive('/providers') ? 'active' : ''} onClick={closeSidebar}>
                 <i className="fas fa-server"></i> {t.nav.provider}
               </Link>
-              <Link href="/logs" className={isActive('/logs') ? 'active' : ''} onClick={closeSidebar}>
+              <Link href={lp("/logs")} className={isActive('/logs') ? 'active' : ''} onClick={closeSidebar}>
                 <i className="fas fa-history"></i> {t.nav.logs}
               </Link>
-              {/* <Link href="/settings" className={isActive('/settings') ? 'active' : ''} onClick={closeSidebar}>
+              {/* <Link href={lp("/settings")} className={isActive('/settings') ? 'active' : ''} onClick={closeSidebar}>
                 <i className="fas fa-cog"></i> Settings
               </Link> */}
             </>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useAlert } from '@/app/components/ui/Alert';
 import { saveGlossaryAction } from '@/app/actions/translate/generateGlosaryAction';
 import { useLanguage } from '../client/LanguageProvider';
@@ -93,6 +93,9 @@ const GlossaryRecommendationRow = memo(({
 // ================= KOMPONEN UTAMA =================
 export default function GlossaryRecommendationClient() {
     const router = useRouter();
+    const params = useParams<{ locale: string }>();
+    const locale = params?.locale ?? 'id';
+    const translatePath = `/${locale}/translate`;
     const { showAlert } = useAlert();
     const { t } = useLanguage();
 
@@ -143,7 +146,7 @@ export default function GlossaryRecommendationClient() {
                 const recommendations = parsedData.recommendations || [];
                 if (recommendations.length === 0) {
                     showAlert(t.translate.glossary.alertNoRecommendation, 'error');
-                    router.push('/translate');
+                    router.push(translatePath);
                     return;
                 }
 
@@ -180,11 +183,11 @@ export default function GlossaryRecommendationClient() {
             } catch (error) {
                 console.error("Gagal mem-parsing data dari sessionStorage", error);
                 showAlert(t.translate.glossary.alertInvalidFormat, 'error');
-                router.push('/translate');
+                router.push(translatePath);
             }
         } else {
             showAlert(t.translate.glossary.alertNoRecommendation, 'error');
-            router.push('/translate');
+            router.push(translatePath);
         }
     }, [router, showAlert, t]);
 
@@ -284,7 +287,7 @@ export default function GlossaryRecommendationClient() {
 
             showAlert(response.message, 'success');
             sessionStorage.removeItem('tempGlossary');
-            return router.push('/translate');
+            return router.push(translatePath);
 
         } catch (error) {
             console.error(error);
@@ -312,7 +315,7 @@ export default function GlossaryRecommendationClient() {
                     className="btn btn-outline btn-sm"
                     onClick={() => {
                         if (window.confirm(t.translate.glossary.confirmBack)) {
-                            router.push('/translate');
+                            router.push(translatePath);
                         }
                     }}
                 >

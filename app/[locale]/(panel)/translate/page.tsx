@@ -1,11 +1,15 @@
-'use client';
-
 import TableData from "@/app/components/translate/TableData";
 import TipCard from "@/app/components/ui/TipCard";
-import { useTranslation } from "@/app/components/client/LanguageProvider";
+import { getDictionary } from "@/app/lib/i18n/dictionaries";
+import { DEFAULT_LOCALE, isLocale } from "@/app/lib/i18n/locales";
 
-export default function TranslatePage() {
-  const t = useTranslation();
+export default async function TranslatePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = getDictionary(isLocale(locale) ? locale : DEFAULT_LOCALE);
 
   return (
     <>

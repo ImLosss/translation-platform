@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import EllipsisDropdown from "../client/ElipsisDropdown";
 import DeleteGlossaryButton from "./DeleteGlossaryButton";
 import DuplicateGlossaryButton from "./DuplicateGlossaryButton";
@@ -21,6 +22,8 @@ export interface GlosaryData {
 
 export default function TableData() {
   const { t, intlLocale } = useLanguage();
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? 'id';
   const [glosary, setGlosary] = useState<GlosaryData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -78,7 +81,7 @@ export default function TableData() {
         </h2>
 
         <div className="card-actions">
-          <Link href="/glosary/create" className="btn btn-primary btn-sm">
+          <Link href={`/${locale}/glosary/create`} className="btn btn-primary btn-sm">
             <i className="fas fa-plus"></i> {t.glossary.newGlossary}
           </Link>
         </div>
@@ -131,10 +134,10 @@ export default function TableData() {
                   <td>{new Date(g.createdAt).toLocaleString(intlLocale)}</td>
                   <td style={{ textAlign: "right" }}>
                     <EllipsisDropdown>
-                      <Link href={`/glosary/${g.id}`} className="dropdown-item">
+                      <Link href={`/${locale}/glosary/${g.id}`} className="dropdown-item">
                         <i className="fas fa-eye"></i> {t.glossary.view}
                       </Link>
-                      <Link href={`/glosary/${g.id}/edit`} className="dropdown-item">
+                      <Link href={`/${locale}/glosary/${g.id}/edit`} className="dropdown-item">
                         <i className="fas fa-edit"></i> {t.glossary.edit}
                       </Link>
                       <DuplicateGlossaryButton glossaryId={g.id} />

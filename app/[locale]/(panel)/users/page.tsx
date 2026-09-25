@@ -37,11 +37,14 @@ interface UsersResponse {
 // 2. Server Component
 // ==============================
 export default async function UsersPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ page?: string }>;
 }) {
   const resolvedParams = await searchParams;
+  const { locale } = await params;
   const currentPage = Number(resolvedParams.page) || 1;
   const limit = 10;
 
@@ -191,7 +194,7 @@ export default async function UsersPage({
                 <div style={{ display: 'flex', gap: '8px' }}>
                   
                   {meta.page > 1 ? (
-                    <Link href={`/users?page=${meta.page - 1}`} className="btn btn-outline btn-sm">
+                    <Link href={`/${locale}/users?page=${meta.page - 1}`} className="btn btn-outline btn-sm">
                       <i className="fas fa-chevron-left" /> Prev
                     </Link>
                   ) : (
@@ -201,7 +204,7 @@ export default async function UsersPage({
                   )}
 
                   {meta.page < meta.lastPage ? (
-                    <Link href={`/users?page=${meta.page + 1}`} className="btn btn-outline btn-sm">
+                    <Link href={`/${locale}/users?page=${meta.page + 1}`} className="btn btn-outline btn-sm">
                       Next <i className="fas fa-chevron-right" />
                     </Link>
                   ) : (

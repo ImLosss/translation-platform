@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAlert } from '@/app/components/ui/Alert';
 import { updateUser } from '@/app/actions/users/UserAction';
 
 export default function EditUserForm({ user }: { user: any }) {
   const router = useRouter();
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? 'id';
   const { showAlert } = useAlert();
   
   const [isSaving, setIsSaving] = useState(false);
@@ -28,7 +30,7 @@ export default function EditUserForm({ user }: { user: any }) {
 
     if (result.success) {
       showAlert('Data pengguna berhasil diperbarui!', 'success');
-      router.push('/users'); // Kembali ke halaman tabel users
+      router.push(`/${locale}/users`); // Kembali ke halaman tabel users
       // Tidak perlu router.refresh() karena revalidatePath di action sudah melakukannya
     } else {
       showAlert(result.message, 'error');
@@ -42,7 +44,7 @@ export default function EditUserForm({ user }: { user: any }) {
           <i className="fas fa-user-edit" style={{ color: 'var(--accent)', marginRight: 10 }}></i>
           Edit User
         </h2>
-        <Link href="/users" className="btn btn-outline btn-sm">
+        <Link href={`/${locale}/users`} className="btn btn-outline btn-sm">
           <i className="fas fa-arrow-left"></i> Back
         </Link>
       </div>

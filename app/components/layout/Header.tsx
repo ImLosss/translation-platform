@@ -7,12 +7,13 @@ import NotifButtonAndModal from '../client/NotifButtonModal';
 import LanguageSwitcher from '../client/LanguageSwitcher';
 import { useUser } from '../client/UserProvider';
 import { useLanguage } from '../client/LanguageProvider';
+import { localePath, stripLocale } from '@/app/lib/i18n/locales';
 import Image from 'next/image';
 
 export default function Header() {
   const user = useUser();
   const pathname = usePathname(); 
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   // Fungsi untuk mengubah segmen path menjadi label yang rapi
   const formatSegment = (segment: string) =>
@@ -34,13 +35,13 @@ export default function Header() {
     logs: t.nav.logs,
   };
 
-  // Buat breadcrumb dari pathname
-  const pathSegments = pathname.split('/').filter(Boolean);
+  // Buat breadcrumb dari pathname (tanpa prefix locale)
+  const pathSegments = stripLocale(pathname).split('/').filter(Boolean);
   const breadcrumbItems =
   pathSegments.length === 0
-    ? [{ label: t.nav.dashboard, href: "/" }]
+    ? [{ label: t.nav.dashboard, href: localePath(locale, "/") }]
     : pathSegments.map((seg, index) => {
-        const href = "/" + pathSegments.slice(0, index + 1).join("/");
+        const href = localePath(locale, "/" + pathSegments.slice(0, index + 1).join("/"));
 
         return {
           label:

@@ -1,11 +1,13 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useState, FormEvent } from 'react';
 
 export default function LogFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? 'id';
 
   // Ambil nilai filter dari URL (jika sudah ada)
   const [method, setMethod] = useState(searchParams.get('method') || '');
@@ -25,7 +27,7 @@ export default function LogFilters() {
     if (startDate) params.set('startDate', startDate);
     if (endDate) params.set('endDate', endDate);
     
-    router.push(`/logs?${params.toString()}`);
+    router.push(`/${locale}/logs?${params.toString()}`);
   };
 
   const handleReset = () => {
@@ -33,7 +35,7 @@ export default function LogFilters() {
     setStatus('');
     setStartDate('');
     setEndDate('');
-    router.push('/logs'); // Hapus semua query
+    router.push(`/${locale}/logs`); // Hapus semua query
   };
 
   return (

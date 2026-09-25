@@ -5,10 +5,11 @@ import Link from 'next/link';
 export default async function EditUserPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }) {
   const resolvedParams = await params;
   const userId = resolvedParams.id;
+  const locale = resolvedParams.locale;
   
   let user = null;
   let errorMsg = '';
@@ -24,7 +25,7 @@ export default async function EditUserPage({
       <section className="card">
         <div className="card-header">
           <h2>Error</h2>
-          <Link href="/users" className="btn btn-outline btn-sm"><i className="fas fa-arrow-left"></i> Kembali</Link>
+          <Link href={`/${locale}/users`} className="btn btn-outline btn-sm"><i className="fas fa-arrow-left"></i> Kembali</Link>
         </div>
         <div style={{ padding: '20px' }}>
           <div className="alert alert-error">{errorMsg || 'User tidak ditemukan'}</div>

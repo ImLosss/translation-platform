@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAlert } from '../../ui/Alert';
-import { redirect } from 'next/navigation';
+import { redirect, useParams } from 'next/navigation';
 import { updateGlosaryAction } from '@/app/actions/glosary/updateGlosaryAction'; // Pastikan action ini dibuat
 import SelectSearch from '../../client/SelectSearch';
 import { useLanguage } from '../../client/LanguageProvider';
@@ -28,6 +28,8 @@ export interface GlosaryData {
 export default function FormClientEdit({ initialData }: { initialData: GlosaryData }) {
     const { showAlert } = useAlert();
     const { t } = useLanguage();
+    const params = useParams<{ locale: string }>();
+    const locale = params?.locale ?? 'id';
 
     const [name, setName] = useState(initialData.name);
     const [sourceLanguage, setSourceLang] = useState<string>(initialData.sourceLanguage);
@@ -55,7 +57,7 @@ export default function FormClientEdit({ initialData }: { initialData: GlosaryDa
             showAlert(result.message || t.glossary.alertUpdateFailed, 'error');
         } else {
             showAlert(result.message || t.glossary.alertUpdateSuccess, 'success');
-            redirect('/glosary');
+            redirect(`/${locale}/glosary`);
         }
     };
 

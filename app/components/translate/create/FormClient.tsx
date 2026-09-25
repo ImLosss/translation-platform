@@ -3,10 +3,10 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useAlert } from '../../ui/Alert';
 import { createAction } from '@/app/actions/translate/createAction';
-import { redirect } from 'next/navigation';
+import { redirect, useParams } from 'next/navigation';
 import SelectSearch from '../../client/SelectSearch';
 import { createFromUrlAction } from '@/app/actions/translate/createFromUrlAction';
-import { AiModelOption } from '@/app/(panel)/translate/create/page';
+import { AiModelOption } from '@/app/[locale]/(panel)/translate/create/page';
 import { useLanguage } from '../../client/LanguageProvider';
 import { interpolate } from '@/app/lib/i18n/format';
 
@@ -25,6 +25,8 @@ const languageOptions = [
 export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; aiModels: AiModelOption[] }) {
   const { showAlert } = useAlert();
   const { t } = useLanguage();
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? 'id';
 
   const [fileName, setFileName] = useState('');
   const [model, setModel] = useState<string>('');
@@ -130,7 +132,7 @@ export default function FormClient({ glosaries, aiModels }: { glosaries: any[]; 
       showAlert(result.message || t.translate.create.alertCreateFailed, 'error');
     } else {
       showAlert(result.message || t.translate.create.alertCreateSuccess, 'success');
-      redirect('/translate');
+      redirect(`/${locale}/translate`);
     }
   };
 

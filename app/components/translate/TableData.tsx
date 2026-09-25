@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import EllipsisDropdown from "../client/ElipsisDropdown";
 import ButtonGenerateGlosary from "./ButtonGenerateGlosary";
 import { getTranslationsAction } from "@/app/actions/translate/getTranslationsAction";
@@ -61,6 +62,8 @@ export default function TableData() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const { t, intlLocale } = useLanguage();
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? 'id';
 
   // 1. Fetch Data Awal & Pindah Halaman
   useEffect(() => {
@@ -112,7 +115,7 @@ export default function TableData() {
           {t.translate.list.recentJobs}
         </h2>
         <div className="card-actions">
-          <Link href="/translate/create" className="btn btn-primary btn-sm">
+          <Link href={`/${locale}/translate/create`} className="btn btn-primary btn-sm">
             <i className="fas fa-plus"></i> {t.translate.list.newTranslate}
           </Link>
         </div>
@@ -200,7 +203,7 @@ export default function TableData() {
                       )}
 
                       <EllipsisDropdown>
-                        <Link href={`/translate/${job.id}`} className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
+                        <Link href={`/${locale}/translate/${job.id}`} className={`dropdown-item ${job.status !== "COMPLETED" ? "disabled" : ""}`}>
                           <i className="fas fa-eye"></i> {t.translate.list.view}
                         </Link>
                         <Link href={`api/translate/${job.id}/downloadsource`} className={`dropdown-item ${!["COMPLETED", "PROCESSING"].includes(job.status) ? "disabled" : ""}`}>

@@ -2,73 +2,42 @@
 
 import {
   createContext,
-  useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
   type ReactNode,
 } from 'react';
-import {
-  DEFAULT_LOCALE,
-  LOCALE_STORAGE_KEY,
-  isLocale,
-  type Locale,
-} from '@/app/lib/i18n/locales';
 import { getDictionary, type Dictionary } from '@/app/lib/i18n/dictionaries';
+import { intlLocaleOf, type Locale } from '@/app/lib/i18n/locales';
 
 interface LanguageContextValue {
   locale: Locale;
   /** Kamus terjemahan statis untuk locale aktif. */
   t: Dictionary;
-  setLocale: (locale: Locale) => void;
-  toggleLocale: () => void;
   /** Locale untuk Intl (format angka & tanggal). */
   intlLocale: string;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
-
-  // Ambil preferensi tersimpan setelah mount (hindari hydration mismatch).
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-      if (isLocale(stored)) setLocaleState(stored);
-    } catch {
-      /* localStorage tidak tersedia */
-    }
-  }, []);
-
-  // Sinkronkan atribut <html lang> dan simpan preferensi.
-  useEffect(() => {
-    document.documentElement.lang = locale;
-    try {
-      window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-    } catch {
-      /* localStorage tidak tersedia */
-    }
-  }, [locale]);
-
-  const setLocale = useCallback((next: Locale) => {
-    setLocaleState(next);
-  }, []);
-
-  const toggleLocale = useCallback(() => {
-    setLocaleState((prev) => (prev === 'id' ? 'en' : 'id'));
-  }, []);
-
+/**
+ * Provider locale yang di-seed dari server (route `[locale]`).
+ * Tidak ada state/effect/localStorage — nilai locale datang dari URL,
+ * sehingga HTML server & client selalu identik (tanpa hydration mismatch).
+ */
+export function LanguageProvider({
+  locale,
+  children,
+}: {
+  locale: Locale;
+  children: ReactNode;
+}) {
   const value = useMemo<LanguageContextValue>(
     () => ({
       locale,
       t: getDictionary(locale),
-      setLocale,
-      toggleLocale,
-      intlLocale: locale === 'id' ? 'id-ID' : 'en-US',
+      intlLocale: intlLocaleOf(locale),
     }),
-    [locale, setLocale, toggleLocale],
+    [locale],
   );
 
   return (

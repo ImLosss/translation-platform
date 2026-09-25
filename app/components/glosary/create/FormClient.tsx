@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAlert } from '../../ui/Alert';
-import { redirect } from 'next/navigation';
+import { redirect, useParams } from 'next/navigation';
 import { createGlosaryAction } from '@/app/actions/glosary/createGlosaryAction';
 import SelectSearch from '../../client/SelectSearch';
 import { useLanguage } from '../../client/LanguageProvider';
@@ -21,6 +21,8 @@ const languageOptions = [
 export default function FormClient() {
     const { showAlert } = useAlert();
     const { t } = useLanguage();
+    const params = useParams<{ locale: string }>();
+    const locale = params?.locale ?? 'id';
 
     const [name, setName] = useState('');
     const [sourceLanguage, setSourceLang] = useState<string>('en');
@@ -47,7 +49,7 @@ export default function FormClient() {
             showAlert(result.message || t.glossary.alertCreateFailed, 'error');
         } else {
             showAlert(result.message || t.glossary.alertCreateSuccess, 'success');
-            redirect('/glosary');
+            redirect(`/${locale}/glosary`);
         }
     };
 

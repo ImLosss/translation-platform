@@ -38,8 +38,10 @@ interface ActivityLogResponse {
 // 2. Server Component
 // ==============================
 export default async function ActivityLogsPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ 
     page?: string;
     method?: string;
@@ -49,6 +51,7 @@ export default async function ActivityLogsPage({
   }>;
 }) {
   const resolvedParams = await searchParams;
+  const { locale } = await params;
   
   const currentPage = Number(resolvedParams.page) || 1;
   const limit = 20;
@@ -94,7 +97,7 @@ export default async function ActivityLogsPage({
     if (resolvedParams.status) params.set('status', resolvedParams.status);
     if (resolvedParams.startDate) params.set('startDate', resolvedParams.startDate);
     if (resolvedParams.endDate) params.set('endDate', resolvedParams.endDate);
-    return `/logs?${params.toString()}`;
+    return `/${locale}/logs?${params.toString()}`;
   };
 
   return (

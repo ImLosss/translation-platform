@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { loginAction, signupAction, googleLoginAction } from '@/app/actions/auth'; 
 import "./login.css"; // Pastikan path ini sesuai dengan file CSS Anda
@@ -10,6 +10,9 @@ import Image from "next/image";
 // Komponen Isi Form (Dipisah agar bisa memakai hook useGoogleLogin)
 function AuthContent() {
   const router = useRouter();
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? 'id';
+  const homePath = `/${locale}`;
   
   // States
   const [activeForm, setActiveForm] = useState<'login' | 'signup'>('login');
@@ -41,7 +44,7 @@ function AuthContent() {
     if (result.success) {
       showAlert(result.message, 'success');
       setTimeout(async () =>{
-        window.location.href = '/'; // Arahkan ke Root Panel Admin
+        window.location.href = homePath; // Arahkan ke Root Panel Admin
       }, 1200);
     } else {
       showAlert(result.message, 'error');
@@ -60,7 +63,7 @@ function AuthContent() {
     if (result.success) {
       showAlert(result.message, 'success');
       setTimeout(async () =>{
-        window.location.href = '/'; // Arahkan ke Root Panel Admin
+        window.location.href = homePath; // Arahkan ke Root Panel Admin
       }, 1200);
     } else {
       showAlert(result.message, 'error');
@@ -77,7 +80,7 @@ function AuthContent() {
       if (result.success) {
         showAlert(result.message, 'success');
         setTimeout(async () =>{
-          window.location.href = '/'; // Arahkan ke Root Panel Admin
+          window.location.href = homePath; // Arahkan ke Root Panel Admin
         }, 1200);
       } else {
         showAlert(result.message, 'error');

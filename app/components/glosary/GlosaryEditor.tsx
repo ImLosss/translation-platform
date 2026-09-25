@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, memo } from 'react';
 import { useAlert } from '../ui/Alert';
 import { updateGlosaryEntriesAction } from '@/app/actions/glosary/updateGlosaryEntriesAction';
-import { GlosaryData } from '@/app/(panel)/glosary/[id]/page';
+import { GlosaryData } from '@/app/[locale]/(panel)/glosary/[id]/page';
 import { useLanguage } from '../client/LanguageProvider';
 import { interpolate } from '@/app/lib/i18n/format';
 

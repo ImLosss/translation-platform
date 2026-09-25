@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useModal } from "../ui/ModalProvider";
 import { useLoading } from "../ui/LoadingProvider";
 import { useAlert } from "../ui/Alert";
@@ -20,6 +20,8 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
   const { showAlert } = useAlert();
   const { t } = useLanguage();
   const router = useRouter();
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale ?? 'id';
 
   // Fungsi helper untuk menyimpan ke session & redirect
   const saveAndRedirect = (data: any) => {
@@ -31,7 +33,7 @@ export default function ButtonGenerateGlosary({ jobId, jobStatus, jobName }: But
       recommendations: data.recommendations
     };
     sessionStorage.setItem('tempGlossary', JSON.stringify(dataToPass));
-    router.push('/translate/generate-glosary');
+    router.push(`/${locale}/translate/generate-glosary`);
   };
 
   // Fungsi untuk memulai Polling ke Backend

@@ -1,7 +1,6 @@
-'use client';
-
 import Image from "next/image";
-import { useLanguage } from "@/app/components/client/LanguageProvider";
+import { getDictionary } from "@/app/lib/i18n/dictionaries";
+import { intlLocaleOf, type Locale } from "@/app/lib/i18n/locales";
 import { formatCurrency } from "@/app/lib/i18n/format";
 
 interface UserProfile {
@@ -14,8 +13,9 @@ interface UserProfile {
   _count?: { translations: number };
 }
 
-export default function ProfileCard({ user }: { user: UserProfile }) {
-  const { t, intlLocale } = useLanguage();
+export default function ProfileCard({ user, locale }: { user: UserProfile; locale: Locale }) {
+  const t = getDictionary(locale);
+  const intlLocale = intlLocaleOf(locale);
 
   // Inisial dari username, fallback "??"
   const initials = user.username
