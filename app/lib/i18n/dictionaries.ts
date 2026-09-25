@@ -709,10 +709,10 @@ const id: Dictionary = {
     errorGeneric: 'Terjadi kesalahan.',
   },
   status: {
-    PROCESSING: 'Diproses',
-    TRANSCRIBING: 'Transkripsi',
-    COMPLETED: 'Selesai',
-    ERROR: 'Gagal',
+    PROCESSING: 'DIPROSES',
+    TRANSCRIBING: 'TRANSKRIPSI',
+    COMPLETED: 'SELESAI',
+    ERROR: 'GAGAL',
   },
   nav: {
     main: 'Utama',
